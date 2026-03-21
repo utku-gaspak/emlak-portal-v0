@@ -1,0 +1,179 @@
+{
+  "common": {
+    "close": "Close",
+    "next": "Next",
+    "previous": "Previous",
+    "viewDetails": "View details",
+    "search": "Search",
+    "clear": "Clear",
+    "loading": "Loading...",
+    "searchOverlay": "Search Overlay",
+    "featured": "Featured",
+    "squareMetersUnit": "sqm"
+  },
+  "meta": {
+    "lang": "en",
+    "title": "Automation-Ready Real Estate",
+    "description": "Modern real estate listing platform built for reliable RPA automation."
+  },
+  "errors": {
+    "authUnauthorized": "Unauthorized.",
+    "passwordRequired": "Password is required.",
+    "passwordInvalid": "Invalid admin password.",
+    "propertyTypeRequired": "Property type is required.",
+    "titleRequired": "Title is required.",
+    "priceInvalid": "Price must be a positive number.",
+    "locationRequired": "Location is required.",
+    "areaInvalid": "Area must be a positive number.",
+    "descriptionRequired": "Description is required.",
+    "photosRequired": "Please upload at least one photo.",
+    "roomCountRequired": "Room count is required.",
+    "floorNumberRequired": "Floor number is required.",
+    "heatingTypeRequired": "Heating type is required.",
+    "zoningStatusRequired": "Zoning status is required.",
+    "islandNumberRequired": "Island number is required.",
+    "parcelNumberRequired": "Parcel number is required.",
+    "listingNotFound": "Listing not found.",
+    "deleteFailed": "Failed to delete listing."
+  },
+  "home": {
+    "heroEyebrow": "Premium Real Estate Collection",
+    "heroTitle": "Discover Your Dream Property.",
+    "heroDescription": "Find the perfect home from our verified listings.",
+    "stats": {
+      "curated": {
+        "value": "Curated listings",
+        "label": "Available now"
+      },
+      "fast": {
+        "value": "Fast",
+        "label": "Search and compare"
+      },
+      "rpaReady": {
+        "value": "RPA-ready",
+        "label": "Stable selectors"
+      }
+    },
+    "searchTitle": "Find the right property quickly",
+    "searchDescription": "Search by title, location, room count, or description.",
+    "searchPlaceholder": "Modern apartment in Istanbul",
+    "searchButton": "Search Properties",
+    "clearButton": "Clear",
+    "adminAddButton": "Admin: Add Listing",
+    "showingProperties": "Showing properties",
+    "showingResultsFor": "Showing results for",
+    "noResultsTitle": "No matching listings found.",
+    "noResultsDescription": "Try a broader search or clear the query to browse everything."
+  },
+  "filters": {
+    "title": "Filters",
+    "anyOption": "Any",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search by title or location",
+    "categoryLabel": "Category",
+    "categoryAll": "All",
+    "categoryHouse": "House",
+    "categoryLand": "Land",
+    "minPriceLabel": "Min Price",
+    "maxPriceLabel": "Max Price",
+    "roomCountLabel": "Room Count",
+    "heatingTypeLabel": "Heating Type",
+    "zoningStatusLabel": "Zoning Status",
+    "applyButton": "Apply Filters",
+    "submitButton": "Search Properties"
+  },
+  "adminPage": {
+    "eyebrow": "Admin Panel",
+    "title": "Add New Property Listing",
+    "description": "This route is password-protected and built for deterministic agent automation.",
+    "loginHint": "Enter the admin password to unlock listing creation.",
+    "authenticated": "Authenticated as admin.",
+    "logoutButton": "Logout",
+    "backHome": "Back to listings"
+  },
+  "adminLogin": {
+    "passwordLabel": "Admin Password",
+    "passwordPlaceholder": "Enter password",
+    "button": "Unlock Admin",
+    "checking": "Checking..."
+  },
+  "listingForm": {
+    "title": "Add Listing",
+    "propertyTypeLabel": "Property Type",
+    "typeHouse": "House",
+    "typeLand": "Land",
+    "titleLabel": "Title",
+    "priceLabel": "Price",
+    "locationLabel": "Location",
+    "areaLabel": "Area (sqm)",
+    "houseSectionTitle": "House Specifications",
+    "houseSectionDescription": "Fill only the house-specific fields.",
+    "roomCountLabel": "Room Count",
+    "roomCountPlaceholder": "3+1",
+    "floorLabel": "Floor Number",
+    "floorPlaceholder": "7",
+    "heatingLabel": "Heating",
+    "heatingPlaceholder": "Central Heating",
+    "landSectionTitle": "Land Specifications",
+    "landSectionDescription": "Fill only the land-specific fields.",
+    "zoningLabel": "Zoning Status",
+    "zoningPlaceholder": "Residential",
+    "islandLabel": "Island Number",
+    "islandPlaceholder": "214",
+    "parcelLabel": "Parcel Number",
+    "parcelPlaceholder": "18",
+    "photosLabel": "Photos",
+    "descriptionLabel": "Description",
+    "submitButton": "Submit Listing",
+    "submitting": "Submitting...",
+    "successMessage": "Listing created successfully."
+  },
+  "propertyCard": {
+    "featuredBadge": "Featured",
+    "houseTypeBadge": "House",
+    "landTypeBadge": "Land",
+    "locationLabel": "Location",
+    "areaLabel": "Area",
+    "roomsLabel": "Rooms",
+    "floorLabel": "Floor",
+    "heatingLabel": "Heating",
+    "zoningLabel": "Zoning",
+    "islandLabel": "Island",
+    "parcelLabel": "Parcel",
+    "viewDetails": "View details",
+    "photosSingular": "photo",
+    "photosPlural": "photos"
+  },
+  "propertyDetail": {
+    "houseTypeBadge": "House",
+    "landTypeBadge": "Land",
+    "galleryEyebrow": "Gallery",
+    "galleryTitle": "Explore the photos",
+    "galleryDescription": "Click a photo to open the full-screen preview.",
+    "specifications": "Specifications",
+    "overview": "Overview",
+    "description": "Description",
+    "locationLabel": "Location",
+    "areaLabel": "Area (sqm)",
+    "photosLabel": "Photos",
+    "roomsLabel": "Rooms",
+    "floorLabel": "Floor",
+    "heatingLabel": "Heating",
+    "zoningLabel": "Zoning",
+    "islandLabel": "Island",
+    "parcelLabel": "Parcel",
+    "featuredPhotoAlt": "Featured photo",
+    "placeholderAlt": "Property placeholder image"
+  },
+  "gallery": {
+    "openPreviewAria": "Open photo preview",
+    "thumbnailAria": "View photo",
+    "placeholderMessage": "This property does not have photos yet.",
+    "photoPreviewAria": "Photo preview"
+  },
+  "deleteListing": {
+    "confirm": "Delete this listing? This action cannot be undone.",
+    "button": "Delete Listing",
+    "deleting": "Deleting..."
+  }
+}

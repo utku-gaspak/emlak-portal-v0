@@ -1,0 +1,29 @@
+﻿# Dependency directories
+node_modules/
+
+# Next.js build output
+.next/
+out/
+build/
+
+# Environment variables (Şifrelerin ve özel ayarların olduğu yer)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Project-specific uploads (Yüklediğin ilan resimlerini Git'e dahil etmiyoruz)
+public/uploads/
+
+# Project-specific data (Eğer listings.json'ı veritabanı gibi kullanıyorsan dışarıda tutabilirsin)
+# listings.json
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating System files
+.DS_Store
+Thumbs.db

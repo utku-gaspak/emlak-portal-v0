@@ -1,0 +1,27 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply min-h-screen bg-gradient-to-b from-brand-50 via-white to-slate-100 text-slate-900 antialiased;
+}
+
+main {
+  @apply mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8;
+}
+
+.input-base {
+  @apply block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+}
+
+.label-base {
+  @apply mb-1.5 block text-sm font-medium text-slate-700;
+}
+
+.button-primary {
+  @apply inline-flex items-center justify-center rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900 focus:outline-none focus:ring-2 focus:ring-brand-100;
+}

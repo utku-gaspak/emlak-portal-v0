@@ -1,0 +1,44 @@
+import path from "node:path";
+import { existsSync, rmSync } from "node:fs";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { getDictionary } from "@/lib/locale";
+import { ADMIN_COOKIE_NAME } from "@/lib/admin-auth";
+import { removeListingById } from "@/lib/listings-store";
+
+const publicDir = path.join(process.cwd(), "public");
+
+type DeleteListingRouteProps = {
+  params: {
+    id: string;
+  };
+};
+
+export async function DELETE(_request: Request, { params }: DeleteListingRouteProps) {
+  const t = getDictionary();
+  const cookieStore = cookies();
+  const isAuthorized = cookieStore.get(ADMIN_COOKIE_NAME)?.value === "1";
+
+  if (!isAuthorized) {
+    return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });
+  }
+
+  const deletedListing = await removeListingById(params.id);
+
+  if (!deletedListing) {
+    return NextResponse.json({ ok: false, error: t.errors.listingNotFound }, { status: 404 });
+  }
+
+  const listingUploadDir = path.join(publicDir, "uploads", params.id);
+  if (existsSync(listingUploadDir)) {
+    rmSync(listingUploadDir, { recursive: true });
+  }
+
+  return NextResponse.json(
+    {
+      ok: true,
+      deletedId: params.id
+    },
+    { status: 200 }
+  );
+}
