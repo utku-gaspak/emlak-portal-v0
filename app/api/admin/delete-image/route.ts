@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { NextResponse } from "next/server";
-import { getDictionary } from "@/lib/locale";
+import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getListingById, updateListingById } from "@/lib/listings-store";
 import { getPhotoFileName } from "@/lib/photo-path";
@@ -47,14 +47,14 @@ export async function DELETE(request: Request) {
   try {
     body = (await request.json()) as DeleteImageBody;
   } catch {
-    return NextResponse.json({ ok: false, error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json({ ok: false, error: t.errors.invalidRequestBody }, { status: 400 });
   }
 
   const propertyId = String(body.propertyId ?? "").trim();
   const imageIndex = Number(body.imageIndex);
 
   if (!propertyId || !Number.isInteger(imageIndex) || imageIndex < 0) {
-    return NextResponse.json({ ok: false, error: "Invalid image selection." }, { status: 400 });
+    return NextResponse.json({ ok: false, error: t.errors.invalidImageSelection }, { status: 400 });
   }
 
   const listing = await getListingById(propertyId);
@@ -66,13 +66,13 @@ export async function DELETE(request: Request) {
   const listingUploadDir = path.join(process.cwd(), "public", "uploads", propertyId);
 
   if (!fs.existsSync(listingUploadDir)) {
-    return NextResponse.json({ ok: false, error: "Photo folder not found." }, { status: 404 });
+    return NextResponse.json({ ok: false, error: t.errors.photoFolderNotFound }, { status: 404 });
   }
 
   const normalizedImages = listing.images.map((image) => getPhotoFileName(image)).filter((image) => image.trim().length > 0);
 
   if (imageIndex >= normalizedImages.length) {
-    return NextResponse.json({ ok: false, error: "Photo not found." }, { status: 404 });
+    return NextResponse.json({ ok: false, error: t.errors.photoNotFound }, { status: 404 });
   }
 
   const fileToDelete = normalizedImages[imageIndex];

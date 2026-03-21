@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDictionary } from "@/lib/locale";
+import { getDictionary } from "@/lib/get-dictionary";
 import path from "node:path";
 import { existsSync, rmSync } from "node:fs";
 import { isAdminAuthenticated } from "@/lib/admin-auth";

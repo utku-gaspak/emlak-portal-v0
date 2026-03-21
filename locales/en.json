@@ -9,12 +9,21 @@
     "loading": "Loading...",
     "searchOverlay": "Search Overlay",
     "featured": "Featured",
-    "squareMetersUnit": "sqm"
+    "squareMetersUnit": "sqm",
+    "turkish": "TR",
+    "english": "EN"
   },
   "meta": {
     "lang": "en",
     "title": "Automation-Ready Real Estate",
     "description": "Modern real estate listing platform built for reliable RPA automation."
+  },
+  "siteHeader": {
+    "brandMark": "RE",
+    "brandName": "Real Estate Collection",
+    "adminPortal": "Admin Portal",
+    "dashboard": "Go to Dashboard",
+    "languageLabel": "Language"
   },
   "errors": {
     "authUnauthorized": "Unauthorized.",
@@ -34,7 +43,12 @@
     "islandNumberRequired": "Island number is required.",
     "parcelNumberRequired": "Parcel number is required.",
     "listingNotFound": "Listing not found.",
-    "deleteFailed": "Failed to delete listing."
+    "deleteFailed": "Failed to delete listing.",
+    "invalidRequestBody": "Invalid request body.",
+    "invalidImageSelection": "Invalid image selection.",
+    "photoFolderNotFound": "Photo folder not found.",
+    "photoNotFound": "Photo not found.",
+    "adminLoginRouteDeprecated": "Use NextAuth signIn() for admin login."
   },
   "home": {
     "heroEyebrow": "Premium Real Estate Collection",
@@ -96,9 +110,19 @@
     "loginHint": "Enter the admin password to unlock listing creation.",
     "authenticated": "Authenticated as admin.",
     "logoutButton": "Logout",
-    "backHome": "Back to listings"
+    "backHome": "Back to listings",
+    "backToListings": "Back to List",
+    "backToSite": "Back to site"
+  },
+  "adminEditPage": {
+    "eyebrow": "Admin Listings",
+    "title": "Edit Listing",
+    "description": "Update the title, pricing, category, or photos without creating a new record."
   },
   "adminLogin": {
+    "eyebrow": "Management Access",
+    "title": "Admin Login",
+    "description": "Enter your credentials to access the dashboard.",
     "usernameLabel": "Admin Username",
     "usernamePlaceholder": "Enter username",
     "passwordLabel": "Admin Password",
@@ -112,10 +136,16 @@
     "propertyTypeLabel": "Property Type",
     "typeHouse": "House",
     "typeLand": "Land",
+    "featuredLabel": "Mark as Featured Property",
+    "featuredDescription": "Featured listings appear at the top of the homepage by default.",
     "titleLabel": "Title",
+    "titlePlaceholder": "e.g. Apartment with Bosphorus view",
     "priceLabel": "Price",
+    "pricePlaceholder": "0",
     "locationLabel": "Location",
+    "locationPlaceholder": "Istanbul",
     "areaLabel": "Area (sqm)",
+    "areaPlaceholder": "120",
     "houseSectionTitle": "House Specifications",
     "houseSectionDescription": "Fill only the house-specific fields.",
     "roomCountLabel": "Room Count",
@@ -133,10 +163,15 @@
     "parcelLabel": "Parcel Number",
     "parcelPlaceholder": "18",
     "photosLabel": "Photos",
+    "addMorePhotosLabel": "Add More Photos",
     "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Write a short description of the listing.",
     "submitButton": "Submit Listing",
+    "updateButton": "Update Listing",
     "submitting": "Submitting...",
-    "successMessage": "Listing created successfully."
+    "saving": "Saving...",
+    "successMessage": "Listing created successfully.",
+    "updateSuccessMessage": "Listing updated successfully."
   },
   "propertyCard": {
     "featuredBadge": "Featured",
@@ -150,6 +185,7 @@
     "zoningLabel": "Zoning",
     "islandLabel": "Island",
     "parcelLabel": "Parcel",
+    "refLabel": "Ref No",
     "viewDetails": "View details",
     "photosSingular": "photo",
     "photosPlural": "photos"
@@ -176,6 +212,7 @@
     "placeholderAlt": "Property placeholder image"
   },
   "gallery": {
+    "imageLabel": "Image",
     "openPreviewAria": "Open photo preview",
     "thumbnailAria": "View photo",
     "placeholderMessage": "This property does not have photos yet.",
@@ -185,5 +222,51 @@
     "confirm": "Delete this listing? This action cannot be undone.",
     "button": "Delete Listing",
     "deleting": "Deleting..."
+  },
+  "communication": {
+    "whatsapp": "WhatsApp",
+    "call": "Call",
+    "share": "Share",
+    "copied": "Copied",
+    "copyFailed": "Copy Failed",
+    "whatsappTemplate": "Hello, I am interested in: {title}"
+  },
+  "adminListings": {
+    "title": "Listing Manager",
+    "description": "Manage listings, search by Ref ID, and move quickly between records.",
+    "addButton": "Add New Listing",
+    "searchLabel": "Search by Ref ID, title, or location",
+    "searchPlaceholder": "Enter Ref ID, title, or location",
+    "searchButton": "Search",
+    "clearButton": "Clear",
+    "thumbnail": "Thumbnail",
+    "refId": "Ref ID",
+    "titleColumn": "Title",
+    "price": "Price",
+    "edit": "Edit",
+    "featured": "Featured",
+    "status": "Status",
+    "actions": "Actions",
+    "statusHouse": "House",
+    "statusLand": "Land",
+    "featuredOn": "Featured",
+    "featuredOff": "Not Featured",
+    "noResults": "No listings found.",
+    "showing": "Showing",
+    "listingsUnit": "listings",
+    "featuredLimitReached": "Limit reached! You can only have a maximum of 10 featured properties.",
+    "featuredUpdateFailed": "Unable to update featured status.",
+    "deleteTitle": "Delete listing?",
+    "deleteDescription": "Are you sure you want to delete this listing? This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete Listing",
+    "deleting": "Deleting...",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "languageSwitcher": {
+    "label": "Language",
+    "turkish": "TR",
+    "english": "EN"
   }
 }

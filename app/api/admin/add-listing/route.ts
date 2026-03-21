@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { addListing } from "@/lib/listings-store";
-import { getDictionary } from "@/lib/locale";
+import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { validateListingForm } from "@/lib/validation";
 import { HouseListing, LandListing, ListingType } from "@/lib/types";

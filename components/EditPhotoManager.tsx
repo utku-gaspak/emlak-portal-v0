@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/context/TranslationContext";
 import { getPhotoFileName, getPublicPhotoSrc } from "@/lib/photo-path";
 
 type EditPhotoManagerProps = {
@@ -14,6 +15,7 @@ type EditPhotoManagerProps = {
 const PLACEHOLDER_SRC = "/property-placeholder.svg";
 
 export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [processingIndex, setProcessingIndex] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -50,7 +52,7 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
   if (normalizedImages.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">
-        No photos available for this listing.
+        {t.gallery.placeholderMessage}
       </div>
     );
   }
@@ -59,10 +61,10 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
     <div className="space-y-4 rounded-3xl bg-white p-6 shadow-sm">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Photo Manager</p>
-          <h2 className="mt-1 text-2xl font-bold text-slate-950">Manage Listing Images</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">{t.propertyDetail.galleryEyebrow}</p>
+          <h2 className="mt-1 text-2xl font-bold text-slate-950">{t.propertyDetail.galleryTitle}</h2>
         </div>
-        <p className="text-sm text-slate-500">Delete a photo to re-index the sequence automatically.</p>
+        <p className="text-sm text-slate-500">{t.propertyDetail.galleryDescription}</p>
       </div>
 
       {errorMessage ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage}</div> : null}
@@ -84,7 +86,7 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
                 <div className="relative aspect-square w-full">
                   <Image
                     src={imageSrc}
-                    alt={`Image ${index + 1}`}
+                    alt={`${t.gallery.imageLabel} ${index + 1}`}
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 50vw, 240px"
@@ -101,21 +103,23 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
                   onClick={() => handleDeletePhoto(index)}
                   disabled={processingIndex !== null}
                   className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-red-600 p-2 text-white shadow-lg transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
-                  aria-label={`Delete image ${index + 1}`}
+                  aria-label={`${t.deleteListing.button} ${index + 1}`}
                 >
                   {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
                 </button>
 
                 {isProcessing ? (
                   <div className="absolute inset-0 flex items-center justify-center bg-slate-950/55">
-                    <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg">Processing...</div>
+                    <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg">
+                      {t.common.loading}
+                    </div>
                   </div>
                 ) : null}
               </div>
 
               <div className="mt-3">
                 <p data-automation={`admin-image-label-${index + 1}`} className="text-center text-xs text-slate-500">
-                  Image {index + 1}
+                  {t.gallery.imageLabel} {index + 1}
                 </p>
               </div>
             </div>

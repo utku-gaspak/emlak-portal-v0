@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { PropertyCard } from "@/components/PropertyCard";
 import { SearchFilters } from "@/components/SearchFilters";
 import { getListings, parseListingFilters } from "@/lib/listings-store";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { getDictionary } from "@/lib/locale";
+import { getDictionary } from "@/lib/get-dictionary";
 
 export const dynamic = "force-dynamic";
 

@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { getDictionary } from "@/lib/locale";
+import { useTranslation } from "@/context/TranslationContext";
 
 type LoginErrors = {
   username?: string;
@@ -12,7 +12,7 @@ type LoginErrors = {
 };
 
 export function AdminLoginForm() {
-  const t = getDictionary();
+  const { t } = useTranslation();
   const router = useRouter();
   const [errors, setErrors] = useState<LoginErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);

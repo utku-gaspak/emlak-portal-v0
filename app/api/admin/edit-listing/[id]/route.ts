@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { updateListingById, getListingById, getListings } from "@/lib/listings-store";
-import { getDictionary } from "@/lib/locale";
+import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { validateListingForm } from "@/lib/validation";
 import { HouseListing, LandListing, ListingType } from "@/lib/types";
@@ -170,7 +170,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json(
         {
           ok: false,
-          error: "Limit reached! You can only have a maximum of 10 featured properties."
+          error: t.adminListings.featuredLimitReached
         },
         { status: 400 }
       );

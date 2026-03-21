@@ -1,11 +1,35 @@
-import en from "@/locales/en.json";
+"use client";
 
-export type Dictionary = typeof en;
+import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, dictionaries, normalizeLocale, type Dictionary, type Locale } from "@/lib/i18n-data";
 
-const dictionaries: Record<string, Dictionary> = {
-  en
-};
+function readCookieLocale(): Locale {
+  if (typeof document === "undefined") {
+    return DEFAULT_LOCALE;
+  }
 
-export function getDictionary(locale = "en"): Dictionary {
-  return dictionaries[locale] ?? dictionaries.en;
+  const cookieValue = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${LOCALE_COOKIE_NAME}=`))
+    ?.split("=")[1];
+
+  return normalizeLocale(cookieValue);
 }
+
+export function getDictionary(locale?: Locale): Dictionary {
+  const resolvedLocale = locale ?? readCookieLocale();
+  return dictionaries[resolvedLocale] ?? dictionaries[DEFAULT_LOCALE];
+}
+
+export function getClientLocale(): Locale {
+  return readCookieLocale();
+}
+
+export function setLocaleCookie(locale: Locale): void {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.cookie = `${LOCALE_COOKIE_NAME}=${locale}; path=/; max-age=31536000; samesite=lax`;
+}
+

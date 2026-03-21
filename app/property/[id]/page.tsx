@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CommunicationActionBar } from "@/components/CommunicationActionBar";
 import { PropertyGallery } from "@/components/PropertyGallery";
 import { getListingById } from "@/lib/listings-store";
-import { getDictionary } from "@/lib/locale";
+import { getDictionary } from "@/lib/get-dictionary";
 import { getListingImageSrc } from "@/lib/photo-path";
 
 type PropertyDetailPageProps = {
@@ -56,7 +56,9 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               <p id="detail-price" data-automation="detail-price" className="text-3xl font-black text-brand-700">
                 {formatCurrency(listing.price)}
               </p>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">Ref No: {listing.refId}</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+                {t.propertyCard.refLabel}: {listing.refId}
+              </p>
               <p className="max-w-2xl text-base leading-7 text-slate-600">{listing.location}</p>
             </div>
 

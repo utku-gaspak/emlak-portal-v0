@@ -1,9 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Bed, Maximize, Map, Star } from "lucide-react";
 import { DeleteListingButton } from "@/components/DeleteListingButton";
 import { getListingImageSrc } from "@/lib/photo-path";
 import { Listing } from "@/lib/types";
+import { useTranslation } from "@/context/TranslationContext";
 
 type PropertyCardProps = {
   listing: Listing;
@@ -18,7 +21,10 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
-function renderPrimarySpecs(listing: Listing) {
+type Translation = ReturnType<typeof useTranslation>["t"];
+
+function renderPrimarySpecs(listing: Listing, t: Translation) {
+
   if (listing.type === "house") {
     return (
       <>
@@ -30,16 +36,16 @@ function renderPrimarySpecs(listing: Listing) {
           <Bed className="h-4 w-4 text-slate-500" />
           <span>{listing.roomCount}</span>
         </span>
-        <span
-          id={`spec-chip-areaSqm-${listing.id}`}
-          data-automation="spec-chip-areaSqm"
-          className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700"
-        >
-          <Maximize className="h-4 w-4 text-slate-500" />
-          <span>
-            {listing.areaSqm} sqm
-          </span>
+      <span
+        id={`spec-chip-areaSqm-${listing.id}`}
+        data-automation="spec-chip-areaSqm"
+        className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700"
+      >
+        <Maximize className="h-4 w-4 text-slate-500" />
+        <span>
+          {listing.areaSqm} {t.common.squareMetersUnit}
         </span>
+      </span>
       </>
     );
   }
@@ -60,13 +66,16 @@ function renderPrimarySpecs(listing: Listing) {
         className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700"
       >
         <Maximize className="h-4 w-4 text-slate-500" />
-        <span>{listing.areaSqm} sqm</span>
+        <span>
+          {listing.areaSqm} {t.common.squareMetersUnit}
+        </span>
       </span>
     </>
   );
 }
 
 export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) {
+  const { t } = useTranslation();
   const coverImage = listing.images[0] ? getListingImageSrc(listing.id, listing.images[0]) : "/property-placeholder.svg";
   const isHouse = listing.type === "house";
 
@@ -104,12 +113,12 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
 
           <div
             id={`type-badge-${listing.id}`}
-            data-automation="type-badge"
+            data-automation={`type-badge-${listing.id}`}
             className={`absolute left-4 top-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-[0_10px_30px_rgba(15,23,42,0.2)] ${
               isHouse ? "bg-blue-600" : "bg-emerald-600"
             }`}
           >
-            {isHouse ? "House" : "Land"}
+            {isHouse ? t.propertyCard.houseTypeBadge : t.propertyCard.landTypeBadge}
           </div>
 
           {listing.isFeatured ? (
@@ -121,7 +130,7 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
               }`}
             >
               <Star className="h-3.5 w-3.5 fill-white" />
-              Featured
+              {t.propertyCard.featuredBadge}
             </div>
           ) : null}
         </div>
@@ -130,22 +139,24 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
           <div className="space-y-2">
             <h2 className="text-2xl font-black tracking-tight text-slate-950">{listing.title}</h2>
             <p className="text-3xl font-black text-brand-700">{formatCurrency(listing.price)}</p>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Ref No: {listing.refId}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+              {t.propertyCard.refLabel}: {listing.refId}
+            </p>
           </div>
 
           <p className="text-sm font-medium text-slate-500">{listing.location}</p>
 
           <div className="flex flex-wrap gap-2">
-            {renderPrimarySpecs(listing)}
+            {renderPrimarySpecs(listing, t)}
           </div>
 
           <p className="max-h-24 overflow-hidden text-sm leading-6 text-slate-600">{listing.description}</p>
 
           <div className="flex items-center justify-between text-sm text-slate-500">
             <span>
-              {listing.images.length} {listing.images.length === 1 ? "photo" : "photos"}
+              {listing.images.length} {listing.images.length === 1 ? t.propertyCard.photosSingular : t.propertyCard.photosPlural}
             </span>
-            <span className="font-semibold text-brand-700">View details</span>
+            <span className="font-semibold text-brand-700">{t.propertyCard.viewDetails}</span>
           </div>
         </div>
       </Link>

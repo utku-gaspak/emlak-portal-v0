@@ -4,8 +4,9 @@ import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { EditPhotoManager } from "@/components/EditPhotoManager";
 import { PropertyForm } from "@/components/PropertyForm";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { getDictionary } from "@/lib/locale";
+import { getDictionary } from "@/lib/get-dictionary";
 import { getListingById } from "@/lib/listings-store";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 type EditListingPageProps = {
   params: {
@@ -29,16 +30,21 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <header className="rounded-3xl border border-brand-100 bg-white p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">Admin Listings</p>
-        <h1 className="mt-2 text-3xl font-bold text-slate-900">Edit Listing</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Update the title, pricing, category, or photos without creating a new record.
-        </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">{t.adminEditPage.eyebrow}</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-900">{t.adminEditPage.title}</h1>
+            <p className="mt-2 text-sm text-slate-600">{t.adminEditPage.description}</p>
+          </div>
+          <LanguageSwitcher />
+        </div>
       </header>
 
       <section id="admin-edit-form-section" data-automation="admin-edit-form-section" className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-          <p className="text-sm text-slate-700">You are editing Ref No: {listing.refId}</p>
+          <p className="text-sm text-slate-700">
+            {t.adminPage.authenticated} Ref No: {listing.refId}
+          </p>
           <AdminLogoutButton className="bg-slate-700 text-white hover:bg-slate-900 hover:text-white" />
         </div>
 
@@ -53,10 +59,10 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
           href="/admin/listings"
           className="inline-flex text-sm font-medium text-brand-700 hover:text-brand-900"
         >
-          Cancel
+          {t.adminListings.cancel}
         </Link>
         <Link id="back-home-link" data-automation="back-home-link" href="/" className="inline-flex text-sm font-medium text-slate-500 hover:text-slate-700">
-          Back to site
+          {t.adminPage.backHome}
         </Link>
       </div>
     </div>

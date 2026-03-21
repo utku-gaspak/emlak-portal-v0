@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { AddListingForm } from "@/components/AddListingForm";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { getDictionary } from "@/lib/locale";
+import { getDictionary } from "@/lib/get-dictionary";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default async function AddListingPage() {
   const t = getDictionary();
@@ -15,9 +16,14 @@ export default async function AddListingPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <header className="rounded-3xl border border-brand-100 bg-white p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">{t.adminPage.eyebrow}</p>
-        <h1 className="mt-2 text-3xl font-bold text-slate-900">{t.adminPage.title}</h1>
-        <p className="mt-2 text-sm text-slate-600">{t.adminPage.description}</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">{t.adminPage.eyebrow}</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-900">{t.adminPage.title}</h1>
+            <p className="mt-2 text-sm text-slate-600">{t.adminPage.description}</p>
+          </div>
+          <LanguageSwitcher />
+        </div>
       </header>
 
       <section id="admin-form-section" data-automation="admin-form-section" className="space-y-4">
@@ -29,12 +35,22 @@ export default async function AddListingPage() {
         <AddListingForm />
       </section>
 
-      <div className="flex flex-wrap gap-3">
-        <Link id="back-to-list-button" data-automation="back-to-list-button" href="/admin/listings" className="inline-flex text-sm font-medium text-brand-700 hover:text-brand-900">
-          Back to List
+        <div className="flex flex-wrap gap-3">
+        <Link
+          id="back-to-list-button"
+          data-automation="back-to-list-button"
+          href="/admin/listings"
+          className="inline-flex text-sm font-medium text-brand-700 hover:text-brand-900"
+        >
+          {t.adminPage.backToListings}
         </Link>
-        <Link id="back-home-link" data-automation="back-home-link" href="/" className="inline-flex text-sm font-medium text-slate-500 hover:text-slate-700">
-          Back to site
+        <Link
+          id="back-home-link"
+          data-automation="back-home-link"
+          href="/"
+          className="inline-flex text-sm font-medium text-slate-500 hover:text-slate-700"
+        >
+          {t.adminPage.backToSite}
         </Link>
       </div>
     </div>

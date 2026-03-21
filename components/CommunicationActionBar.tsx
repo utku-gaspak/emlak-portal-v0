@@ -3,14 +3,18 @@
 import { useState } from "react";
 import { MessageCircle, Phone, Share2, Check } from "lucide-react";
 import { getCallHref, getWhatsAppHref } from "@/lib/contact-links";
+import { getClientLocale } from "@/lib/locale";
+import { useTranslation } from "@/context/TranslationContext";
 
 type CommunicationActionBarProps = {
   listingTitle: string;
 };
 
 export function CommunicationActionBar({ listingTitle }: CommunicationActionBarProps) {
+  const { t } = useTranslation();
+  const locale = getClientLocale();
   const [shareState, setShareState] = useState<"idle" | "copied" | "error">("idle");
-  const whatsappHref = getWhatsAppHref(listingTitle);
+  const whatsappHref = getWhatsAppHref(listingTitle, locale);
   const callHref = getCallHref();
 
   async function handleShare() {
@@ -36,7 +40,7 @@ export function CommunicationActionBar({ listingTitle }: CommunicationActionBarP
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(16,185,129,0.25)] transition hover:-translate-y-0.5 hover:bg-emerald-700"
         >
           <MessageCircle className="h-4 w-4" />
-          WhatsApp
+          {t.communication.whatsapp}
         </a>
 
         <a
@@ -46,7 +50,7 @@ export function CommunicationActionBar({ listingTitle }: CommunicationActionBarP
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(15,23,42,0.2)] transition hover:-translate-y-0.5 hover:bg-slate-800"
         >
           <Phone className="h-4 w-4" />
-          Call
+          {t.communication.call}
         </a>
 
         <button
@@ -57,7 +61,7 @@ export function CommunicationActionBar({ listingTitle }: CommunicationActionBarP
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-800 shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:bg-slate-200"
         >
           {shareState === "copied" ? <Check className="h-4 w-4 text-emerald-600" /> : <Share2 className="h-4 w-4" />}
-          {shareState === "copied" ? "Copied" : shareState === "error" ? "Copy Failed" : "Share"}
+          {shareState === "copied" ? t.communication.copied : shareState === "error" ? t.communication.copyFailed : t.communication.share}
         </button>
       </div>
     </div>

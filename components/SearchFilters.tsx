@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Check, ChevronDown } from "lucide-react";
-import { getDictionary } from "@/lib/locale";
+import { useTranslation } from "@/context/TranslationContext";
 import type { ListingType } from "@/lib/types";
 
 type SearchFiltersProps = {
@@ -52,7 +52,7 @@ function normalizeChoices(values: string[]): string[] {
 }
 
 export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, showHeader = true }: SearchFiltersProps) {
-  const t = getDictionary();
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

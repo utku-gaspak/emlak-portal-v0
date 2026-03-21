@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getDictionary } from "@/lib/locale";
+import { useTranslation } from "@/context/TranslationContext";
 
 type DeleteListingButtonProps = {
   listingId: string;
 };
 
 export function DeleteListingButton({ listingId }: DeleteListingButtonProps) {
-  const t = getDictionary();
+  const { t } = useTranslation();
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 

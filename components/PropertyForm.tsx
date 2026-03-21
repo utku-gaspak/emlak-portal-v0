@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useRef, useState } from "react";
 import { Listing, ListingType } from "@/lib/types";
+import { useTranslation } from "@/context/TranslationContext";
 
 type ListingField =
   | "type"
@@ -76,6 +77,7 @@ function buildFormState(initialData?: Listing): FormState {
 }
 
 export function PropertyForm({ mode, initialData }: PropertyFormProps) {
+  const { t } = useTranslation();
   const initialType = initialData?.type ?? "house";
   const [listingType, setListingType] = useState<ListingType>(initialType);
   const [formState, setFormState] = useState<FormState>(() => buildFormState(initialData));
@@ -95,9 +97,9 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
 
   const hasExistingPhotos = (initialData?.images.length ?? 0) > 0;
   const isHouse = listingType === "house";
-  const submitLabel = mode === "edit" ? "Update Listing" : "Submit Listing";
-  const successMessage = mode === "edit" ? "Listing updated successfully." : "Listing created successfully.";
-  const photosLabel = mode === "edit" && hasExistingPhotos ? "Add More Photos" : "Photos";
+  const submitLabel = mode === "edit" ? t.listingForm.updateButton : t.listingForm.submitButton;
+  const successMessage = mode === "edit" ? t.listingForm.updateSuccessMessage : t.listingForm.successMessage;
+  const photosLabel = mode === "edit" && hasExistingPhotos ? t.listingForm.addMorePhotosLabel : t.listingForm.photosLabel;
 
   const updateField = (field: TextFormField, value: string) => {
     setSuccess(false);
@@ -180,7 +182,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
     >
       <div className="rounded-3xl bg-slate-50 p-4 sm:p-5">
         <label htmlFor="prop-type" className="label-base">
-          Property Type
+          {t.listingForm.propertyTypeLabel}
         </label>
         <select
           id="prop-type"
@@ -191,8 +193,8 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
           required
           className="input-base"
         >
-          <option value="house">House</option>
-          <option value="land">Land</option>
+          <option value="house">{t.listingForm.typeHouse}</option>
+          <option value="land">{t.listingForm.typeLand}</option>
         </select>
         {renderError("type")}
       </div>
@@ -201,9 +203,9 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-1">
             <label htmlFor="prop-featured" className="block text-sm font-semibold text-slate-900">
-              Mark as Featured Property
+              {t.listingForm.featuredLabel}
             </label>
-            <p className="text-sm text-slate-600">Featured listings appear at the top of the homepage by default.</p>
+            <p className="text-sm text-slate-600">{t.listingForm.featuredDescription}</p>
           </div>
 
           <input
@@ -221,7 +223,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <div>
           <label htmlFor="prop-title" className="label-base">
-            Title
+            {t.listingForm.titleLabel}
           </label>
           <input
             id="prop-title"
@@ -232,13 +234,14 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
             required
             value={formState.title}
             onChange={(event) => updateField("title", event.target.value)}
+            placeholder={t.listingForm.titlePlaceholder}
           />
           {renderError("title")}
         </div>
 
         <div>
           <label htmlFor="prop-price" className="label-base">
-            Price
+            {t.listingForm.priceLabel}
           </label>
           <input
             id="prop-price"
@@ -250,13 +253,14 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
             required
             value={formState.price}
             onChange={(event) => updateField("price", event.target.value)}
+            placeholder={t.listingForm.pricePlaceholder}
           />
           {renderError("price")}
         </div>
 
         <div>
           <label htmlFor="prop-location" className="label-base">
-            Location
+            {t.listingForm.locationLabel}
           </label>
           <input
             id="prop-location"
@@ -267,13 +271,14 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
             required
             value={formState.location}
             onChange={(event) => updateField("location", event.target.value)}
+            placeholder={t.listingForm.locationPlaceholder}
           />
           {renderError("location")}
         </div>
 
         <div>
           <label htmlFor="prop-area-sqm" className="label-base">
-            Area (sqm)
+            {t.listingForm.areaLabel}
           </label>
           <input
             id="prop-area-sqm"
@@ -285,6 +290,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
             required
             value={formState.areaSqm}
             onChange={(event) => updateField("areaSqm", event.target.value)}
+            placeholder={t.listingForm.areaPlaceholder}
           />
           {renderError("areaSqm")}
         </div>
@@ -293,14 +299,14 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
       {isHouse ? (
         <div className="rounded-3xl bg-slate-50 p-5">
           <div className="mb-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">House Details</p>
-            <p className="mt-1 text-sm text-slate-600">Enter the room layout and heating information.</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">{t.listingForm.houseSectionTitle}</p>
+            <p className="mt-1 text-sm text-slate-600">{t.listingForm.houseSectionDescription}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             <div>
               <label htmlFor="prop-room-count" className="label-base">
-                Room Count
+                {t.listingForm.roomCountLabel}
               </label>
               <input
                 id="prop-room-count"
@@ -308,7 +314,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
                 name="roomCount"
                 type="text"
                 className="input-base"
-                placeholder="3+1"
+                placeholder={t.listingForm.roomCountPlaceholder}
                 required
                 value={formState.roomCount}
                 onChange={(event) => updateField("roomCount", event.target.value)}
@@ -318,7 +324,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
 
             <div>
               <label htmlFor="prop-floor-number" className="label-base">
-                Floor Number
+                {t.listingForm.floorLabel}
               </label>
               <input
                 id="prop-floor-number"
@@ -326,7 +332,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
                 name="floorNumber"
                 type="number"
                 className="input-base"
-                placeholder="5"
+                placeholder={t.listingForm.floorPlaceholder}
                 required
                 value={formState.floorNumber}
                 onChange={(event) => updateField("floorNumber", event.target.value)}
@@ -336,7 +342,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
 
             <div>
               <label htmlFor="prop-heating-type" className="label-base">
-                Heating Type
+                {t.listingForm.heatingLabel}
               </label>
               <input
                 id="prop-heating-type"
@@ -344,7 +350,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
                 name="heatingType"
                 type="text"
                 className="input-base"
-                placeholder="Central"
+                placeholder={t.listingForm.heatingPlaceholder}
                 required
                 value={formState.heatingType}
                 onChange={(event) => updateField("heatingType", event.target.value)}
@@ -356,14 +362,14 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
       ) : (
         <div className="rounded-3xl bg-slate-50 p-5">
           <div className="mb-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Land Details</p>
-            <p className="mt-1 text-sm text-slate-600">Enter zoning and parcel information.</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">{t.listingForm.landSectionTitle}</p>
+            <p className="mt-1 text-sm text-slate-600">{t.listingForm.landSectionDescription}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             <div>
               <label htmlFor="prop-zoning-status" className="label-base">
-                Zoning Status
+                {t.listingForm.zoningLabel}
               </label>
               <input
                 id="prop-zoning-status"
@@ -371,7 +377,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
                 name="zoningStatus"
                 type="text"
                 className="input-base"
-                placeholder="Zoned"
+                placeholder={t.listingForm.zoningPlaceholder}
                 required
                 value={formState.zoningStatus}
                 onChange={(event) => updateField("zoningStatus", event.target.value)}
@@ -381,7 +387,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
 
             <div>
               <label htmlFor="prop-island-number" className="label-base">
-                Island Number
+                {t.listingForm.islandLabel}
               </label>
               <input
                 id="prop-island-number"
@@ -389,7 +395,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
                 name="islandNumber"
                 type="number"
                 className="input-base"
-                placeholder="123"
+                placeholder={t.listingForm.islandPlaceholder}
                 required
                 value={formState.islandNumber}
                 onChange={(event) => updateField("islandNumber", event.target.value)}
@@ -399,7 +405,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
 
             <div>
               <label htmlFor="prop-parcel-number" className="label-base">
-                Parcel Number
+                {t.listingForm.parcelLabel}
               </label>
               <input
                 id="prop-parcel-number"
@@ -407,7 +413,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
                 name="parcelNumber"
                 type="number"
                 className="input-base"
-                placeholder="45"
+                placeholder={t.listingForm.parcelPlaceholder}
                 required
                 value={formState.parcelNumber}
                 onChange={(event) => updateField("parcelNumber", event.target.value)}
@@ -445,7 +451,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
 
       <div>
         <label htmlFor="prop-description" className="label-base">
-          Description
+          {t.listingForm.descriptionLabel}
         </label>
         <textarea
           id="prop-description"
@@ -456,6 +462,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
           required
           value={formState.description}
           onChange={(event) => updateField("description", event.target.value)}
+          placeholder={t.listingForm.descriptionPlaceholder}
         />
         {renderError("description")}
       </div>
@@ -467,7 +474,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
         className="button-primary"
         disabled={isSubmitting}
       >
-        {isSubmitting ? "Saving..." : submitLabel}
+        {isSubmitting ? t.listingForm.saving : submitLabel}
       </button>
 
       {success ? (

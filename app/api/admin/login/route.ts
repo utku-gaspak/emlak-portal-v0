@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { getDictionary } from "@/lib/get-dictionary";
 
 export async function POST() {
+  const t = getDictionary();
+
   return NextResponse.json(
     {
       ok: false,
-      error: "Use NextAuth signIn() for admin login."
+      error: t.errors.adminLoginRouteDeprecated
     },
     { status: 410 }
   );

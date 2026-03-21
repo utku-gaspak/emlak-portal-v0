@@ -2,14 +2,14 @@
 
 import { signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
-import { getDictionary } from "@/lib/locale";
+import { useTranslation } from "@/context/TranslationContext";
 
 type AdminLogoutButtonProps = {
   className?: string;
 };
 
 export function AdminLogoutButton({ className = "" }: AdminLogoutButtonProps) {
-  const t = getDictionary();
+  const { t } = useTranslation();
 
   return (
     <button

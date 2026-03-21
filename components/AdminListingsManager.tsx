@@ -8,6 +8,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Listing } from "@/lib/types";
 import { getListingImageSrc } from "@/lib/photo-path";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from "@/context/TranslationContext";
 
 type AdminListingsManagerProps = {
   listings: Listing[];
@@ -36,6 +38,7 @@ export function AdminListingsManager({
   previousHref,
   nextHref
 }: AdminListingsManagerProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get("q") || "";
@@ -98,7 +101,7 @@ export function AdminListingsManager({
 
   async function handleFeaturedToggle(listing: Listing, nextChecked: boolean) {
     if (nextChecked && !listing.isFeatured && featuredCount >= 10) {
-      window.alert("Limit reached! You can only have a maximum of 10 featured properties.");
+      window.alert(t.adminListings.featuredLimitReached);
       return;
     }
 
@@ -116,12 +119,8 @@ export function AdminListingsManager({
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        const errorMessage = payload?.error ?? "Unable to update featured status.";
-        if (errorMessage.includes("Limit reached")) {
-          window.alert(errorMessage);
-        } else {
-          window.alert(errorMessage);
-        }
+        const errorMessage = payload?.error ?? t.adminListings.featuredUpdateFailed;
+        window.alert(errorMessage);
         return;
       }
 
@@ -129,7 +128,7 @@ export function AdminListingsManager({
       setFeaturedCount((current) => current + (nextChecked ? 1 : -1));
       router.refresh();
     } catch {
-      window.alert("Unable to update featured status.");
+      window.alert(t.adminListings.featuredUpdateFailed);
     } finally {
       setFeaturedPendingIds((current) => ({ ...current, [listing.id]: false }));
     }
@@ -140,20 +139,21 @@ export function AdminListingsManager({
       <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">Admin Listings</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">Listing Manager</h1>
-            <p className="mt-2 text-sm text-slate-600">Manage listings, search by Ref ID, and move quickly between records.</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">{t.adminPage.eyebrow}</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-900">{t.adminListings.title}</h1>
+            <p className="mt-2 text-sm text-slate-600">{t.adminListings.description}</p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <LanguageSwitcher />
             <Link
               id="admin-add-button"
               data-automation="admin-add-button"
               href="/admin/add"
               className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-              >
-                Add New Listing
-              </Link>
+            >
+              {t.adminListings.addButton}
+            </Link>
             <AdminLogoutButton />
             <Link
               id="admin-dashboard-home"
@@ -161,7 +161,7 @@ export function AdminListingsManager({
               href="/"
               className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
-              Back to Site
+              {t.adminPage.backHome}
             </Link>
           </div>
         </div>
@@ -171,7 +171,7 @@ export function AdminListingsManager({
         <form id="admin-listing-search-form" data-automation="admin-listing-search-form" method="get" className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <div className="space-y-2">
             <label htmlFor="admin-listing-search" className="label-base">
-              Search by Ref ID or Title
+              {t.adminListings.searchLabel}
             </label>
             <input
               id="admin-listing-search"
@@ -179,7 +179,7 @@ export function AdminListingsManager({
               name="q"
               type="search"
               defaultValue={searchTerm}
-              placeholder="Enter Ref ID, title, or location"
+              placeholder={t.adminListings.searchPlaceholder}
               className="input-base"
             />
           </div>
@@ -191,7 +191,7 @@ export function AdminListingsManager({
               type="submit"
               className="inline-flex items-center justify-center rounded-2xl bg-brand-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-800"
             >
-              Search
+              {t.adminListings.searchButton}
             </button>
             <Link
               id="admin-listing-search-clear"
@@ -199,7 +199,7 @@ export function AdminListingsManager({
               href="/admin/listings"
               className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
-              Clear
+              {t.adminListings.clearButton}
             </Link>
           </div>
         </form>
@@ -210,13 +210,13 @@ export function AdminListingsManager({
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                <th className="px-4 py-4">Thumbnail</th>
-                <th className="px-4 py-4">Ref ID</th>
-                <th className="px-4 py-4">Title</th>
-                <th className="px-4 py-4">Price</th>
-                <th className="px-4 py-4">Featured</th>
-                <th className="px-4 py-4">Status</th>
-                <th className="px-4 py-4">Actions</th>
+                <th className="px-4 py-4">{t.adminListings.thumbnail}</th>
+                <th className="px-4 py-4">{t.adminListings.refId}</th>
+                <th className="px-4 py-4">{t.adminListings.titleColumn}</th>
+                <th className="px-4 py-4">{t.adminListings.price}</th>
+                <th className="px-4 py-4">{t.adminListings.featured}</th>
+                <th className="px-4 py-4">{t.adminListings.status}</th>
+                <th className="px-4 py-4">{t.adminListings.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
@@ -264,7 +264,7 @@ export function AdminListingsManager({
                       <td className="px-4 py-4 font-semibold text-brand-700">{formatCurrency(listing.price)}</td>
                       <td className="px-4 py-4">
                         <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold text-white ${listing.type === "house" ? "bg-blue-600" : "bg-emerald-600"}`}>
-                          {listing.type === "house" ? "House" : "Land"}
+                          {listing.type === "house" ? t.adminListings.statusHouse : t.adminListings.statusLand}
                         </span>
                       </td>
                       <td className="px-4 py-4" onClick={(event) => event.stopPropagation()}>
@@ -293,7 +293,7 @@ export function AdminListingsManager({
                               {isFeaturedPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                             </span>
                           </span>
-                          <span>{featuredById.get(listing.id) ? "Featured" : "Not Featured"}</span>
+                          <span>{featuredById.get(listing.id) ? t.adminListings.featuredOn : t.adminListings.featuredOff}</span>
                         </label>
                       </td>
                       <td className="px-4 py-4">
@@ -302,10 +302,10 @@ export function AdminListingsManager({
                             id={`edit-button-${listing.id}`}
                             data-automation={`edit-button-${listing.id}`}
                             href={`/admin/edit/${listing.id}`}
-                            onClick={(event) => event.stopPropagation()}
-                            className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-                          >
-                            Edit
+                          onClick={(event) => event.stopPropagation()}
+                          className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                            {t.adminListings.edit}
                           </Link>
                           <button
                             id={`delete-button-${listing.id}`}
@@ -319,7 +319,7 @@ export function AdminListingsManager({
                             className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
                           >
                             <Trash2 className="h-4 w-4" />
-                            Delete
+                            {t.deleteListing.button}
                           </button>
                         </div>
                       </td>
@@ -328,8 +328,8 @@ export function AdminListingsManager({
                 })
               ) : (
                 <tr>
-          <td className="px-4 py-10 text-center text-sm text-slate-500" colSpan={7}>
-                    No listings found.
+                  <td className="px-4 py-10 text-center text-sm text-slate-500" colSpan={7}>
+                    {t.adminListings.noResults}
                   </td>
                 </tr>
               )}
@@ -340,7 +340,7 @@ export function AdminListingsManager({
 
       <div className="flex items-center justify-between rounded-3xl bg-white px-4 py-4 shadow-sm">
         <p className="text-sm text-slate-600">
-          Showing {listings.length} of {totalListings} listings
+          {t.adminListings.showing} {listings.length} {t.adminListings.listingsUnit} / {totalListings} {t.adminListings.listingsUnit}
         </p>
 
         <div className="flex items-center gap-2">
@@ -350,7 +350,7 @@ export function AdminListingsManager({
               currentPage <= 1 ? "pointer-events-none border-slate-100 bg-slate-50 text-slate-300" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
             }`}
           >
-            Previous
+            {t.adminListings.previous}
           </Link>
           <span className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
             {currentPage} / {totalPages}
@@ -362,7 +362,7 @@ export function AdminListingsManager({
               currentPage >= totalPages ? "pointer-events-none border-slate-100 bg-slate-50 text-slate-300" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
             }`}
           >
-            Next
+            {t.adminListings.next}
           </Link>
         </div>
       </div>
@@ -375,12 +375,12 @@ export function AdminListingsManager({
                 <Trash2 className="h-6 w-6" />
               </div>
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-slate-950">Delete listing?</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Are you sure you want to delete this listing? This action cannot be undone.
-                </p>
+                <h2 className="text-2xl font-bold text-slate-950">{t.adminListings.deleteTitle}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{t.adminListings.deleteDescription}</p>
                 <p className="mt-3 text-sm font-semibold text-slate-900">{listingToDelete.title}</p>
-                <p className="text-xs text-slate-500">Ref No: {listingToDelete.refId}</p>
+                <p className="text-xs text-slate-500">
+                  {t.adminListings.refId}: {listingToDelete.refId}
+                </p>
                 {deleteError ? <p className="mt-3 text-sm text-red-600">{deleteError}</p> : null}
               </div>
             </div>
@@ -396,7 +396,7 @@ export function AdminListingsManager({
                 }}
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
-                Cancel
+                {t.adminListings.cancel}
               </button>
               <button
                 id="confirm-delete-btn"
@@ -406,7 +406,7 @@ export function AdminListingsManager({
                 disabled={isDeleting}
                 className="inline-flex items-center justify-center rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {isDeleting ? "Deleting..." : "Delete Listing"}
+                {isDeleting ? t.adminListings.deleting : t.adminListings.delete}
               </button>
             </div>
           </div>

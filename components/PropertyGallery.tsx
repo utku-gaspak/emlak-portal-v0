@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getDictionary } from "@/lib/locale";
+import { useTranslation } from "@/context/TranslationContext";
 import { getPhotoFileName, getPublicPhotoSrc } from "@/lib/photo-path";
 
 type PropertyGalleryProps = {
@@ -13,7 +13,7 @@ type PropertyGalleryProps = {
 const PLACEHOLDER_SRC = "/property-placeholder.svg";
 
 export function PropertyGallery({ listingId, title, images }: PropertyGalleryProps) {
-  const t = getDictionary();
+  const { t } = useTranslation();
   const normalizedImages = useMemo(() => images.map((image) => getPhotoFileName(image)), [images]);
   const imageCount = normalizedImages.length;
   const hasPhotos = imageCount > 0;
@@ -171,7 +171,7 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
                   data-automation="viewer-image-index"
                   className="absolute left-4 top-4 rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-white backdrop-blur"
                 >
-                  Image {selectedIndex + 1}
+                  {t.gallery.imageLabel} {selectedIndex + 1}
                 </div>
               </div>
             </div>
