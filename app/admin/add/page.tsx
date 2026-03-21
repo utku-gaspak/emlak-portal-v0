@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AddListingForm } from "@/components/AddListingForm";
+import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getDictionary } from "@/lib/locale";
 
-export default function AddListingPage() {
+export default async function AddListingPage() {
   const t = getDictionary();
 
-  if (!isAdminAuthenticated()) {
+  if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
 
@@ -22,11 +23,7 @@ export default function AddListingPage() {
       <section id="admin-form-section" data-automation="admin-form-section" className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
           <p className="text-sm text-slate-700">{t.adminPage.authenticated}</p>
-          <form id="admin-logout-form" data-automation="admin-logout-form" method="post" action="/api/admin/logout">
-            <button id="admin-logout-button" data-automation="admin-logout-button" type="submit" className="button-primary bg-slate-700 hover:bg-slate-900">
-              {t.adminPage.logoutButton}
-            </button>
-          </form>
+          <AdminLogoutButton className="bg-slate-700 text-white hover:bg-slate-900 hover:text-white" />
         </div>
 
         <AddListingForm />

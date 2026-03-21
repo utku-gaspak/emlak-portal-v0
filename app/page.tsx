@@ -21,7 +21,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const t = getDictionary();
   const filters = parseListingFilters(searchParams);
   const [allListings, filteredListings] = await Promise.all([getListings(), getListings(filters)]);
-  const canDelete = isAdminAuthenticated();
+  const canDelete = await isAdminAuthenticated();
 
   const houseListings = allListings.filter((listing) => listing.type === "house");
   const landListings = allListings.filter((listing) => listing.type === "land");

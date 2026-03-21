@@ -1,9 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE_NAME } from "@/lib/admin-auth";
 import { getDictionary } from "@/lib/locale";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getListingById, updateListingById } from "@/lib/listings-store";
 import { getPhotoFileName } from "@/lib/photo-path";
 
@@ -38,10 +37,8 @@ function safeSortFiles(files: string[]): string[] {
 
 export async function DELETE(request: Request) {
   const t = getDictionary();
-  const cookieStore = cookies();
-  const isAuthorized = cookieStore.get(ADMIN_COOKIE_NAME)?.value === "1";
 
-  if (!isAuthorized) {
+  if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });
   }
 

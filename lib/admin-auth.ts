@@ -1,9 +1,16 @@
-﻿import { cookies } from "next/headers";
+import { getServerSession } from "next-auth/next";
+import type { Session } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { ADMIN_PASSWORD, ADMIN_USERNAME, NEXTAUTH_SECRET } from "@/lib/auth-env";
 
 export const ADMIN_COOKIE_NAME = "emlak-admin-auth";
-export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "change-me-123";
+export { ADMIN_PASSWORD, ADMIN_USERNAME, NEXTAUTH_SECRET };
 
-export function isAdminAuthenticated(): boolean {
-  const cookieStore = cookies();
-  return cookieStore.get(ADMIN_COOKIE_NAME)?.value === "1";
+export async function getAdminSession(): Promise<Session | null> {
+  return getServerSession(authOptions);
+}
+
+export async function isAdminAuthenticated(): Promise<boolean> {
+  const session = await getAdminSession();
+  return Boolean(session);
 }

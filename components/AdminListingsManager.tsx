@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, LogOut, Trash2 } from "lucide-react";
+import { ExternalLink, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Listing } from "@/lib/types";
 import { getListingImageSrc } from "@/lib/photo-path";
+import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 
 type AdminListingsManagerProps = {
   listings: Listing[];
@@ -88,20 +89,10 @@ export function AdminListingsManager({
               data-automation="admin-add-button"
               href="/admin/add"
               className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-            >
-              Add New Listing
-            </Link>
-            <form id="admin-logout-form" data-automation="admin-logout-form" method="post" action="/api/admin/logout">
-              <button
-                id="logout-button"
-                data-automation="logout-button"
-                type="submit"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50"
               >
-                <LogOut className="h-4 w-4" />
-                Log Out
-              </button>
-            </form>
+                Add New Listing
+              </Link>
+            <AdminLogoutButton />
             <Link
               id="admin-dashboard-home"
               data-automation="admin-dashboard-home"

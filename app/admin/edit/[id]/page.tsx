@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { EditPhotoManager } from "@/components/EditPhotoManager";
 import { PropertyForm } from "@/components/PropertyForm";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
@@ -15,7 +16,7 @@ type EditListingPageProps = {
 export default async function EditListingPage({ params }: EditListingPageProps) {
   const t = getDictionary();
 
-  if (!isAdminAuthenticated()) {
+  if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
 
@@ -38,11 +39,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
       <section id="admin-edit-form-section" data-automation="admin-edit-form-section" className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
           <p className="text-sm text-slate-700">You are editing Ref No: {listing.refId}</p>
-          <form id="admin-logout-form" data-automation="admin-logout-form" method="post" action="/api/admin/logout">
-            <button id="admin-logout-button" data-automation="admin-logout-button" type="submit" className="button-primary bg-slate-700 hover:bg-slate-900">
-              {t.adminPage.logoutButton}
-            </button>
-          </form>
+          <AdminLogoutButton className="bg-slate-700 text-white hover:bg-slate-900 hover:text-white" />
         </div>
 
         <EditPhotoManager listingId={listing.id} images={listing.images} />

@@ -35,7 +35,7 @@ function buildPageHref(searchTerm: string, page: number): string {
 }
 
 export default async function AdminListingsPage({ searchParams }: AdminListingsPageProps) {
-  if (!isAdminAuthenticated()) {
+  if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
 

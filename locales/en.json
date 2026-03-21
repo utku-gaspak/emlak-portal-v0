@@ -92,10 +92,13 @@
     "backHome": "Back to listings"
   },
   "adminLogin": {
+    "usernameLabel": "Admin Username",
+    "usernamePlaceholder": "Enter username",
     "passwordLabel": "Admin Password",
     "passwordPlaceholder": "Enter password",
     "button": "Unlock Admin",
-    "checking": "Checking..."
+    "checking": "Checking...",
+    "loginFailed": "Login Failed"
   },
   "listingForm": {
     "title": "Add Listing",

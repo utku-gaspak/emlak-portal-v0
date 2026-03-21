@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { updateListingById, getListingById } from "@/lib/listings-store";
 import { getDictionary } from "@/lib/locale";
-import { ADMIN_COOKIE_NAME } from "@/lib/admin-auth";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { validateListingForm } from "@/lib/validation";
 import { HouseListing, LandListing, ListingType } from "@/lib/types";
 import { deleteUploadedFiles, ensurePublicDirectory, saveUploadedPhotos } from "@/lib/listing-media";
@@ -14,10 +13,8 @@ function getListingType(formValue: string, fallback: ListingType): ListingType {
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const t = getDictionary();
-  const cookieStore = cookies();
-  const isAuthorized = cookieStore.get(ADMIN_COOKIE_NAME)?.value === "1";
 
-  if (!isAuthorized) {
+  if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ ok: false, errors: { auth: t.errors.authUnauthorized } }, { status: 401 });
   }
 

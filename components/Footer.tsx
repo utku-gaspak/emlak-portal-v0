@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 
-export function Footer() {
-  const isAuthenticated = isAdminAuthenticated();
+export async function Footer() {
+  const isAuthenticated = await isAdminAuthenticated();
   const href = isAuthenticated ? "/admin/listings" : "/admin/login";
 
   return (

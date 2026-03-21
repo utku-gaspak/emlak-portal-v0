@@ -1,9 +1,8 @@
-import path from "node:path";
-import { existsSync, rmSync } from "node:fs";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { getDictionary } from "@/lib/locale";
-import { ADMIN_COOKIE_NAME } from "@/lib/admin-auth";
+import path from "node:path";
+import { existsSync, rmSync } from "node:fs";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { removeListingById } from "@/lib/listings-store";
 
 const publicDir = path.join(process.cwd(), "public");
@@ -16,10 +15,8 @@ type DeleteListingRouteProps = {
 
 export async function DELETE(_request: Request, { params }: DeleteListingRouteProps) {
   const t = getDictionary();
-  const cookieStore = cookies();
-  const isAuthorized = cookieStore.get(ADMIN_COOKIE_NAME)?.value === "1";
 
-  if (!isAuthorized) {
+  if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });
   }
 
