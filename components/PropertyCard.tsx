@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Bed, Maximize, Map } from "lucide-react";
+import { Bed, Maximize, Map, Star } from "lucide-react";
 import { DeleteListingButton } from "@/components/DeleteListingButton";
 import { getListingImageSrc } from "@/lib/photo-path";
 import { Listing } from "@/lib/types";
@@ -74,7 +74,9 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
     <article
       id={`property-card-${listing.id}`}
       data-automation="property-card"
-      className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+      className={`group relative overflow-hidden rounded-3xl border bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
+        listing.isFeatured ? "border-amber-300/70 ring-1 ring-amber-200/70" : "border-slate-200"
+      }`}
     >
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-500 via-emerald-400 to-cyan-400" />
 
@@ -109,6 +111,19 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
           >
             {isHouse ? "House" : "Land"}
           </div>
+
+          {listing.isFeatured ? (
+            <div
+              id={`featured-badge-${listing.id}`}
+              data-automation={`featured-badge-${listing.id}`}
+              className={`absolute inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white shadow-[0_10px_30px_rgba(245,158,11,0.28)] ${
+                canDelete ? "right-4 top-14" : "right-4 top-4"
+              }`}
+            >
+              <Star className="h-3.5 w-3.5 fill-white" />
+              Featured
+            </div>
+          ) : null}
         </div>
 
         <div className="space-y-5 p-6">

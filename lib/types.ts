@@ -3,6 +3,7 @@ export type ListingType = "house" | "land";
 export type ListingCommonFields = {
   id: string;
   refId: number;
+  isFeatured: boolean;
   title: string;
   price: number;
   location: string;
@@ -31,6 +32,7 @@ export type Listing = HouseListing | LandListing;
 
 export type ListingInput = {
   type: ListingType;
+  isFeatured?: boolean;
   title: string;
   price: string;
   location: string;

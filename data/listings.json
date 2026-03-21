@@ -1,61 +1,33 @@
 [
   {
-    "id": "f6ca6b3a-7a2a-4252-81ab-2ab119404c6c",
-    "refId": 1003,
-    "type": "house",
-    "title": "ggg",
-    "price": 333,
-    "location": "gg",
-    "areaSqm": 333,
-    "description": "333",
-    "photos": [
+    "id": "b023cdcf-de8f-4911-b1db-2038c46f9b38",
+    "refId": 1001,
+    "isFeatured": true,
+    "title": "1",
+    "price": 1000,
+    "location": "Edirne",
+    "areaSqm": 124,
+    "description": "asd",
+    "images": [
       "1.jpg",
-      "2.png"
-    ],
-    "createdAt": "2026-03-21T14:34:17.132Z",
-    "roomCount": "3",
-    "floorNumber": "3",
-    "heatingType": "33"
-  },
-  {
-    "id": "9458d520-2007-44e3-9f1d-1c1117bbcc15",
-    "refId": 1002,
-    "title": "asd",
-    "price": 123,
-    "location": "123",
-    "areaSqm": 123,
-    "description": "asdasdasd",
-    "photos": [
-      "1.jpg",
-      "2.jpg",
-      "3.png",
+      "2.png",
+      "3.jpeg",
       "4.jpg",
       "5.png",
       "6.png"
     ],
-    "createdAt": "2026-03-21T14:30:00.749Z",
-    "type": "house",
-    "roomCount": "123",
-    "floorNumber": "123",
-    "heatingType": "123"
-  },
-  {
-    "id": "38a22b38-c44f-4ede-b509-f42746dacb13",
-    "refId": 1001,
-    "title": "123",
-    "price": 123,
-    "location": "123",
-    "areaSqm": 123,
-    "description": "123",
     "photos": [
       "1.jpg",
-      "2.jpg",
-      "3.png"
+      "2.png",
+      "3.jpeg",
+      "4.jpg",
+      "5.png",
+      "6.png"
     ],
-    "createdAt": "2026-03-21T14:19:47.088Z",
+    "createdAt": "2026-03-21T17:14:49.236Z",
     "type": "house",
-    "roomCount": "123",
-    "floorNumber": "123",
-    "heatingType": "123"
+    "roomCount": "3+1",
+    "floorNumber": "4",
+    "heatingType": "asd"
   }
 ]

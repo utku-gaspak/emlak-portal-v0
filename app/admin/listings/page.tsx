@@ -60,6 +60,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   const safePage = Math.min(currentPage, totalPages);
   const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
   const pageListings = filteredListings.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const totalFeaturedListings = allListings.filter((listing) => listing.isFeatured).length;
 
   return (
     <AdminListingsManager
@@ -67,6 +68,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
       currentPage={safePage}
       totalPages={totalPages}
       totalListings={filteredListings.length}
+      totalFeaturedListings={totalFeaturedListings}
       previousHref={buildPageHref(searchTerm, Math.max(1, safePage - 1))}
       nextHref={buildPageHref(searchTerm, Math.min(totalPages, safePage + 1))}
     />

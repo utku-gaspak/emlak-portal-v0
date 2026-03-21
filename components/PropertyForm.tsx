@@ -26,6 +26,7 @@ type PropertyFormProps = {
 };
 
 type FormState = {
+  isFeatured: boolean;
   title: string;
   price: string;
   location: string;
@@ -38,6 +39,8 @@ type FormState = {
   parcelNumber: string;
   description: string;
 };
+
+type TextFormField = Exclude<keyof FormState, "isFeatured">;
 
 const errorIdByField: Record<ListingField, string> = {
   type: "error-type",
@@ -57,6 +60,7 @@ const errorIdByField: Record<ListingField, string> = {
 
 function buildFormState(initialData?: Listing): FormState {
   return {
+    isFeatured: initialData?.isFeatured ?? false,
     title: initialData?.title ?? "",
     price: initialData ? String(initialData.price) : "",
     location: initialData?.location ?? "",
@@ -95,7 +99,15 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
   const successMessage = mode === "edit" ? "Listing updated successfully." : "Listing created successfully.";
   const photosLabel = mode === "edit" && hasExistingPhotos ? "Add More Photos" : "Photos";
 
-  const updateField = (field: keyof FormState, value: string) => {
+  const updateField = (field: TextFormField, value: string) => {
+    setSuccess(false);
+    setFormState((current) => ({
+      ...current,
+      [field]: value
+    }));
+  };
+
+  const updateCheckbox = (field: "isFeatured", value: boolean) => {
     setSuccess(false);
     setFormState((current) => ({
       ...current,
@@ -183,6 +195,27 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
           <option value="land">Land</option>
         </select>
         {renderError("type")}
+      </div>
+
+      <div className="rounded-3xl border border-amber-200/70 bg-amber-50/60 p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-1">
+            <label htmlFor="prop-featured" className="block text-sm font-semibold text-slate-900">
+              Mark as Featured Property
+            </label>
+            <p className="text-sm text-slate-600">Featured listings appear at the top of the homepage by default.</p>
+          </div>
+
+          <input
+            id="prop-featured"
+            data-automation="featured-checkbox"
+            name="isFeatured"
+            type="checkbox"
+            checked={formState.isFeatured}
+            onChange={(event) => updateCheckbox("isFeatured", event.target.checked)}
+            className="h-5 w-5 rounded border-slate-300 text-amber-500 focus:ring-amber-500"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">

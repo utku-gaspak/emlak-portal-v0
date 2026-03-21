@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { updateListingById, getListingById } from "@/lib/listings-store";
+import { updateListingById, getListingById, getListings } from "@/lib/listings-store";
 import { getDictionary } from "@/lib/locale";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { validateListingForm } from "@/lib/validation";
@@ -40,6 +40,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   const zoningStatus = String(formData.get("zoningStatus") ?? "");
   const islandNumber = String(formData.get("islandNumber") ?? "");
   const parcelNumber = String(formData.get("parcelNumber") ?? "");
+  const isFeatured = formData.get("isFeatured") === "on" || formData.get("isFeatured") === "true";
   const uploadedPhotos = formData
     .getAll("photos")
     .filter((item): item is File => item instanceof File)
@@ -88,6 +89,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       id: existingListing.id,
       refId: existingListing.refId,
       createdAt: existingListing.createdAt,
+      isFeatured,
       type,
       title: title.trim(),
       price: Number(price),
@@ -142,4 +144,57 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     throw error;
   }
+}
+
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  const t = getDictionary();
+
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });
+  }
+
+  const existingListing = await getListingById(params.id);
+
+  if (!existingListing) {
+    return NextResponse.json({ ok: false, error: t.errors.listingNotFound }, { status: 404 });
+  }
+
+  const payload = (await request.json().catch(() => null)) as { isFeatured?: unknown } | null;
+  const nextIsFeatured = typeof payload?.isFeatured === "boolean" ? payload.isFeatured : Boolean(payload?.isFeatured);
+
+  if (nextIsFeatured && !existingListing.isFeatured) {
+    const allListings = await getListings();
+    const featuredCount = allListings.filter((listing) => listing.isFeatured).length;
+
+    if (featuredCount >= 10) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Limit reached! You can only have a maximum of 10 featured properties."
+        },
+        { status: 400 }
+      );
+    }
+  }
+
+  const updatedListing = {
+    ...existingListing,
+    isFeatured: nextIsFeatured
+  };
+
+  const savedListing = await updateListingById(existingListing.id, updatedListing);
+
+  if (!savedListing) {
+    return NextResponse.json({ ok: false, error: t.errors.listingNotFound }, { status: 404 });
+  }
+
+  return NextResponse.json(
+    {
+      ok: true,
+      listingId: savedListing.id,
+      refId: savedListing.refId,
+      isFeatured: savedListing.isFeatured
+    },
+    { status: 200 }
+  );
 }

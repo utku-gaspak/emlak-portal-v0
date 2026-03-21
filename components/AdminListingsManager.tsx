@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Trash2 } from "lucide-react";
+import { Check, ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Listing } from "@/lib/types";
 import { getListingImageSrc } from "@/lib/photo-path";
@@ -14,6 +14,7 @@ type AdminListingsManagerProps = {
   currentPage: number;
   totalPages: number;
   totalListings: number;
+  totalFeaturedListings: number;
   previousHref: string;
   nextHref: string;
 };
@@ -31,18 +32,40 @@ export function AdminListingsManager({
   currentPage,
   totalPages,
   totalListings,
+  totalFeaturedListings,
   previousHref,
   nextHref
 }: AdminListingsManagerProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get("q") || "";
+  const [visibleListings, setVisibleListings] = useState(listings);
+  const [featuredCount, setFeaturedCount] = useState(totalFeaturedListings);
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [featuredPendingIds, setFeaturedPendingIds] = useState<Record<string, boolean>>({});
   const [deleteError, setDeleteError] = useState("");
+
+  useEffect(() => {
+    setVisibleListings(listings);
+  }, [listings]);
+
+  useEffect(() => {
+    setFeaturedCount(totalFeaturedListings);
+  }, [totalFeaturedListings]);
+
+  const featuredById = useMemo(() => {
+    return new Map(visibleListings.map((listing) => [listing.id, listing.isFeatured]));
+  }, [visibleListings]);
 
   function openPublicListing(listingId: string) {
     window.open(`/property/${listingId}`, "_blank", "noopener,noreferrer");
+  }
+
+  function setListingFeaturedState(listingId: string, isFeatured: boolean) {
+    setVisibleListings((current) =>
+      current.map((listing) => (listing.id === listingId ? { ...listing, isFeatured } : listing))
+    );
   }
 
   async function handleConfirmDelete() {
@@ -70,6 +93,45 @@ export function AdminListingsManager({
       setDeleteError(error instanceof Error ? error.message : "Unable to delete listing.");
     } finally {
       setIsDeleting(false);
+    }
+  }
+
+  async function handleFeaturedToggle(listing: Listing, nextChecked: boolean) {
+    if (nextChecked && !listing.isFeatured && featuredCount >= 10) {
+      window.alert("Limit reached! You can only have a maximum of 10 featured properties.");
+      return;
+    }
+
+    setFeaturedPendingIds((current) => ({ ...current, [listing.id]: true }));
+
+    try {
+      const response = await fetch(`/api/admin/edit-listing/${listing.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ isFeatured: nextChecked })
+      });
+
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const errorMessage = payload?.error ?? "Unable to update featured status.";
+        if (errorMessage.includes("Limit reached")) {
+          window.alert(errorMessage);
+        } else {
+          window.alert(errorMessage);
+        }
+        return;
+      }
+
+      setListingFeaturedState(listing.id, nextChecked);
+      setFeaturedCount((current) => current + (nextChecked ? 1 : -1));
+      router.refresh();
+    } catch {
+      window.alert("Unable to update featured status.");
+    } finally {
+      setFeaturedPendingIds((current) => ({ ...current, [listing.id]: false }));
     }
   }
 
@@ -152,14 +214,16 @@ export function AdminListingsManager({
                 <th className="px-4 py-4">Ref ID</th>
                 <th className="px-4 py-4">Title</th>
                 <th className="px-4 py-4">Price</th>
+                <th className="px-4 py-4">Featured</th>
                 <th className="px-4 py-4">Status</th>
                 <th className="px-4 py-4">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
-              {listings.length > 0 ? (
-                listings.map((listing) => {
+              {visibleListings.length > 0 ? (
+                visibleListings.map((listing) => {
                   const thumbnail = listing.images[0] ? getListingImageSrc(listing.id, listing.images[0]) : "/property-placeholder.svg";
+                  const isFeaturedPending = Boolean(featuredPendingIds[listing.id]);
 
                   return (
                     <tr
@@ -203,6 +267,35 @@ export function AdminListingsManager({
                           {listing.type === "house" ? "House" : "Land"}
                         </span>
                       </td>
+                      <td className="px-4 py-4" onClick={(event) => event.stopPropagation()}>
+                        <label
+                          htmlFor={`quick-toggle-featured-${listing.id}`}
+                          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-amber-300 hover:text-slate-950"
+                        >
+                          <span className="relative flex h-5 w-5 items-center justify-center">
+                            <input
+                              id={`quick-toggle-featured-${listing.id}`}
+                              data-automation={`quick-toggle-featured-${listing.id}`}
+                              type="checkbox"
+                              checked={Boolean(featuredById.get(listing.id))}
+                              disabled={isFeaturedPending}
+                              onChange={(event) => handleFeaturedToggle(listing, event.target.checked)}
+                              onClick={(event) => event.stopPropagation()}
+                              className="peer sr-only"
+                            />
+                            <span
+                              className={`flex h-5 w-5 items-center justify-center rounded border transition ${
+                                featuredById.get(listing.id)
+                                  ? "border-amber-500 bg-amber-500 text-white"
+                                  : "border-slate-300 bg-white text-transparent"
+                              } ${isFeaturedPending ? "opacity-70" : ""}`}
+                            >
+                              {isFeaturedPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                            </span>
+                          </span>
+                          <span>{featuredById.get(listing.id) ? "Featured" : "Not Featured"}</span>
+                        </label>
+                      </td>
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2">
                           <Link
@@ -235,7 +328,7 @@ export function AdminListingsManager({
                 })
               ) : (
                 <tr>
-                  <td className="px-4 py-10 text-center text-sm text-slate-500" colSpan={6}>
+          <td className="px-4 py-10 text-center text-sm text-slate-500" colSpan={7}>
                     No listings found.
                   </td>
                 </tr>

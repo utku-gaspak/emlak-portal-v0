@@ -32,6 +32,7 @@ export async function POST(request: Request) {
   const zoningStatus = String(formData.get("zoningStatus") ?? "");
   const islandNumber = String(formData.get("islandNumber") ?? "");
   const parcelNumber = String(formData.get("parcelNumber") ?? "");
+  const isFeatured = formData.get("isFeatured") === "on" || formData.get("isFeatured") === "true";
   const photos = formData
     .getAll("photos")
     .filter((item): item is File => item instanceof File)
@@ -71,6 +72,7 @@ export async function POST(request: Request) {
     const baseListing = {
       id: listingId,
       refId: 0,
+      isFeatured,
       type,
       title: title.trim(),
       price: Number(price),

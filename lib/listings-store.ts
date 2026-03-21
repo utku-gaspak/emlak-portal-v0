@@ -10,6 +10,7 @@ export type ListingFilters = {
   query?: string;
   refId?: number;
   category?: ListingType;
+  sortBy?: "newest" | "oldest" | "price-asc" | "price-desc";
   minPrice?: number;
   maxPrice?: number;
   rooms?: string;
@@ -27,12 +28,34 @@ function toNumber(value: unknown, fallback = 0): number {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+function toBoolean(value: unknown, fallback = false): boolean {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    return normalized === "true" || normalized === "on" || normalized === "1";
+  }
+
+  return fallback;
+}
+
 function isPureNumber(value: string): boolean {
   return /^\d+$/.test(value.trim());
 }
 
 function normalizeValue(value: string): string {
   return value.trim().toLowerCase();
+}
+
+function getListingSortTimestamp(listing: Listing): number {
+  const createdAtTime = Date.parse(listing.createdAt);
+  if (Number.isFinite(createdAtTime)) {
+    return createdAtTime;
+  }
+
+  return Number.isFinite(listing.refId) ? listing.refId : 0;
 }
 
 function toSearchParamValue(value: string | string[] | undefined): string {
@@ -113,6 +136,14 @@ export function parseListingFilters(searchParams?: SearchParamsLike): ListingFil
   const query = toSearchParamValue(searchParams.q).trim();
   const categoryValue = toSearchParamValue(searchParams.category);
   const category = categoryValue === "house" || categoryValue === "land" ? categoryValue : undefined;
+  const sortByValue = toSearchParamValue(searchParams.sortBy);
+  const sortBy =
+    sortByValue === "oldest" ||
+    sortByValue === "price-asc" ||
+    sortByValue === "price-desc" ||
+    sortByValue === "newest"
+      ? sortByValue
+      : undefined;
   const minPrice = parseOptionalNumber(toSearchParamValue(searchParams.minPrice));
   const maxPrice = parseOptionalNumber(toSearchParamValue(searchParams.maxPrice));
   const rooms = toSearchParamValue(searchParams.rooms).trim();
@@ -122,6 +153,7 @@ export function parseListingFilters(searchParams?: SearchParamsLike): ListingFil
   return {
     ...(query ? { query } : {}),
     ...(category ? { category } : {}),
+    ...(sortBy ? { sortBy } : {}),
     ...(minPrice !== undefined ? { minPrice } : {}),
     ...(maxPrice !== undefined ? { maxPrice } : {}),
     ...(rooms ? { rooms } : {}),
@@ -153,6 +185,7 @@ function normalizeListing(raw: unknown): NormalizedListingResult | null {
   const commonFields = {
     id: toText(record.id, crypto.randomUUID()),
     refId: toNumber(record.refId, 0),
+    isFeatured: toBoolean(record.isFeatured, false),
     title: toText(record.title),
     price: toNumber(record.price),
     location: toText(record.location),
@@ -224,6 +257,8 @@ export async function getListings(filters: ListingFilters = {}): Promise<Listing
     const query = filters.query?.trim().toLowerCase() ?? "";
     const queryIsNumeric = isPureNumber(query);
     const queryAsNumber = queryIsNumeric ? Number(query) : null;
+    const hasExplicitSort = typeof filters.sortBy !== "undefined";
+    const sortBy = filters.sortBy ?? "newest";
 
     const filteredListings = listings.filter((listing) => {
       if (typeof filters.refId === "number" && listing.refId !== filters.refId) {
@@ -277,7 +312,23 @@ export async function getListings(filters: ListingFilters = {}): Promise<Listing
         }
       }
 
-      return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+      if (!hasExplicitSort && a.isFeatured !== b.isFeatured) {
+        return a.isFeatured ? -1 : 1;
+      }
+
+      if (sortBy === "price-asc") {
+        return a.price - b.price;
+      }
+
+      if (sortBy === "price-desc") {
+        return b.price - a.price;
+      }
+
+      if (sortBy === "oldest") {
+        return getListingSortTimestamp(a) - getListingSortTimestamp(b);
+      }
+
+      return getListingSortTimestamp(b) - getListingSortTimestamp(a);
     });
   } catch {
     return [];
@@ -308,6 +359,7 @@ export async function addListing(listing: Listing): Promise<void> {
   const nextRefId = listing.refId > 0 ? listing.refId : Math.max(minimumRefId, ...listings.map((item) => item.refId)) + 1;
   const listingToStore = {
     ...listing,
+    isFeatured: Boolean(listing.isFeatured),
     images: listing.images,
     photos: listing.images,
     refId: nextRefId
@@ -342,6 +394,7 @@ export async function updateListingById(id: string, updatedListing: Listing): Pr
   const existingListing = listings[index];
   const listingToStore = {
     ...updatedListing,
+    isFeatured: Boolean(updatedListing.isFeatured),
     images: updatedListing.images,
     photos: updatedListing.images,
     id: existingListing.id,

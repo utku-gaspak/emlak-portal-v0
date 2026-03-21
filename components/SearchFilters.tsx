@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState, useTransition } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Check, ChevronDown } from "lucide-react";
 import { getDictionary } from "@/lib/locale";
 import type { ListingType } from "@/lib/types";
 
@@ -15,6 +16,7 @@ type SearchFiltersProps = {
 type FilterState = {
   query: string;
   category: ListingType | "";
+  sortBy: "newest" | "oldest" | "price-asc" | "price-desc";
   minPrice: string;
   maxPrice: string;
   rooms: string;
@@ -25,10 +27,16 @@ type FilterState = {
 function readFiltersFromParams(params: { get(name: string): string | null }): FilterState {
   const categoryValue = params.get("category");
   const category = categoryValue === "house" || categoryValue === "land" ? categoryValue : "";
+  const sortByValue = params.get("sortBy");
+  const sortBy =
+    sortByValue === "oldest" || sortByValue === "price-asc" || sortByValue === "price-desc" || sortByValue === "newest"
+      ? sortByValue
+      : "newest";
 
   return {
     query: params.get("q") ?? "",
     category,
+    sortBy,
     minPrice: params.get("minPrice") ?? "",
     maxPrice: params.get("maxPrice") ?? "",
     rooms: params.get("rooms") ?? "",
@@ -49,16 +57,73 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const categoryMenuRef = useRef<HTMLDivElement>(null);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
   const searchSignature = searchParams.toString();
   const normalizedRoomOptions = useMemo(() => normalizeChoices(roomOptions), [roomOptions]);
   const normalizedHeatingOptions = useMemo(() => normalizeChoices(heatingOptions), [heatingOptions]);
   const normalizedZoningOptions = useMemo(() => normalizeChoices(zoningOptions), [zoningOptions]);
   const currentFilters = useMemo(() => readFiltersFromParams(searchParams), [searchSignature]);
   const [filters, setFilters] = useState<FilterState>(currentFilters);
+  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+
+  const defaultFilters: FilterState = useMemo(
+    () => ({
+      query: "",
+      category: "",
+      sortBy: "newest",
+      minPrice: "",
+      maxPrice: "",
+      rooms: "",
+      heatingType: "",
+      zoningStatus: ""
+    }),
+    []
+  );
+
+  const sortOptions = useMemo(
+    () => [
+      { value: "newest" as const, label: t.filters.sortNewestFirst },
+      { value: "price-asc" as const, label: t.filters.sortPriceLowToHigh },
+      { value: "price-desc" as const, label: t.filters.sortPriceHighToLow },
+      { value: "oldest" as const, label: t.filters.sortOldestFirst }
+    ],
+    [t.filters.sortNewestFirst, t.filters.sortPriceLowToHigh, t.filters.sortPriceHighToLow, t.filters.sortOldestFirst]
+  );
 
   useEffect(() => {
     setFilters(currentFilters);
   }, [currentFilters]);
+
+  useEffect(() => {
+    function handleOutsideClick(event: MouseEvent) {
+      const target = event.target as Node;
+
+      if (sortMenuRef.current && !sortMenuRef.current.contains(target)) {
+        setIsSortMenuOpen(false);
+      }
+
+      if (categoryMenuRef.current && !categoryMenuRef.current.contains(target)) {
+        setIsCategoryMenuOpen(false);
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsSortMenuOpen(false);
+        setIsCategoryMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   function buildUrl(nextFilters: FilterState): string {
     const params = new URLSearchParams();
@@ -69,6 +134,10 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
 
     if (nextFilters.category) {
       params.set("category", nextFilters.category);
+    }
+
+    if (nextFilters.sortBy) {
+      params.set("sortBy", nextFilters.sortBy);
     }
 
     if (nextFilters.minPrice.trim()) {
@@ -131,6 +200,26 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
 
   const isHouse = filters.category === "house";
   const isLand = filters.category === "land";
+  const categoryOptions = [
+    { value: "" as const, label: t.filters.categoryAll },
+    { value: "house" as const, label: t.filters.categoryHouse },
+    { value: "land" as const, label: t.filters.categoryLand }
+  ];
+  const hasActiveFilters =
+    filters.query.trim().length > 0 ||
+    filters.category !== "" ||
+    filters.sortBy !== "newest" ||
+    filters.minPrice.trim().length > 0 ||
+    filters.maxPrice.trim().length > 0 ||
+    filters.rooms.trim().length > 0 ||
+    filters.heatingType.trim().length > 0 ||
+    filters.zoningStatus.trim().length > 0;
+
+  function resetAllFilters() {
+    setFilters(defaultFilters);
+    setIsSortMenuOpen(false);
+    pushFilters(defaultFilters);
+  }
 
   return (
     <section
@@ -145,6 +234,16 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
             <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950">{t.home.searchTitle}</h2>
           </div>
           <p className="max-w-xl text-sm leading-6 text-slate-600">{t.home.searchDescription}</p>
+          {hasActiveFilters ? (
+            <button
+              type="button"
+              data-automation="reset-all-filters"
+              onClick={resetAllFilters}
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-950"
+            >
+              {t.filters.resetAll}
+            </button>
+          ) : null}
         </div>
       ) : null}
 
@@ -154,7 +253,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
         className="mt-5 space-y-4"
         onSubmit={handleSubmit}
       >
-        <div className="grid gap-4 lg:grid-cols-[1.45fr_0.8fr_auto] lg:items-end">
+        <div className="grid gap-4 lg:grid-cols-[1.3fr_0.85fr_0.95fr_auto] lg:items-end">
           <div className="space-y-2">
             <label htmlFor="search-filters-query" className="label-base">
               {t.filters.searchLabel}
@@ -172,21 +271,119 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="search-filters-category" className="label-base">
+            <label htmlFor="search-filters-category-trigger" className="label-base">
               {t.filters.categoryLabel}
             </label>
-            <select
-              id="search-filters-category"
-              data-automation="category-filter"
-              name="category"
-              value={filters.category}
-              onChange={(event) => updateFilters({ category: event.target.value as ListingType | "" })}
-              className="input-base"
-            >
-              <option value="">{t.filters.categoryAll}</option>
-              <option value="house">{t.filters.categoryHouse}</option>
-              <option value="land">{t.filters.categoryLand}</option>
-            </select>
+            <div ref={categoryMenuRef} className="relative">
+              <button
+                id="search-filters-category-trigger"
+                data-automation="category-filter"
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded={isCategoryMenuOpen}
+                onClick={() => setIsCategoryMenuOpen((value) => !value)}
+                className="input-base relative w-full overflow-hidden pr-10 text-left whitespace-nowrap"
+              >
+                <span className="block truncate text-sm leading-6">
+                  {categoryOptions.find((option) => option.value === filters.category)?.label ?? t.filters.categoryAll}
+                </span>
+                <ChevronDown
+                  className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition ${
+                    isCategoryMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isCategoryMenuOpen ? (
+                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)]">
+                  <div role="listbox" aria-label={t.filters.categoryLabel} className="p-1">
+                    {categoryOptions.map((option) => {
+                      const isActive = option.value === filters.category;
+
+                      return (
+                        <button
+                          key={option.value || "all"}
+                          type="button"
+                          data-automation={`category-option-${option.value || "all"}`}
+                          role="option"
+                          aria-selected={isActive}
+                          onClick={() => {
+                            updateFilters({ category: option.value });
+                            setIsCategoryMenuOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
+                            isActive
+                              ? "bg-slate-950 text-white"
+                              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                          }`}
+                        >
+                          <span>{option.label}</span>
+                          {isActive ? <Check className="h-4 w-4" /> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="search-filters-sort-by-trigger" className="label-base">
+              {t.filters.sortByLabel}
+            </label>
+            <div ref={sortMenuRef} className="relative">
+              <button
+                id="search-filters-sort-by-trigger"
+                data-automation="sort-by-filter"
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded={isSortMenuOpen}
+                onClick={() => setIsSortMenuOpen((value) => !value)}
+                className="input-base relative w-full overflow-hidden pr-10 text-left whitespace-nowrap"
+              >
+                <span className="block truncate text-sm leading-6">
+                  {sortOptions.find((option) => option.value === filters.sortBy)?.label ?? t.filters.sortNewestFirst}
+                </span>
+                <ChevronDown
+                  className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition ${
+                    isSortMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isSortMenuOpen ? (
+                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)]">
+                  <div role="listbox" aria-label={t.filters.sortByLabel} className="p-1">
+                    {sortOptions.map((option) => {
+                      const isActive = option.value === filters.sortBy;
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          data-automation={`sort-by-option-${option.value}`}
+                          role="option"
+                          aria-selected={isActive}
+                          onClick={() => {
+                            updateFilters({ sortBy: option.value });
+                            setIsSortMenuOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
+                            isActive
+                              ? "bg-slate-950 text-white"
+                              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                          }`}
+                        >
+                          <span>{option.label}</span>
+                          {isActive ? <Check className="h-4 w-4" /> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <button
