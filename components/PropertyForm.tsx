@@ -6,6 +6,7 @@ import { useTranslation } from "@/context/TranslationContext";
 
 type ListingField =
   | "type"
+  | "currency"
   | "title"
   | "price"
   | "location"
@@ -28,6 +29,7 @@ type PropertyFormProps = {
 
 type FormState = {
   isFeatured: boolean;
+  currency: "TL" | "USD" | "EUR";
   title: string;
   price: string;
   location: string;
@@ -45,6 +47,7 @@ type TextFormField = Exclude<keyof FormState, "isFeatured">;
 
 const errorIdByField: Record<ListingField, string> = {
   type: "error-type",
+  currency: "error-currency",
   title: "error-title",
   price: "error-price",
   location: "error-location",
@@ -62,6 +65,7 @@ const errorIdByField: Record<ListingField, string> = {
 function buildFormState(initialData?: Listing): FormState {
   return {
     isFeatured: initialData?.isFeatured ?? false,
+    currency: initialData?.currency ?? "TL",
     title: initialData?.title ?? "",
     price: initialData ? String(initialData.price) : "",
     location: initialData?.location ?? "",
@@ -243,19 +247,35 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
           <label htmlFor="prop-price" className="label-base">
             {t.listingForm.priceLabel}
           </label>
-          <input
-            id="prop-price"
-            data-automation="price-input"
-            name="price"
-            type="number"
-            min="1"
-            className="input-base"
-            required
-            value={formState.price}
-            onChange={(event) => updateField("price", event.target.value)}
-            placeholder={t.listingForm.pricePlaceholder}
-          />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_140px]">
+            <input
+              id="prop-price"
+              data-automation="price-input"
+              name="price"
+              type="number"
+              min="1"
+              className="input-base"
+              required
+              value={formState.price}
+              onChange={(event) => updateField("price", event.target.value)}
+              placeholder={t.listingForm.pricePlaceholder}
+            />
+            <select
+              id="prop-currency"
+              data-automation="currency-select"
+              name="currency"
+              value={formState.currency}
+              onChange={(event) => updateField("currency", event.target.value)}
+              className="input-base"
+              aria-label={t.listingForm.currencyLabel}
+            >
+              <option value="TL">{t.listingForm.currencyTL}</option>
+              <option value="USD">{t.listingForm.currencyUSD}</option>
+              <option value="EUR">{t.listingForm.currencyEUR}</option>
+            </select>
+          </div>
           {renderError("price")}
+          {renderError("currency")}
         </div>
 
         <div>

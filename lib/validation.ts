@@ -1,8 +1,9 @@
 import { ListingType, ValidationErrors } from "@/lib/types";
-import { getDictionary } from "@/lib/locale";
+import { getDictionary } from "@/lib/get-dictionary";
 
 type FormFields = {
   type: ListingType | string;
+  currency?: string;
   title: string;
   price: string;
   location: string;
@@ -32,6 +33,10 @@ export function validateListingForm(fields: FormFields): ValidationErrors {
 
   if (!fields.title.trim()) {
     errors.title = t.errors.titleRequired;
+  }
+
+  if (fields.currency !== undefined && !["TL", "USD", "EUR"].includes(fields.currency)) {
+    errors.currency = t.errors.currencyInvalid;
   }
 
   const price = Number(fields.price);

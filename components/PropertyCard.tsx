@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Bed, Maximize, Map, Star } from "lucide-react";
 import { DeleteListingButton } from "@/components/DeleteListingButton";
+import { formatListingPrice } from "@/lib/currency";
 import { getListingImageSrc } from "@/lib/photo-path";
 import { Listing } from "@/lib/types";
 import { useTranslation } from "@/context/TranslationContext";
@@ -12,14 +13,6 @@ type PropertyCardProps = {
   listing: Listing;
   canDelete?: boolean;
 };
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0
-  }).format(value);
-}
 
 type Translation = ReturnType<typeof useTranslation>["t"];
 
@@ -138,7 +131,7 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
         <div className="space-y-5 p-6">
           <div className="space-y-2">
             <h2 className="text-2xl font-black tracking-tight text-slate-950">{listing.title}</h2>
-            <p className="text-3xl font-black text-brand-700">{formatCurrency(listing.price)}</p>
+            <p className="text-3xl font-black text-brand-700">{formatListingPrice(listing.price, listing.currency)}</p>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
               {t.propertyCard.refLabel}: {listing.refId}
             </p>

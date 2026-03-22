@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Check, ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Listing } from "@/lib/types";
+import { formatListingPrice } from "@/lib/currency";
 import { getListingImageSrc } from "@/lib/photo-path";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -20,14 +21,6 @@ type AdminListingsManagerProps = {
   previousHref: string;
   nextHref: string;
 };
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0
-  }).format(value);
-}
 
 export function AdminListingsManager({
   listings,
@@ -261,7 +254,7 @@ export function AdminListingsManager({
                         </Link>
                         <div className="text-xs text-slate-500">{listing.location}</div>
                       </td>
-                      <td className="px-4 py-4 font-semibold text-brand-700">{formatCurrency(listing.price)}</td>
+                      <td className="px-4 py-4 font-semibold text-brand-700">{formatListingPrice(listing.price, listing.currency)}</td>
                       <td className="px-4 py-4">
                         <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold text-white ${listing.type === "house" ? "bg-blue-600" : "bg-emerald-600"}`}>
                           {listing.type === "house" ? t.adminListings.statusHouse : t.adminListings.statusLand}

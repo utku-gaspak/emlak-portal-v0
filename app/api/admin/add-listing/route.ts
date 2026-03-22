@@ -4,6 +4,7 @@ import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { validateListingForm } from "@/lib/validation";
 import { HouseListing, LandListing, ListingType } from "@/lib/types";
+import { normalizeCurrency } from "@/lib/currency";
 import { deleteListingUploadDir, ensurePublicDirectory, saveUploadedPhotos } from "@/lib/listing-media";
 
 function getListingType(formValue: string): ListingType | "" {
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
   const type = getListingType(String(formData.get("type") ?? ""));
   const title = String(formData.get("title") ?? "");
   const price = String(formData.get("price") ?? "");
+  const currency = normalizeCurrency(String(formData.get("currency") ?? ""));
   const location = String(formData.get("location") ?? "");
   const areaSqm = String(formData.get("areaSqm") ?? "");
   const description = String(formData.get("description") ?? "");
@@ -42,6 +44,7 @@ export async function POST(request: Request) {
     type,
     title,
     price,
+    currency,
     location,
     areaSqm,
     description,
@@ -76,6 +79,7 @@ export async function POST(request: Request) {
       type,
       title: title.trim(),
       price: Number(price),
+      currency,
       location: location.trim(),
       areaSqm: Number(areaSqm),
       description: description.trim(),

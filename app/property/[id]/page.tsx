@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { CommunicationActionBar } from "@/components/CommunicationActionBar";
 import { PropertyGallery } from "@/components/PropertyGallery";
+import { formatListingPrice } from "@/lib/currency";
 import { getListingById } from "@/lib/listings-store";
 import { getDictionary } from "@/lib/get-dictionary";
 import { getListingImageSrc } from "@/lib/photo-path";
@@ -11,14 +12,6 @@ type PropertyDetailPageProps = {
     id: string;
   };
 };
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0
-  }).format(value);
-}
 
 function SpecificationItem({ label, value }: { label: string; value: string }) {
   return (
@@ -54,7 +47,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                 {listing.title}
               </h1>
               <p id="detail-price" data-automation="detail-price" className="text-3xl font-black text-brand-700">
-                {formatCurrency(listing.price)}
+                {formatListingPrice(listing.price, listing.currency)}
               </p>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
                 {t.propertyCard.refLabel}: {listing.refId}

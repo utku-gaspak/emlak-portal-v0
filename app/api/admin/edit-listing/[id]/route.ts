@@ -6,6 +6,7 @@ import { validateListingForm } from "@/lib/validation";
 import { HouseListing, LandListing, ListingType } from "@/lib/types";
 import { deleteUploadedFiles, ensurePublicDirectory, saveUploadedPhotos } from "@/lib/listing-media";
 import { getPhotoFileName } from "@/lib/photo-path";
+import { normalizeCurrency } from "@/lib/currency";
 
 function getListingType(formValue: string, fallback: ListingType): ListingType {
   return formValue === "house" || formValue === "land" ? formValue : fallback;
@@ -31,6 +32,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   const type = getListingType(String(formData.get("type") ?? existingListing.type), existingListing.type);
   const title = String(formData.get("title") ?? "");
   const price = String(formData.get("price") ?? "");
+  const currency = normalizeCurrency(String(formData.get("currency") ?? existingListing.currency ?? "TL"));
   const location = String(formData.get("location") ?? "");
   const areaSqm = String(formData.get("areaSqm") ?? "");
   const description = String(formData.get("description") ?? "");
@@ -56,6 +58,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
   const errors = validateListingForm({
     type,
+    currency,
     title,
     price,
     location,
@@ -93,6 +96,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       type,
       title: title.trim(),
       price: Number(price),
+      currency,
       location: location.trim(),
       areaSqm: Number(areaSqm),
       description: description.trim(),

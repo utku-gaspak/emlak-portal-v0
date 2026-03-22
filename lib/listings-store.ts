@@ -1,6 +1,7 @@
 import path from "node:path";
 import { promises as fs } from "node:fs";
 import { getPhotoFileName } from "@/lib/photo-path";
+import { normalizeCurrency } from "@/lib/currency";
 import { Listing, ListingType, LandListing, HouseListing } from "@/lib/types";
 
 const dataFilePath = path.join(process.cwd(), "data", "listings.json");
@@ -181,11 +182,15 @@ function normalizeListing(raw: unknown): NormalizedListingResult | null {
       : [];
   const normalizedImages = rawImages.map((image) => getPhotoFileName(image));
   const imagesChanged = rawImages.some((image, index) => image !== normalizedImages[index]);
+  const rawCurrency = toText(record.currency, "");
+  const normalizedCurrency = normalizeCurrency(rawCurrency);
+  const currencyChanged = rawCurrency !== normalizedCurrency;
 
   const commonFields = {
     id: toText(record.id, crypto.randomUUID()),
     refId: toNumber(record.refId, 0),
     isFeatured: toBoolean(record.isFeatured, false),
+    currency: normalizedCurrency,
     title: toText(record.title),
     price: toNumber(record.price),
     location: toText(record.location),
@@ -207,7 +212,7 @@ function normalizeListing(raw: unknown): NormalizedListingResult | null {
 
     return {
       listing,
-      changed: imagesChanged
+      changed: imagesChanged || currencyChanged
     };
   }
 
@@ -221,7 +226,7 @@ function normalizeListing(raw: unknown): NormalizedListingResult | null {
 
   return {
     listing,
-    changed: imagesChanged
+    changed: imagesChanged || currencyChanged
   };
 }
 
@@ -360,6 +365,7 @@ export async function addListing(listing: Listing): Promise<void> {
   const listingToStore = {
     ...listing,
     isFeatured: Boolean(listing.isFeatured),
+    currency: normalizeCurrency(listing.currency),
     images: listing.images,
     photos: listing.images,
     refId: nextRefId
@@ -395,6 +401,7 @@ export async function updateListingById(id: string, updatedListing: Listing): Pr
   const listingToStore = {
     ...updatedListing,
     isFeatured: Boolean(updatedListing.isFeatured),
+    currency: normalizeCurrency(updatedListing.currency),
     images: updatedListing.images,
     photos: updatedListing.images,
     id: existingListing.id,

@@ -1,9 +1,11 @@
 export type ListingType = "house" | "land";
+export type ListingCurrency = "TL" | "USD" | "EUR";
 
 export type ListingCommonFields = {
   id: string;
   refId: number;
   isFeatured: boolean;
+  currency: ListingCurrency;
   title: string;
   price: number;
   location: string;
@@ -33,6 +35,7 @@ export type Listing = HouseListing | LandListing;
 export type ListingInput = {
   type: ListingType;
   isFeatured?: boolean;
+  currency?: ListingCurrency;
   title: string;
   price: string;
   location: string;
@@ -50,6 +53,7 @@ export type ListingInput = {
 export type ValidationErrors = Partial<
   Record<
     | "type"
+    | "currency"
     | "title"
     | "price"
     | "location"
