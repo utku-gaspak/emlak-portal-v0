@@ -19,7 +19,6 @@
     "description": "Modern real estate listing platform built for reliable RPA automation."
   },
   "siteHeader": {
-    "brandMark": "RE",
     "brandName": "Real Estate Portal",
     "adminPortal": "Admin Portal",
     "dashboard": "Go to Dashboard",
@@ -70,8 +69,8 @@
         "label": "Search and compare"
       },
       "rpaReady": {
-        "value": "RPA-ready",
-        "label": "Stable selectors"
+        "value": "Secure",
+        "label": "Transparent process"
       }
     },
     "searchTitle": "Find the right property quickly",

@@ -19,7 +19,6 @@
     "description": "Güvenilir RPA otomasyonu için geliştirilmiş modern emlak ilan platformu."
   },
   "siteHeader": {
-    "brandMark": "RE",
     "brandName": "Emlak Portalı",
     "adminPortal": "Admin Paneli",
     "dashboard": "Panele Git",
@@ -70,8 +69,8 @@
         "label": "Ara ve karşılaştır"
       },
       "rpaReady": {
-        "value": "RPA uyumlu",
-        "label": "Sabit seçiciler"
+        "value": "Güvenli",
+        "label": "Şeffaf işlem süreci"
       }
     },
     "searchTitle": "Doğru gayrimenkulü hızlıca bulun",
