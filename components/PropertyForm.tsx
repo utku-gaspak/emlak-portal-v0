@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useRef, useState } from "react";
 import { Listing, ListingType } from "@/lib/types";
 import { useTranslation } from "@/context/TranslationContext";
+import { useToast } from "@/components/ToastProvider";
 
 type ListingField =
   | "type"
@@ -82,6 +83,7 @@ function buildFormState(initialData?: Listing): FormState {
 
 export function PropertyForm({ mode, initialData }: PropertyFormProps) {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const initialType = initialData?.type ?? "house";
   const [listingType, setListingType] = useState<ListingType>(initialType);
   const [formState, setFormState] = useState<FormState>(() => buildFormState(initialData));
@@ -165,6 +167,9 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
       setErrors(responseErrors);
       if (responseErrors.auth) {
         setGlobalError(String(responseErrors.auth));
+        showToast(String(responseErrors.auth), "error");
+      } else if (payload?.error) {
+        showToast(String(payload.error), "error");
       }
       setIsSubmitting(false);
       return;
@@ -178,6 +183,7 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
 
     setIsSubmitting(false);
     setSuccess(true);
+    showToast(successMessage, "success");
   }
 
   return (

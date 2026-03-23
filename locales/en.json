@@ -20,7 +20,7 @@
   },
   "siteHeader": {
     "brandMark": "RE",
-    "brandName": "RE/EMLAK",
+    "brandName": "Real Estate Portal",
     "adminPortal": "Admin Portal",
     "dashboard": "Go to Dashboard",
     "languageLabel": "Language",
@@ -86,7 +86,7 @@
     "noResultsDescription": "Try a broader search or clear the query to browse everything.",
     "aboutEyebrow": "A Professional Approach",
     "aboutTitle": "We make the property experience simpler, sharper, and more trustworthy.",
-    "aboutDescription": "RE/EMLAK brings buyers and sellers together with curated listings, polished presentation, and automation-friendly infrastructure."
+    "aboutDescription": "Brings buyers and sellers together with curated listings, polished presentation, and automation-friendly infrastructure."
   },
   "filters": {
     "title": "Filters",
@@ -322,7 +322,8 @@
     "delete": "Delete Listing",
     "deleting": "Deleting...",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "deleteSuccessMessage": "Listing deleted successfully."
   },
   "languageSwitcher": {
     "label": "Language",
@@ -348,7 +349,7 @@
     "address": "Edirne, Turkey",
     "phone": "+90 212 000 00 00",
     "email": "info@reemlak.com",
-    "copyright": "? 2026 RE/EMLAK. All rights reserved.",
+    "copyright": "© 2026 Real Estate Portal. All rights reserved.",
     "disclaimer": "Listing details are provided for information only; please contact us for final confirmation.",
     "socialInstagram": "Instagram",
     "socialFacebook": "Facebook",

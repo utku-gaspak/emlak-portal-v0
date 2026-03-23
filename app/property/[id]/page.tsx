@@ -1,16 +1,88 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CommunicationActionBar } from "@/components/CommunicationActionBar";
 import { PropertyGallery } from "@/components/PropertyGallery";
 import { formatListingPrice } from "@/lib/currency";
 import { getListingById } from "@/lib/listings-store";
+import { getOptimizedCloudinaryUrl } from "@/lib/image-url";
+import { getFirmName } from "@/lib/brand";
 import { getDictionary } from "@/lib/get-dictionary";
+import { getSiteUrl } from "@/lib/site-url";
 
 type PropertyDetailPageProps = {
   params: Promise<{
     id: string;
   }>;
 };
+
+const SITE_URL = getSiteUrl();
+
+function buildOgImage(listingImage?: string | null): string | null {
+  if (!listingImage) {
+    return null;
+  }
+
+  const optimized = getOptimizedCloudinaryUrl(listingImage, 1000);
+
+  if (/^https?:\/\//i.test(optimized)) {
+    return optimized;
+  }
+
+  try {
+    return new URL(optimized, SITE_URL).toString();
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata({ params }: PropertyDetailPageProps): Promise<Metadata> {
+  const t = await getDictionary();
+  const firmName = getFirmName();
+  const resolvedParams = await params;
+  const listing = await getListingById(resolvedParams.id);
+
+  if (!listing) {
+    return {
+      title: firmName,
+      description: t.meta.description
+    };
+  }
+
+  const description = listing.description.slice(0, 160);
+  const ogImage = buildOgImage(listing.images[0]);
+
+  return {
+    title: `${listing.title} | ${firmName}`,
+    description,
+    alternates: {
+      canonical: `${SITE_URL}/property/${listing.id}`
+    },
+    openGraph: {
+      type: "article",
+      url: `${SITE_URL}/property/${listing.id}`,
+      siteName: firmName,
+      title: `${listing.title} | ${firmName}`,
+      description,
+      images: ogImage
+        ? [
+            {
+              url: ogImage,
+              width: 1200,
+              height: 800,
+              alt: listing.title
+            }
+          ]
+        : []
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${listing.title} | ${firmName}`,
+      description,
+      images: ogImage ? [ogImage] : []
+    }
+  };
+}
 
 function SpecificationItem({ label, value }: { label: string; value: string }) {
   return (
@@ -30,7 +102,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     notFound();
   }
 
-  const featuredImage = listing.images[0] ?? "/property-placeholder.svg";
+  const featuredImage = listing.images[0] ? getOptimizedCloudinaryUrl(listing.images[0]) : "/property-placeholder.svg";
   const featuredAlt = listing.images[0] ? `${listing.title} ${t.propertyDetail.featuredPhotoAlt}` : t.propertyDetail.placeholderAlt;
 
   return (

@@ -61,6 +61,35 @@ export function getCloudinaryPublicIdFromUrl(imageUrl: string): string | null {
   }
 }
 
+export function getOptimizedCloudinaryUrl(imageUrl: string, width = 1000): string {
+  if (!imageUrl.includes("res.cloudinary.com")) {
+    return imageUrl;
+  }
+
+  try {
+    const url = new URL(imageUrl);
+    const uploadSegment = "/upload/";
+    const uploadIndex = url.pathname.indexOf(uploadSegment);
+
+    if (uploadIndex === -1) {
+      return imageUrl;
+    }
+
+    const prefix = url.pathname.slice(0, uploadIndex + uploadSegment.length);
+    const suffix = url.pathname.slice(uploadIndex + uploadSegment.length);
+    const transform = `f_auto,q_auto,w_${width},c_fill`;
+
+    if (suffix.startsWith(`${transform}/`)) {
+      return imageUrl;
+    }
+
+    url.pathname = `${prefix}${transform}/${suffix}`;
+    return url.toString();
+  } catch {
+    return imageUrl;
+  }
+}
+
 export function uploadListingImage(listingId: string, file: File, index: number): Promise<CloudinaryUploadResult> {
   const folder = getListingFolder(listingId);
   const publicId = String(index + 1);

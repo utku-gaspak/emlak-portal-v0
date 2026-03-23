@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "@/context/TranslationContext";
+import { getOptimizedCloudinaryUrl } from "@/lib/image-url";
 
 type PropertyGalleryProps = {
   listingId: string;
@@ -65,7 +66,7 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
   }, [hasPhotos, imageCount, isLightboxOpen]);
 
   const currentImageFile = normalizedImages[selectedIndex];
-  const currentImageSrc = currentImageFile ?? PLACEHOLDER_SRC;
+  const currentImageSrc = currentImageFile ? getOptimizedCloudinaryUrl(currentImageFile) : PLACEHOLDER_SRC;
 
   const handleImageError = (index: number) => {
     setFailedImages((current) => (current[index] ? current : { ...current, [index]: true }));
@@ -120,7 +121,7 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
           {Array.from({ length: imageCount }).map((_, index) => {
             const isSelected = selectedIndex === index;
             const fileName = normalizedImages[index];
-            const imageSrc = failedImages[index] || !fileName ? PLACEHOLDER_SRC : fileName;
+            const imageSrc = failedImages[index] || !fileName ? PLACEHOLDER_SRC : getOptimizedCloudinaryUrl(fileName);
 
             return (
               <button
@@ -135,10 +136,10 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
                 aria-label={`${t.gallery.thumbnailAria} ${index + 1}`}
               >
                 <div className="relative aspect-square w-full bg-slate-100 dark:bg-slate-800">
-                  <img
-                    src={imageSrc}
-                    alt={`${title} thumbnail ${index + 1}`}
-                    className="h-full w-full object-cover"
+                <img
+                  src={imageSrc}
+                  alt={`${title} thumbnail ${index + 1}`}
+                  className="h-full w-full object-cover"
                     onError={() => handleImageError(index)}
                   />
                 </div>

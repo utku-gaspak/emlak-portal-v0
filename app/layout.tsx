@@ -4,8 +4,11 @@ import "@/app/globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ToastProvider } from "@/components/ToastProvider";
 import { TranslationProvider } from "@/context/TranslationContext";
+import { getFirmName } from "@/lib/brand";
 import { getDictionary, getServerLocale } from "@/lib/get-dictionary";
+import { getSiteUrl } from "@/lib/site-url";
 
 const roboto = Roboto({
   subsets: ["latin", "latin-ext"],
@@ -16,10 +19,15 @@ const roboto = Roboto({
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
   const t = await getDictionary(locale);
+  const firmName = getFirmName();
 
   return {
-    title: t.meta.title,
-    description: t.meta.description
+    title: {
+      default: firmName,
+      template: `%s | ${firmName}`
+    },
+    description: t.meta.description,
+    metadataBase: new URL(getSiteUrl())
   };
 }
 
@@ -38,11 +46,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       >
         <ThemeProvider>
           <TranslationProvider dictionary={t}>
-            <Header />
-            <main className="min-h-[85vh] flex-1 px-4 py-6 sm:px-6 lg:px-8">
-              <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 sm:gap-12">{children}</div>
-            </main>
-            <Footer />
+            <ToastProvider>
+              <Header />
+              <main className="min-h-[85vh] flex-1 px-4 py-6 sm:px-6 lg:px-8">
+                <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 sm:gap-12">{children}</div>
+              </main>
+              <Footer />
+            </ToastProvider>
           </TranslationProvider>
         </ThemeProvider>
       </body>

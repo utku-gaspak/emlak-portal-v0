@@ -5,15 +5,17 @@ import Image from "next/image";
 import { Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/context/TranslationContext";
+import { getOptimizedCloudinaryUrl } from "@/lib/image-url";
 
 type EditPhotoManagerProps = {
   listingId: string;
+  listingTitle: string;
   images: string[];
 };
 
 const PLACEHOLDER_SRC = "/property-placeholder.svg";
 
-export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
+export function EditPhotoManager({ listingId, listingTitle, images }: EditPhotoManagerProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const [processingIndex, setProcessingIndex] = useState<number | null>(null);
@@ -72,7 +74,7 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
         {Array.from({ length: normalizedImages.length }).map((_, index) => {
           const isProcessing = processingIndex === index;
           const imageFile = normalizedImages[index];
-          const imageSrc = imageFile ?? PLACEHOLDER_SRC;
+          const imageSrc = imageFile ? getOptimizedCloudinaryUrl(imageFile) : PLACEHOLDER_SRC;
 
           return (
             <div
@@ -85,7 +87,7 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
                 <div className="relative aspect-square w-full">
                   <Image
                     src={imageSrc}
-                    alt={`${t.gallery.imageLabel} ${index + 1}`}
+                    alt={`${listingTitle} ${t.gallery.imageLabel} ${index + 1}`}
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 50vw, 240px"
@@ -101,7 +103,7 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
                   data-automation={`delete-photo-${index}`}
                   onClick={() => handleDeletePhoto(index)}
                   disabled={processingIndex !== null}
-                className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-red-600 p-2 text-white shadow-lg transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-red-600 p-2 text-white shadow-lg transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
                   aria-label={`${t.deleteListing.button} ${index + 1}`}
                 >
                   {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
@@ -118,7 +120,7 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
 
               <div className="mt-3">
                 <p data-automation={`admin-image-label-${index + 1}`} className="text-center text-xs text-slate-500">
-                  {t.gallery.imageLabel} {index + 1}
+                  {listingTitle} {t.gallery.imageLabel} {index + 1}
                 </p>
               </div>
             </div>

@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { ArrowUpRight, Home, MessageCircle } from "lucide-react";
 import { getDictionary } from "@/lib/get-dictionary";
+import { getFirmName } from "@/lib/brand";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { getPublicContactConfig } from "@/lib/contact-links";
 
 export async function Header() {
   const t = await getDictionary();
+  const firmName = getFirmName();
   const contact = getPublicContactConfig();
   const whatsappHref = contact.phone ? `https://wa.me/${contact.phone.replace(/\D/g, "")}` : "#";
 
@@ -26,12 +28,9 @@ export async function Header() {
               <Home className="h-5 w-5" />
             </span>
 
-            <div className="leading-tight">
-              <p className="text-xs font-bold uppercase tracking-[0.34em] text-amber-600 dark:text-amber-400">
-                {t.siteHeader.brandMark}
-              </p>
-              <p className="text-lg font-black tracking-[0.18em] text-slate-950 dark:text-slate-50">
-                {t.siteHeader.brandName}
+            <div className="inline-flex rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10">
+              <p className="text-xl font-black tracking-[0.16em] text-slate-950 sm:text-2xl dark:text-slate-50">
+                {firmName}
               </p>
             </div>
           </Link>

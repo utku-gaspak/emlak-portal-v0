@@ -53,7 +53,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
           <AdminLogoutButton className="border-slate-200 bg-slate-700 text-white hover:bg-slate-900 hover:text-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700" />
         </div>
 
-        <EditPhotoManager listingId={listing.id} images={listing.images} />
+        <EditPhotoManager listingId={listing.id} listingTitle={listing.title} images={listing.images} />
         <PropertyForm mode="edit" initialData={listing} />
       </section>
 

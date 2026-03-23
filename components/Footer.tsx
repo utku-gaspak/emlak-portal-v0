@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { getDictionary } from "@/lib/get-dictionary";
+import { getFirmName } from "@/lib/brand";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getPublicContactConfig } from "@/lib/contact-links";
 
 export async function Footer() {
   const t = await getDictionary();
+  const firmName = getFirmName();
+  const copyrightLine =
+    t.meta.lang === "en"
+      ? `© ${new Date().getFullYear()} ${firmName}. All rights reserved.`
+      : `© ${new Date().getFullYear()} ${firmName}. Tüm hakları saklıdır.`;
   const contact = getPublicContactConfig();
   const isAuthenticated = await isAdminAuthenticated();
   const adminHref = isAuthenticated ? "/admin/listings" : "/admin/login";
@@ -21,8 +27,9 @@ export async function Footer() {
         <div className="grid gap-12 lg:grid-cols-4">
           <div className="space-y-5">
             <div className="space-y-3">
-              <p className="text-xs font-bold uppercase tracking-[0.34em] text-amber-400">{t.siteHeader.brandMark}</p>
-              <p className="text-2xl font-black tracking-[0.16em] text-white">{t.siteHeader.brandName}</p>
+              <div className="inline-flex rounded-2xl border border-amber-400/25 bg-amber-400/10 px-4 py-2 shadow-sm">
+                <p className="text-2xl font-black tracking-[0.16em] text-white">{firmName}</p>
+              </div>
             </div>
 
             <p className="max-w-sm text-sm leading-7 text-slate-400">{t.footer.vision}</p>
@@ -114,7 +121,7 @@ export async function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>{t.footer.copyright}</p>
+          <p>{copyrightLine}</p>
           <p className="max-w-2xl">{t.footer.disclaimer}</p>
         </div>
       </div>

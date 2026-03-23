@@ -7,10 +7,12 @@ import { Check, ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Listing } from "@/lib/types";
 import { formatListingPrice } from "@/lib/currency";
+import { getOptimizedCloudinaryUrl } from "@/lib/image-url";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTranslation } from "@/context/TranslationContext";
+import { useToast } from "@/components/ToastProvider";
 
 type AdminListingsManagerProps = {
   listings: Listing[];
@@ -35,6 +37,7 @@ export function AdminListingsManager({
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get("q") || "";
+  const { showToast } = useToast();
   const [visibleListings, setVisibleListings] = useState(listings);
   const [featuredCount, setFeaturedCount] = useState(totalFeaturedListings);
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
@@ -83,10 +86,17 @@ export function AdminListingsManager({
         throw new Error(payload?.error ?? "Unable to delete listing.");
       }
 
+      setVisibleListings((current) => current.filter((listing) => listing.id !== listingToDelete.id));
+      if (listingToDelete.isFeatured) {
+        setFeaturedCount((current) => Math.max(0, current - 1));
+      }
       setListingToDelete(null);
+      showToast(t.adminListings.deleteSuccessMessage, "success");
       router.refresh();
     } catch (error) {
-      setDeleteError(error instanceof Error ? error.message : "Unable to delete listing.");
+      const message = error instanceof Error ? error.message : "Unable to delete listing.";
+      setDeleteError(message);
+      showToast(message, "error");
     } finally {
       setIsDeleting(false);
     }
@@ -113,15 +123,16 @@ export function AdminListingsManager({
 
       if (!response.ok) {
         const errorMessage = payload?.error ?? t.adminListings.featuredUpdateFailed;
-        window.alert(errorMessage);
+        showToast(errorMessage, "error");
         return;
       }
 
       setListingFeaturedState(listing.id, nextChecked);
       setFeaturedCount((current) => current + (nextChecked ? 1 : -1));
+      showToast(nextChecked ? t.adminListings.featuredOn : t.adminListings.featuredOff, "success");
       router.refresh();
     } catch {
-      window.alert(t.adminListings.featuredUpdateFailed);
+      showToast(t.adminListings.featuredUpdateFailed, "error");
     } finally {
       setFeaturedPendingIds((current) => ({ ...current, [listing.id]: false }));
     }
@@ -219,8 +230,8 @@ export function AdminListingsManager({
                   const thumbnail = listing.images[0] ?? "/property-placeholder.svg";
                   const isFeaturedPending = Boolean(featuredPendingIds[listing.id]);
 
-                  return (
-                    <tr
+                return (
+                  <tr
                       key={listing.id}
                       id={`admin-listing-row-${listing.id}`}
                       data-automation={`admin-listing-row-${listing.id}`}
@@ -237,7 +248,13 @@ export function AdminListingsManager({
                     >
                       <td className="px-4 py-4">
                         <div className="relative h-16 w-24 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
-                          <Image src={thumbnail} alt={listing.title} fill className="object-cover" sizes="96px" />
+                          <Image
+                            src={getOptimizedCloudinaryUrl(thumbnail)}
+                            alt={`${listing.title} preview`}
+                            fill
+                            className="object-cover"
+                            sizes="96px"
+                          />
                         </div>
                       </td>
                       <td className="px-4 py-4 font-semibold text-slate-900 dark:text-slate-100">{listing.refId}</td>

@@ -20,7 +20,7 @@
   },
   "siteHeader": {
     "brandMark": "RE",
-    "brandName": "RE/EMLAK",
+    "brandName": "Emlak Portalı",
     "adminPortal": "Admin Paneli",
     "dashboard": "Panele Git",
     "languageLabel": "Dil",
@@ -86,7 +86,7 @@
     "noResultsDescription": "Daha geniş arama yapın ya da her şeyi görmek için sorguyu temizleyin.",
     "aboutEyebrow": "Kurumsal Yaklaşım",
     "aboutTitle": "Gayrimenkul deneyimini daha sade, daha şık ve daha güvenilir hale getiriyoruz.",
-    "aboutDescription": "RE/EMLAK; seçilmiş portfüyler, düzenli sunum ve otomasyona uygun altyapısıyla alıcı ile satıcıyı aynı çatı altında buluşturur."
+    "aboutDescription": "Seçilmiş portföyler, düzenli sunum ve otomasyona uygun altyapısıyla alıcı ile satıcıyı aynı çatı altında buluşturur."
   },
   "filters": {
     "title": "Filtreler",
@@ -322,7 +322,8 @@
     "delete": "İlanı Sil",
     "deleting": "Siliniyor...",
     "previous": "Önceki",
-    "next": "Sonraki"
+    "next": "Sonraki",
+    "deleteSuccessMessage": "İlan silindi."
   },
   "languageSwitcher": {
     "label": "Dil",
@@ -348,7 +349,7 @@
     "address": "Edirne, Türkiye",
     "phone": "+90 212 000 00 00",
     "email": "info@reemlak.com",
-    "copyright": "© 2026 RE/EMLAK. Tüm hakları saklıdır.",
+    "copyright": "© 2026 Emlak Portalı. Tüm hakları saklıdır.",
     "disclaimer": "İlan detayları bilgilendirme amaçlıdır; son teyit için iletişime geçiniz.",
     "socialInstagram": "Instagram",
     "socialFacebook": "Facebook",
