@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Home, MessageCircle } from "lucide-react";
 import { getDictionary } from "@/lib/get-dictionary";
 import { getFirmName } from "@/lib/brand";
@@ -60,7 +60,7 @@ export async function Header() {
               <span className="hidden sm:inline">WhatsApp</span>
             </a>
 
-            <div className="hidden items-center gap-2 md:flex">
+            <div className="hidden items-stretch gap-2 md:flex">
               <ThemeToggle />
               <LanguageSwitcher />
             </div>
@@ -73,3 +73,4 @@ export async function Header() {
     </header>
   );
 }
+
