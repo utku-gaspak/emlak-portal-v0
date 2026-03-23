@@ -20,10 +20,15 @@
   },
   "siteHeader": {
     "brandMark": "RE",
-    "brandName": "Emlak Koleksiyonu",
+    "brandName": "RE/EMLAK",
     "adminPortal": "Admin Paneli",
     "dashboard": "Panele Git",
-    "languageLabel": "Dil"
+    "languageLabel": "Dil",
+    "navHome": "Ana Sayfa",
+    "navListings": "İlanlar",
+    "navAbout": "Hakkımızda",
+    "navContact": "İletişim",
+    "listProperty": "İlan Ver"
   },
   "errors": {
     "authUnauthorized": "Yetkisiz erişim.",
@@ -78,7 +83,10 @@
     "showingProperties": "Gösterilen ilanlar",
     "showingResultsFor": "Şu sonuçlar gösteriliyor",
     "noResultsTitle": "Eşleşen ilan bulunamadı.",
-    "noResultsDescription": "Daha geniş arama yapın ya da her şeyi görmek için sorguyu temizleyin."
+    "noResultsDescription": "Daha geniş arama yapın ya da her şeyi görmek için sorguyu temizleyin.",
+    "aboutEyebrow": "Kurumsal Yaklaşım",
+    "aboutTitle": "Gayrimenkul deneyimini daha sade, daha şık ve daha güvenilir hale getiriyoruz.",
+    "aboutDescription": "RE/EMLAK; seçilmiş portfüyler, düzenli sunum ve otomasyona uygun altyapısıyla alıcı ile satıcıyı aynı çatı altında buluşturur."
   },
   "filters": {
     "title": "Filtreler",
@@ -325,5 +333,25 @@
     "toggleAria": "Temayı değiştir",
     "light": "Açık",
     "dark": "Koyu"
+  },
+  "footer": {
+    "vision": "Gayrimenkul keşfini daha akıllı, daha hızlı ve daha güvenilir hale getiriyoruz.",
+    "quickLinks": "Hızlı Bağlantılar",
+    "categories": "Kategoriler",
+    "contact": "İletişim",
+    "home": "Ana Sayfa",
+    "allListings": "Tüm İlanlar",
+    "adminLogin": "Admin Girişi",
+    "apartment": "Daire",
+    "villa": "Villa",
+    "land": "Arsa",
+    "address": "İstanbul, Türkiye",
+    "phone": "+90 212 000 00 00",
+    "email": "info@reemlak.com",
+    "copyright": "© 2026 RE/EMLAK. Tüm hakları saklıdır.",
+    "disclaimer": "İlan detayları bilgilendirme amaçlıdır; son teyit için iletişime geçiniz.",
+    "socialInstagram": "Instagram",
+    "socialFacebook": "Facebook",
+    "socialTwitter": "Twitter"
   }
 }

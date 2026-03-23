@@ -20,10 +20,15 @@
   },
   "siteHeader": {
     "brandMark": "RE",
-    "brandName": "Real Estate Collection",
+    "brandName": "RE/EMLAK",
     "adminPortal": "Admin Portal",
     "dashboard": "Go to Dashboard",
-    "languageLabel": "Language"
+    "languageLabel": "Language",
+    "navHome": "Home",
+    "navListings": "Listings",
+    "navAbout": "About",
+    "navContact": "Contact",
+    "listProperty": "List Property"
   },
   "errors": {
     "authUnauthorized": "Unauthorized.",
@@ -78,7 +83,10 @@
     "showingProperties": "Showing properties",
     "showingResultsFor": "Showing results for",
     "noResultsTitle": "No matching listings found.",
-    "noResultsDescription": "Try a broader search or clear the query to browse everything."
+    "noResultsDescription": "Try a broader search or clear the query to browse everything.",
+    "aboutEyebrow": "A Professional Approach",
+    "aboutTitle": "We make the property experience simpler, sharper, and more trustworthy.",
+    "aboutDescription": "RE/EMLAK brings buyers and sellers together with curated listings, polished presentation, and automation-friendly infrastructure."
   },
   "filters": {
     "title": "Filters",
@@ -325,5 +333,25 @@
     "toggleAria": "Toggle theme",
     "light": "Light",
     "dark": "Dark"
+  },
+  "footer": {
+    "vision": "We make property discovery smarter, faster, and more reliable.",
+    "quickLinks": "Quick Links",
+    "categories": "Categories",
+    "contact": "Contact",
+    "home": "Home",
+    "allListings": "All Listings",
+    "adminLogin": "Admin Login",
+    "apartment": "Apartment",
+    "villa": "Villa",
+    "land": "Land",
+    "address": "Istanbul, Turkey",
+    "phone": "+90 212 000 00 00",
+    "email": "info@reemlak.com",
+    "copyright": "? 2026 RE/EMLAK. All rights reserved.",
+    "disclaimer": "Listing details are provided for information only; please contact us for final confirmation.",
+    "socialInstagram": "Instagram",
+    "socialFacebook": "Facebook",
+    "socialTwitter": "Twitter"
   }
 }

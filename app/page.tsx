@@ -32,20 +32,21 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <div className="space-y-10 sm:space-y-12">
-      <section className="relative isolate overflow-hidden rounded-[3rem] bg-slate-950 text-white shadow-[0_32px_80px_rgba(15,23,42,0.3)]">
-        <div
-          data-automation="hero-background"
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1800&q=80')"
-          }}
-          aria-hidden="true"
-        />
-        <div className="absolute inset-0 bg-black/55" aria-hidden="true" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.14),_transparent_28%)]" aria-hidden="true" />
+      <section className="relative isolate rounded-[3rem] bg-slate-950 text-white shadow-[0_32px_80px_rgba(15,23,42,0.3)]">
+        <div className="absolute inset-0 overflow-hidden rounded-[3rem]" aria-hidden="true">
+          <div
+            data-automation="hero-background"
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage:
+                "url('https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1800&q=80')"
+            }}
+          />
+          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.14),_transparent_28%)]" />
+        </div>
 
-        <div className="relative flex min-h-[78vh] flex-col items-center justify-center px-6 py-10 text-center sm:px-8 lg:px-12">
+        <div className="relative z-10 flex min-h-[78vh] flex-col items-center justify-center px-6 py-10 text-center sm:px-8 lg:px-12">
           <div className="max-w-4xl space-y-6">
             <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur">
               {t.home.heroEyebrow}
@@ -68,8 +69,45 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
           </div>
 
-          <div className="mt-10 w-full max-w-6xl px-0 sm:px-4">
+          <div className="relative z-20 mt-10 w-full max-w-6xl overflow-visible px-0 sm:px-4">
             <SearchFilters roomOptions={roomOptions} heatingOptions={heatingOptions} zoningOptions={zoningOptions} showHeader={false} />
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="about"
+        className="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-[0_18px_55px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/80"
+      >
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-600 dark:text-amber-400">
+              {t.home.aboutEyebrow}
+            </p>
+            <h2 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+              {t.home.aboutTitle}
+            </h2>
+            <p className="text-sm leading-7 text-slate-600 dark:text-slate-400 sm:text-base">{t.home.aboutDescription}</p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[36rem] lg:flex-1">
+            {[
+              { key: "curated", tone: "from-amber-500/15 to-amber-500/5" },
+              { key: "fast", tone: "from-sky-500/15 to-sky-500/5" },
+              { key: "rpaReady", tone: "from-emerald-500/15 to-emerald-500/5" }
+            ].map((item) => {
+              const stat = t.home.stats[item.key as keyof typeof t.home.stats];
+
+              return (
+                <div
+                  key={item.key}
+                  className={`rounded-3xl border border-slate-200 bg-gradient-to-br ${item.tone} p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/60`}
+                >
+                  <p className="text-2xl font-black text-slate-950 dark:text-white">{stat.value}</p>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{stat.label}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

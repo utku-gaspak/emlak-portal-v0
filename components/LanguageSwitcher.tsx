@@ -28,12 +28,39 @@ function FlagIcon({ locale }: { locale: Locale }) {
 
   return (
     <svg viewBox="0 0 24 16" className="h-3.5 w-5 rounded-sm shadow-sm" aria-hidden="true">
-      <rect width="24" height="16" rx="3" fill="#1D4ED8" />
-      <rect x="0" y="0" width="24" height="3" fill="#fff" />
-      <rect x="0" y="6.5" width="24" height="3" fill="#fff" />
-      <rect x="0" y="13" width="24" height="3" fill="#fff" />
-      <rect x="9" y="0" width="3" height="16" fill="#fff" />
-    </svg>
+      <rect width="24" height="16" rx="3" fill="#FFFFFF" />
+      <g fill="#DC2626">
+        <rect x="0" y="0" width="24" height="1.5" />
+        <rect x="0" y="3" width="24" height="1.5" />
+        <rect x="0" y="6" width="24" height="1.5" />
+        <rect x="0" y="9" width="24" height="1.5" />
+        <rect x="0" y="12" width="24" height="1.5" />
+        <rect x="0" y="15" width="24" height="1" />
+      </g>
+      <rect x="0" y="0" width="10.5" height="8.5" rx="3" fill="#1D4ED8" />
+      <g fill="#FFFFFF">
+        <circle cx="1.5" cy="1.3" r="0.35" />
+        <circle cx="3.2" cy="1.3" r="0.35" />
+        <circle cx="4.9" cy="1.3" r="0.35" />
+        <circle cx="6.6" cy="1.3" r="0.35" />
+        <circle cx="8.3" cy="1.3" r="0.35" />
+        <circle cx="2.3" cy="2.6" r="0.35" />
+        <circle cx="4" cy="2.6" r="0.35" />
+        <circle cx="5.7" cy="2.6" r="0.35" />
+        <circle cx="7.4" cy="2.6" r="0.35" />
+        <circle cx="9.1" cy="2.6" r="0.35" />
+        <circle cx="1.5" cy="3.9" r="0.35" />
+        <circle cx="3.2" cy="3.9" r="0.35" />
+        <circle cx="4.9" cy="3.9" r="0.35" />
+        <circle cx="6.6" cy="3.9" r="0.35" />
+        <circle cx="8.3" cy="3.9" r="0.35" />
+        <circle cx="2.3" cy="5.2" r="0.35" />
+        <circle cx="4" cy="5.2" r="0.35" />
+        <circle cx="5.7" cy="5.2" r="0.35" />
+        <circle cx="7.4" cy="5.2" r="0.35" />
+        <circle cx="9.1" cy="5.2" r="0.35" />
+      </g>
+      </svg>
   );
 }
 

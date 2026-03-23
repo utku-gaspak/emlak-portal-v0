@@ -225,7 +225,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
     <section
       id="search-filters-panel"
       data-automation="search-filters-panel"
-      className="rounded-[2.5rem] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.09)] ring-1 ring-slate-200/70 sm:p-6 lg:p-7 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-[0_24px_70px_rgba(2,6,23,0.35)] dark:ring-slate-800/70"
+      className="relative z-30 overflow-visible rounded-[2.5rem] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.09)] ring-1 ring-slate-200/70 sm:p-6 lg:p-7 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-[0_24px_70px_rgba(2,6,23,0.35)] dark:ring-slate-800/70"
     >
       {showHeader ? (
         <div className="flex flex-col gap-2 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
@@ -295,7 +295,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
               </button>
 
               {isCategoryMenuOpen ? (
-                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_22px_55px_rgba(2,6,23,0.35)]">
+                <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_22px_55px_rgba(2,6,23,0.35)]">
                   <div role="listbox" aria-label={t.filters.categoryLabel} className="p-1">
                     {categoryOptions.map((option) => {
                       const isActive = option.value === filters.category;
@@ -353,7 +353,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
               </button>
 
               {isSortMenuOpen ? (
-                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_22px_55px_rgba(2,6,23,0.35)]">
+                <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_22px_55px_rgba(2,6,23,0.35)]">
                   <div role="listbox" aria-label={t.filters.sortByLabel} className="p-1">
                     {sortOptions.map((option) => {
                       const isActive = option.value === filters.sortBy;
