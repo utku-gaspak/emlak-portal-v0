@@ -12,6 +12,15 @@ function getListingType(formValue: string): ListingType | "" {
   return formValue === "house" || formValue === "land" ? formValue : "";
 }
 
+function parseOptionalNumber(value: string): number | null {
+  if (!value.trim()) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function buildInsertData(args: {
   type: ListingType;
   status: "satilik" | "kiralik";
@@ -21,6 +30,8 @@ function buildInsertData(args: {
   currency: string;
   location: string;
   areaSqm: string;
+  latitude: string;
+  longitude: string;
   description: string;
   roomCount: string;
   floorNumber: string;
@@ -30,6 +41,7 @@ function buildInsertData(args: {
   parcelNumber: string;
   isFeatured: boolean;
   images: string[];
+  viewCount?: number;
 }) {
   return {
     type: args.type,
@@ -40,9 +52,12 @@ function buildInsertData(args: {
     currency: args.currency,
     location: args.location.trim(),
     area_sqm: Number(args.areaSqm),
+    latitude: parseOptionalNumber(args.latitude),
+    longitude: parseOptionalNumber(args.longitude),
     description: args.description.trim(),
     images: args.images,
     is_featured: args.isFeatured,
+    view_count: typeof args.viewCount === "number" ? args.viewCount : 0,
     room_count: args.type === "house" ? args.roomCount.trim() : null,
     floor_number: args.type === "house" ? args.floorNumber.trim() : null,
     heating_type: args.type === "house" ? args.heatingType.trim() : null,
@@ -81,13 +96,15 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const body = Object.fromEntries(formData.entries());
-    console.log("Request Body:", body);
+    console.log("Payload:", body);
     const type = getListingType(String(formData.get("type") ?? ""));
     const title = String(formData.get("title") ?? "");
     const price = String(formData.get("price") ?? "");
     const currency = normalizeCurrency(String(formData.get("currency") ?? ""));
     const location = String(formData.get("location") ?? "");
     const areaSqm = String(formData.get("areaSqm") ?? "");
+    const latitude = String(formData.get("latitude") ?? "");
+    const longitude = String(formData.get("longitude") ?? "");
     const description = String(formData.get("description") ?? "");
     const statusValue = String(formData.get("status") ?? "");
     const status = statusValue === "kiralik" ? "kiralik" : "satilik";
@@ -113,6 +130,8 @@ export async function POST(request: Request) {
       currency,
       location,
       areaSqm,
+      latitude,
+      longitude,
       description,
       roomCount,
       floorNumber,
@@ -170,6 +189,8 @@ export async function POST(request: Request) {
       currency,
       location,
       areaSqm,
+      latitude,
+      longitude,
       description,
       roomCount,
       floorNumber,

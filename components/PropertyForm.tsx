@@ -7,6 +7,7 @@ import { useTranslation } from "@/context/TranslationContext";
 import { useToast } from "@/components/ToastProvider";
 import { CategoryDropdown } from "@/components/CategoryDropdown";
 import { StatusDropdown } from "@/components/StatusDropdown";
+import { LocationPickerModal } from "@/components/LocationPickerModal";
 import {
   determineListingTypeFromCategory,
   findCategoryById,
@@ -23,6 +24,8 @@ type ListingField =
   | "price"
   | "location"
   | "areaSqm"
+  | "latitude"
+  | "longitude"
   | "roomCount"
   | "floorNumber"
   | "heatingType"
@@ -50,6 +53,8 @@ type FormState = {
   price: string;
   location: string;
   areaSqm: string;
+  latitude: string;
+  longitude: string;
   roomCount: string;
   floorNumber: string;
   heatingType: string;
@@ -70,6 +75,8 @@ const errorIdByField: Record<ListingField, string> = {
   price: "error-price",
   location: "error-location",
   areaSqm: "error-area-sqm",
+  latitude: "error-latitude",
+  longitude: "error-longitude",
   roomCount: "error-room-count",
   floorNumber: "error-floor-number",
   heatingType: "error-heating-type",
@@ -78,6 +85,11 @@ const errorIdByField: Record<ListingField, string> = {
   parcelNumber: "error-parcel-number",
   description: "error-description",
   photos: "error-photos"
+};
+
+const ISTANBUL_COORDINATES = {
+  latitude: 41.0082,
+  longitude: 28.9784
 };
 
 function buildFormState(initialData?: Listing, categories: Category[] = []): FormState {
@@ -94,6 +106,8 @@ function buildFormState(initialData?: Listing, categories: Category[] = []): For
     price: initialData ? String(initialData.price) : "",
     location: initialData?.location ?? "",
     areaSqm: initialData ? String(initialData.areaSqm) : "",
+    latitude: initialData?.latitude != null ? String(initialData.latitude) : "",
+    longitude: initialData?.longitude != null ? String(initialData.longitude) : "",
     roomCount: initialData?.type === "house" ? initialData.roomCount : "",
     floorNumber: initialData?.type === "house" ? initialData.floorNumber : "",
     heatingType: initialData?.type === "house" ? initialData.heatingType : "",
@@ -131,6 +145,9 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
   const [globalError, setGlobalError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [addressQuery, setAddressQuery] = useState("");
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const categoriesById = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
   const parentCategories = useMemo(() => categories.filter((category) => !category.parentId), [categories]);
@@ -158,6 +175,10 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
   const submitLabel = mode === "edit" ? t.admin.form.updateButton : t.admin.form.submitButton;
   const successMessage = mode === "edit" ? t.admin.form.updateSuccessMessage : t.admin.form.successMessage;
   const photosLabel = mode === "edit" && hasExistingPhotos ? t.admin.form.addMorePhotosLabel : t.admin.form.photos;
+  const latitudeValue = formState.latitude.trim() ? Number(formState.latitude) : null;
+  const longitudeValue = formState.longitude.trim() ? Number(formState.longitude) : null;
+  const hasManualCoordinates =
+    typeof latitudeValue === "number" && Number.isFinite(latitudeValue) && typeof longitudeValue === "number" && Number.isFinite(longitudeValue);
 
   function updateField(field: TextFormField, value: string) {
     setSuccess(false);
@@ -181,6 +202,64 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
       ...current,
       status: value
     }));
+  }
+
+  function updateCoordinates(latitude: number | null, longitude: number | null) {
+    setSuccess(false);
+    setFormState((current) => ({
+      ...current,
+      latitude: typeof latitude === "number" && Number.isFinite(latitude) ? String(latitude) : "",
+      longitude: typeof longitude === "number" && Number.isFinite(longitude) ? String(longitude) : ""
+    }));
+  }
+
+  async function handleAddressSearch() {
+    const query = addressQuery.trim();
+
+    if (!query) {
+      showToast(t.admin.form.addressSearchNotFound, "error");
+      return;
+    }
+
+    try {
+      setIsSearchingAddress(true);
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`, {
+        headers: {
+          Accept: "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Geocoding request failed.");
+      }
+
+      const results = (await response.json()) as Array<{ lat: string; lon: string; display_name?: string }>;
+
+      if (!results.length) {
+        showToast(t.admin.form.addressSearchNotFound, "error");
+        return;
+      }
+
+      const nextLatitude = Number(results[0].lat);
+      const nextLongitude = Number(results[0].lon);
+
+      if (!Number.isFinite(nextLatitude) || !Number.isFinite(nextLongitude)) {
+        showToast(t.admin.form.addressSearchError, "error");
+        return;
+      }
+
+      updateCoordinates(nextLatitude, nextLongitude);
+
+      if (!formState.location.trim() && results[0].display_name) {
+        updateField("location", results[0].display_name);
+      }
+
+      showToast(t.admin.form.addressSearchSuccess, "success");
+    } catch {
+      showToast(t.admin.form.addressSearchError, "error");
+    } finally {
+      setIsSearchingAddress(false);
+    }
   }
 
   function handleParentCategoryChange(parentCategoryId: string) {
@@ -240,12 +319,27 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
     setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
+    formData.set("status", formState.status);
+    formData.set("category_id", formState.categoryId);
+    formData.set("currency", formState.currency);
+    formData.set("latitude", formState.latitude);
+    formData.set("longitude", formState.longitude);
+
+    if (formState.isFeatured) {
+      formData.set("isFeatured", "on");
+    } else {
+      formData.delete("isFeatured");
+    }
+
     const response = await fetch(actionPath, {
       method: mode === "edit" ? "PUT" : "POST",
       body: formData
     });
 
-    const payload = await response.json();
+    const contentType = response.headers.get("content-type") ?? "";
+    const payload = contentType.includes("application/json")
+      ? await response.json()
+      : { ok: false, error: await response.text() };
 
     if (!response.ok) {
       const responseErrors = payload?.errors ?? {};
@@ -253,8 +347,10 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
       if (responseErrors.auth) {
         setGlobalError(String(responseErrors.auth));
         showToast(String(responseErrors.auth), "error");
-      } else if (payload?.error) {
-        showToast(String(payload.error), "error");
+      } else {
+        const message = payload?.error || Object.values(responseErrors)[0] || t.errors.invalidRequestBody;
+        setGlobalError(String(message));
+        showToast(String(message), "error");
       }
       setIsSubmitting(false);
       return;
@@ -263,6 +359,7 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
     if (mode === "create") {
       setFormState(buildFormState(undefined, categories));
       formRef.current?.reset();
+      setAddressQuery("");
     }
 
     setIsSubmitting(false);
@@ -280,6 +377,7 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
       onSubmit={handleSubmit}
     >
       <input type="hidden" name="type" value={listingType} />
+      <input type="hidden" name="status" value={formState.status} />
       <input type="hidden" name="category_id" value={formState.categoryId} />
 
       <div className="rounded-3xl bg-slate-50 p-4 sm:p-5 dark:bg-slate-950/50">
@@ -438,6 +536,121 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
           {renderError("areaSqm")}
         </div>
       </div>
+
+      <section className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-950/50">
+        <div className="space-y-1">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700 dark:text-amber-400">
+            {t.admin.form.locationSectionTitle}
+          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{t.admin.form.locationSectionDescription}</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+              {t.admin.form.manualLocationTitle}
+            </p>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="prop-latitude" className="label-base">
+                  {t.admin.form.latitude}
+                </label>
+                <input
+                  id="prop-latitude"
+                  data-automation="latitude-input"
+                  name="latitude"
+                  type="number"
+                  step="any"
+                  min="-90"
+                  max="90"
+                  className="input-base"
+                  value={formState.latitude}
+                  onChange={(event) => updateField("latitude", event.target.value)}
+                  placeholder={t.admin.form.latitudePlaceholder}
+                />
+                {renderError("latitude")}
+              </div>
+
+              <div>
+                <label htmlFor="prop-longitude" className="label-base">
+                  {t.admin.form.longitude}
+                </label>
+                <input
+                  id="prop-longitude"
+                  data-automation="longitude-input"
+                  name="longitude"
+                  type="number"
+                  step="any"
+                  min="-180"
+                  max="180"
+                  className="input-base"
+                  value={formState.longitude}
+                  onChange={(event) => updateField("longitude", event.target.value)}
+                  placeholder={t.admin.form.longitudePlaceholder}
+                />
+                {renderError("longitude")}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+              {t.admin.form.addressSearchTitle}
+            </p>
+            <div className="mt-4 space-y-3">
+              <div>
+                <label htmlFor="prop-address-search" className="label-base">
+                  {t.admin.form.addressSearchLabel}
+                </label>
+                <input
+                  id="prop-address-search"
+                  data-automation="address-search-input"
+                  type="text"
+                  className="input-base"
+                  value={addressQuery}
+                  onChange={(event) => setAddressQuery(event.target.value)}
+                  placeholder={t.admin.form.addressSearchPlaceholder}
+                />
+              </div>
+
+              <button
+                id="prop-address-search-button"
+                data-automation="address-search-button"
+                type="button"
+                onClick={handleAddressSearch}
+                disabled={isSearchingAddress}
+                className="button-primary w-full"
+              >
+                {isSearchingAddress ? t.admin.form.saving : t.admin.form.searchCoordinatesButton}
+              </button>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+              {t.admin.form.mapPickerTitle}
+            </p>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{t.admin.form.mapPickerDescription}</p>
+            <div className="mt-4 space-y-3">
+              <button
+                id="prop-open-map-picker"
+                data-automation="open-map-picker-button"
+                type="button"
+                onClick={() => setIsMapPickerOpen(true)}
+                className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-amber-300 hover:text-amber-700 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-200 dark:hover:border-amber-500/40 dark:hover:text-amber-400"
+              >
+                {t.admin.form.mapPickerButton}
+              </button>
+
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
+                {hasManualCoordinates
+                  ? `${t.propertyDetail.coordinatesLabel}: ${formState.latitude}, ${formState.longitude}`
+                  : t.admin.form.locationSectionDescription}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {isHouse ? (
         <div className="rounded-3xl bg-slate-50 p-5 dark:bg-slate-950/50">
@@ -635,6 +848,15 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
           {globalError}
         </div>
       ) : null}
+
+      <LocationPickerModal
+        open={isMapPickerOpen}
+        title={formState.location.trim() || t.admin.form.mapPickerTitle}
+        latitude={latitudeValue}
+        longitude={longitudeValue}
+        onClose={() => setIsMapPickerOpen(false)}
+        onChange={(nextLatitude, nextLongitude) => updateCoordinates(nextLatitude, nextLongitude)}
+      />
     </form>
   );
 }

@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 
 import { getDescendantCategoryIdsByParentId } from "@/lib/categories";
 import { normalizeCurrency } from "@/lib/currency";
@@ -34,9 +34,12 @@ type ListingInsert = {
   price: number;
   location: string;
   areaSqm: number;
+  latitude?: number | null;
+  longitude?: number | null;
   description: string;
   images: string[];
   createdAt: string;
+  viewCount?: number;
   roomCount?: string;
   floorNumber?: string;
   heatingType?: string;
@@ -142,6 +145,11 @@ function getRecordNumber(record: Record<string, unknown>, keys: string[], fallba
   return fallback;
 }
 
+function getRecordNullableNumber(record: Record<string, unknown>, keys: string[]): number | null {
+  const value = getRecordNumber(record, keys, Number.NaN);
+  return Number.isFinite(value) ? value : null;
+}
+
 function getRecordBoolean(record: Record<string, unknown>, keys: string[], fallback = false): boolean {
   for (const key of keys) {
     const value = record[key];
@@ -199,7 +207,10 @@ function normalizeListingRow(raw: unknown): Listing | null {
     areaSqm: getRecordNumber(record, ["area_sqm", "areaSqm"]),
     description: getRecordText(record, ["description"]),
     images,
-    createdAt: getRecordText(record, ["created_at", "createdAt"], new Date().toISOString())
+    createdAt: getRecordText(record, ["created_at", "createdAt"], new Date().toISOString()),
+    latitude: getRecordNullableNumber(record, ["latitude"]),
+    longitude: getRecordNullableNumber(record, ["longitude"]),
+    viewCount: getRecordNumber(record, ["view_count", "viewCount"], 0)
   };
 
   if (type === "land") {
@@ -237,7 +248,10 @@ function toDatabaseRow(listing: ListingInsert, refId: number = listing.refId ?? 
     area_sqm: Number(listing.areaSqm),
     description: listing.description,
     images: listing.images,
-    created_at: listing.createdAt
+    created_at: listing.createdAt,
+    latitude: typeof listing.latitude === "number" ? listing.latitude : null,
+    longitude: typeof listing.longitude === "number" ? listing.longitude : null,
+    view_count: typeof listing.viewCount === "number" ? listing.viewCount : 0
   };
 
   const refIdField = refId > 0 ? { ref_id: refId } : {};
@@ -529,3 +543,29 @@ export async function updateListingById(id: string, updatedListing: Listing): Pr
 
   return normalizeListingRow(data);
 }
+
+export async function incrementListingViewCount(id: string): Promise<Listing | null> {
+  const existingListing = await getListingById(id);
+
+  if (!existingListing) {
+    return null;
+  }
+
+  const supabase = getSupabaseServerClient();
+  const nextViewCount = (existingListing.viewCount ?? 0) + 1;
+
+  const { data, error } = await supabase
+    .from(LISTINGS_TABLE)
+    .update({ view_count: nextViewCount })
+    .eq("id", existingListing.id)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return normalizeListingRow(data);
+}
+
+

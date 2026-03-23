@@ -1,4 +1,4 @@
-import { ListingInput, ListingType, ValidationErrors } from "@/lib/types";
+﻿import { ListingInput, ListingType, ValidationErrors } from "@/lib/types";
 import { getDictionary } from "@/lib/get-dictionary";
 
 type FormFields = Omit<ListingInput, "type" | "price" | "areaSqm" | "photos" | "isFeatured"> & {
@@ -6,6 +6,8 @@ type FormFields = Omit<ListingInput, "type" | "price" | "areaSqm" | "photos" | "
   type: ListingType | string;
   price: string;
   areaSqm: string;
+  latitude?: string;
+  longitude?: string;
   photos: Array<File | string>;
   existingPhotos?: string[];
 };
@@ -54,6 +56,20 @@ export async function validateListingForm(fields: FormFields): Promise<Validatio
     errors.areaSqm = t.errors.areaInvalid;
   }
 
+  if (fields.latitude?.trim()) {
+    const latitude = Number(fields.latitude);
+    if (Number.isNaN(latitude) || latitude < -90 || latitude > 90) {
+      errors.latitude = t.errors.latitudeInvalid;
+    }
+  }
+
+  if (fields.longitude?.trim()) {
+    const longitude = Number(fields.longitude);
+    if (Number.isNaN(longitude) || longitude < -180 || longitude > 180) {
+      errors.longitude = t.errors.longitudeInvalid;
+    }
+  }
+
   if (!fields.description.trim()) {
     errors.description = t.errors.descriptionRequired;
   }
@@ -94,3 +110,4 @@ export async function validateListingForm(fields: FormFields): Promise<Validatio
 
   return errors;
 }
+

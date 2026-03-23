@@ -16,6 +16,24 @@ function getListingType(formValue: string, fallback: ListingType): ListingType {
   return formValue === "house" || formValue === "land" ? formValue : fallback;
 }
 
+function parseOptionalNumber(value: string): number | null {
+  if (!value.trim()) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseOptionalNumberWithFallback(value: string, fallback: number | null): number | null {
+  if (!value.trim()) {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 export async function GET(_request: Request, { params }: { params: RouteParams }) {
   const t = await getDictionary();
 
@@ -61,92 +79,97 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
   }
 
   const { id } = await params;
-  const existingListing = await getListingById(id);
-
-  if (!existingListing) {
-    return NextResponse.json({ ok: false, errors: { listing: t.errors.listingNotFound } }, { status: 404 });
-  }
-
-  const formData = await request.formData();
-  const type = getListingType(String(formData.get("type") ?? existingListing.type), existingListing.type);
-  const status = String(formData.get("status") ?? existingListing.status ?? "satilik");
-  const categoryId = String(formData.get("categoryId") ?? existingListing.categoryId ?? "");
-  const title = String(formData.get("title") ?? "");
-  const price = String(formData.get("price") ?? "");
-  const currency = normalizeCurrency(String(formData.get("currency") ?? existingListing.currency ?? "TL"));
-  const location = String(formData.get("location") ?? "");
-  const areaSqm = String(formData.get("areaSqm") ?? "");
-  const description = String(formData.get("description") ?? "");
-  const roomCount = String(formData.get("roomCount") ?? "");
-  const floorNumber = String(formData.get("floorNumber") ?? "");
-  const heatingType = String(formData.get("heatingType") ?? "");
-  const zoningStatus = String(formData.get("zoningStatus") ?? "");
-  const islandNumber = String(formData.get("islandNumber") ?? "");
-  const parcelNumber = String(formData.get("parcelNumber") ?? "");
-  const isFeatured = formData.get("isFeatured") === "on" || formData.get("isFeatured") === "true";
-  const uploadedPhotos = formData
-    .getAll("photos")
-    .filter((item): item is File => item instanceof File)
-    .filter((item) => item.size > 0);
-  const existingImages = [...formData.getAll("existingImages"), ...formData.getAll("existingPhotos")]
-    .map((photo) => String(photo).trim())
-    .filter((photo) => photo.length > 0);
-
-  const preservedImages = existingImages.length > 0 ? existingImages : existingListing.images;
-
-  const errors = await validateListingForm({
-    type,
-    status: status as "satilik" | "kiralik",
-    categoryId,
-    currency,
-    title,
-    price,
-    location,
-    areaSqm,
-    description,
-    roomCount,
-    floorNumber,
-    heatingType,
-    zoningStatus,
-    islandNumber,
-    parcelNumber,
-    photos: uploadedPhotos,
-    existingPhotos: preservedImages
-  });
-
-  if (Object.keys(errors).length > 0) {
-    return NextResponse.json({ ok: false, errors }, { status: 400 });
-  }
-
-  if (!categoryId.trim()) {
-    return NextResponse.json(
-      {
-        ok: false,
-        errors: {
-          categoryId: t.errors.categoryRequired
-        }
-      },
-      { status: 400 }
-    );
-  }
-
-  const resolvedType = await resolveListingTypeFromCategoryId(categoryId.trim());
-
-  if (!resolvedType) {
-    return NextResponse.json(
-      {
-        ok: false,
-        errors: {
-          categoryId: t.errors.categoryInvalid
-        }
-      },
-      { status: 400 }
-    );
-  }
-  const listingId = existingListing.id;
-  const savedNewPhotoPaths: string[] = [];
-
   try {
+    const existingListing = await getListingById(id);
+
+    if (!existingListing) {
+      return NextResponse.json({ ok: false, errors: { listing: t.errors.listingNotFound } }, { status: 404 });
+    }
+
+    const formData = await request.formData();
+    const type = getListingType(String(formData.get("type") ?? existingListing.type), existingListing.type);
+    const status = String(formData.get("status") ?? existingListing.status ?? "satilik");
+    const categoryId = String(formData.get("category_id") ?? formData.get("categoryId") ?? existingListing.categoryId ?? "");
+    const title = String(formData.get("title") ?? "");
+    const price = String(formData.get("price") ?? "");
+    const currency = normalizeCurrency(String(formData.get("currency") ?? existingListing.currency ?? "TL"));
+    const location = String(formData.get("location") ?? "");
+    const areaSqm = String(formData.get("areaSqm") ?? "");
+    const latitude = String(formData.get("latitude") ?? existingListing.latitude ?? "");
+    const longitude = String(formData.get("longitude") ?? existingListing.longitude ?? "");
+    const description = String(formData.get("description") ?? "");
+    const roomCount = String(formData.get("roomCount") ?? "");
+    const floorNumber = String(formData.get("floorNumber") ?? "");
+    const heatingType = String(formData.get("heatingType") ?? "");
+    const zoningStatus = String(formData.get("zoningStatus") ?? "");
+    const islandNumber = String(formData.get("islandNumber") ?? "");
+    const parcelNumber = String(formData.get("parcelNumber") ?? "");
+    const isFeatured = formData.get("isFeatured") === "on" || formData.get("isFeatured") === "true";
+    const uploadedPhotos = formData
+      .getAll("photos")
+      .filter((item): item is File => item instanceof File)
+      .filter((item) => item.size > 0);
+    const existingImages = [...formData.getAll("existingImages"), ...formData.getAll("existingPhotos")]
+      .map((photo) => String(photo).trim())
+      .filter((photo) => photo.length > 0);
+
+    const preservedImages = existingImages.length > 0 ? existingImages : existingListing.images;
+
+    const errors = await validateListingForm({
+      type,
+      status: status as "satilik" | "kiralik",
+      categoryId,
+      currency,
+      title,
+      price,
+      location,
+      areaSqm,
+      latitude,
+      longitude,
+      description,
+      roomCount,
+      floorNumber,
+      heatingType,
+      zoningStatus,
+      islandNumber,
+      parcelNumber,
+      photos: uploadedPhotos,
+      existingPhotos: preservedImages
+    });
+
+    if (Object.keys(errors).length > 0) {
+      return NextResponse.json({ ok: false, errors }, { status: 400 });
+    }
+
+    if (!categoryId.trim()) {
+      return NextResponse.json(
+        {
+          ok: false,
+          errors: {
+            categoryId: t.errors.categoryRequired
+          }
+        },
+        { status: 400 }
+      );
+    }
+
+    const resolvedType = await resolveListingTypeFromCategoryId(categoryId.trim());
+
+    if (!resolvedType) {
+      return NextResponse.json(
+        {
+          ok: false,
+          errors: {
+            categoryId: t.errors.categoryInvalid
+          }
+        },
+        { status: 400 }
+      );
+    }
+
+    const listingId = existingListing.id;
+    const savedNewPhotoPaths: string[] = [];
+
     if (uploadedPhotos.length > 0) {
       const savedPhotos = await saveUploadedPhotos(listingId, uploadedPhotos, preservedImages.length);
       savedNewPhotoPaths.push(...savedPhotos);
@@ -157,6 +180,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       id: existingListing.id,
       refId: existingListing.refId,
       createdAt: existingListing.createdAt,
+      viewCount: existingListing.viewCount ?? 0,
       isFeatured,
       status: status as "satilik" | "kiralik",
       categoryId: categoryId.trim(),
@@ -166,6 +190,8 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       currency,
       location: location.trim(),
       areaSqm: Number(areaSqm),
+      latitude: parseOptionalNumberWithFallback(latitude, existingListing.latitude ?? null),
+      longitude: parseOptionalNumberWithFallback(longitude, existingListing.longitude ?? null),
       description: description.trim(),
       images: combinedImages
     };
@@ -208,11 +234,13 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       { status: 200 }
     );
   } catch (error) {
-    if (savedNewPhotoPaths.length > 0) {
-      await deleteUploadedFiles(listingId, savedNewPhotoPaths);
-    }
-
-    throw error;
+    return NextResponse.json(
+      {
+        ok: false,
+        error: error instanceof Error ? error.message : String(error)
+      },
+      { status: 500 }
+    );
   }
 }
 

@@ -1,4 +1,4 @@
-export type ListingType = "house" | "land";
+﻿export type ListingType = "house" | "land";
 export type ListingStatus = "satilik" | "kiralik";
 export type ListingCurrency = "TL" | "USD" | "EUR";
 
@@ -23,6 +23,9 @@ export type ListingCommonFields = {
   description: string;
   images: string[];
   createdAt: string;
+  latitude: number | null;
+  longitude: number | null;
+  viewCount: number;
 };
 
 export type HouseListing = ListingCommonFields & {
@@ -52,6 +55,8 @@ export type ListingInput = {
   price: string;
   location: string;
   areaSqm: string;
+  latitude?: string;
+  longitude?: string;
   description: string;
   roomCount?: string;
   floorNumber?: string;

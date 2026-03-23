@@ -1,4 +1,6 @@
-﻿@tailwind base;
+﻿@import "leaflet/dist/leaflet.css";
+
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -35,3 +37,6 @@ main {
 .button-primary {
   @apply inline-flex items-center justify-center rounded-2xl bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-amber-200 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400 dark:focus:ring-amber-500/20;
 }
+
+
+

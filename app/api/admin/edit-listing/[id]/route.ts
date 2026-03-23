@@ -12,6 +12,24 @@ function getListingType(formValue: string, fallback: ListingType): ListingType {
   return formValue === "house" || formValue === "land" ? formValue : fallback;
 }
 
+function parseOptionalNumber(value: string): number | null {
+  if (!value.trim()) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseOptionalNumberWithFallback(value: string, fallback: number | null): number | null {
+  if (!value.trim()) {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 type RouteParams = Promise<{
   id: string;
 }>;
@@ -33,12 +51,14 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
   const formData = await request.formData();
   const type = getListingType(String(formData.get("type") ?? existingListing.type), existingListing.type);
   const status = String(formData.get("status") ?? existingListing.status ?? "satilik");
-  const categoryId = String(formData.get("categoryId") ?? existingListing.categoryId ?? "");
+  const categoryId = String(formData.get("category_id") ?? formData.get("categoryId") ?? existingListing.categoryId ?? "");
   const title = String(formData.get("title") ?? "");
   const price = String(formData.get("price") ?? "");
   const currency = normalizeCurrency(String(formData.get("currency") ?? existingListing.currency ?? "TL"));
   const location = String(formData.get("location") ?? "");
   const areaSqm = String(formData.get("areaSqm") ?? "");
+  const latitude = String(formData.get("latitude") ?? existingListing.latitude ?? "");
+  const longitude = String(formData.get("longitude") ?? existingListing.longitude ?? "");
   const description = String(formData.get("description") ?? "");
   const roomCount = String(formData.get("roomCount") ?? "");
   const floorNumber = String(formData.get("floorNumber") ?? "");
@@ -69,6 +89,8 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
     price,
     location,
     areaSqm,
+    latitude,
+    longitude,
     description,
     roomCount,
     floorNumber,
@@ -122,6 +144,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       id: existingListing.id,
       refId: existingListing.refId,
       createdAt: existingListing.createdAt,
+      viewCount: existingListing.viewCount ?? 0,
       isFeatured,
       status: status as "satilik" | "kiralik",
       categoryId: categoryId.trim(),
@@ -131,6 +154,8 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       currency,
       location: location.trim(),
       areaSqm: Number(areaSqm),
+      latitude: parseOptionalNumberWithFallback(latitude, existingListing.latitude ?? null),
+      longitude: parseOptionalNumberWithFallback(longitude, existingListing.longitude ?? null),
       description: description.trim(),
       images: combinedImages,
       photos: combinedImages
