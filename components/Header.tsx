@@ -24,13 +24,13 @@ export async function Header() {
     <header className="sticky top-0 z-50 overflow-x-clip border-b border-slate-200/60 bg-white/80 backdrop-blur-md dark:border-slate-800/70 dark:bg-slate-950/75">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-2 py-4 sm:gap-3">
-          <Link href="/" className="group flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
-            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-950 to-slate-800 text-white shadow-lg shadow-slate-950/15 transition-transform duration-200 group-hover:scale-105 dark:from-amber-500 dark:to-amber-400 dark:text-slate-950 sm:h-11 sm:w-11">
+          <Link href="/" className="group flex min-w-0 shrink-0 items-center gap-3 transition-all duration-200 hover:scale-[1.01] hover:opacity-90">
+            <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-950 to-slate-800 text-white shadow-lg shadow-slate-950/15 transition-transform duration-200 group-hover:scale-105 dark:from-amber-500 dark:to-amber-400 dark:text-slate-950 sm:h-12 sm:w-12">
               <Home className="h-5 w-5" />
             </span>
 
-            <div className="inline-flex min-w-0 shrink-0 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10 sm:px-4">
-              <p className="text-lg font-black tracking-[0.14em] text-slate-950 sm:text-2xl dark:text-slate-50">
+            <div className="inline-flex min-w-0 shrink-0 items-center rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2 shadow-[0_0_0_1px_rgba(245,158,11,0.08),0_10px_24px_rgba(245,158,11,0.08)] transition-shadow duration-300 hover:shadow-[0_0_0_1px_rgba(245,158,11,0.14),0_12px_28px_rgba(245,158,11,0.12)] dark:border-amber-500/20 dark:bg-amber-500/10 sm:px-5 sm:py-2.5">
+              <p className="whitespace-nowrap text-xl font-extrabold tracking-tighter text-slate-950 dark:text-neutral-50 sm:text-2xl md:text-2xl">
                 {firmName}
               </p>
             </div>
@@ -56,7 +56,7 @@ export async function Header() {
               aria-label="WhatsApp"
               className="inline-flex h-11 flex-shrink-0 items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 shadow-[0_10px_24px_rgba(16,185,129,0.18)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-300 dark:shadow-[0_10px_24px_rgba(16,185,129,0.16)] dark:hover:border-emerald-700 dark:hover:bg-emerald-900/70 dark:hover:text-emerald-200"
             >
-              <MessageCircle className="h-5 w-5" />
+              <MessageCircle className="h-5 w-5 flex-shrink-0" />
               <span className="hidden sm:inline">WhatsApp</span>
             </a>
 

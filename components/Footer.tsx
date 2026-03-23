@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { getDictionary } from "@/lib/get-dictionary";
 import { getFirmName } from "@/lib/brand";
@@ -10,8 +10,8 @@ export async function Footer() {
   const firmName = getFirmName();
   const copyrightLine =
     t.meta.lang === "en"
-      ? `© ${new Date().getFullYear()} ${firmName}. All rights reserved.`
-      : `© ${new Date().getFullYear()} ${firmName}. Tüm hakları saklıdır.`;
+      ? `Â© ${new Date().getFullYear()} ${firmName}. All rights reserved.`
+      : `Â© ${new Date().getFullYear()} ${firmName}. TÃ¼m haklarÄ± saklÄ±dÄ±r.`;
   const contact = getPublicContactConfig();
   const isAuthenticated = await isAdminAuthenticated();
   const socialLinks = [
@@ -25,8 +25,10 @@ export async function Footer() {
         <div className="grid gap-12 lg:grid-cols-4">
           <div className="space-y-5">
             <div className="space-y-3">
-              <div className="inline-flex rounded-2xl border border-amber-400/25 bg-amber-400/10 px-4 py-2 shadow-sm">
-                <p className="text-2xl font-black tracking-[0.16em] text-white">{firmName}</p>
+              <div className="inline-flex min-w-0 shrink-0 items-center rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2 shadow-[0_0_0_1px_rgba(245,158,11,0.08),0_10px_24px_rgba(245,158,11,0.08)] transition-shadow duration-300 hover:shadow-[0_0_0_1px_rgba(245,158,11,0.14),0_12px_28px_rgba(245,158,11,0.12)] dark:border-amber-500/20 dark:bg-amber-500/10 sm:px-5 sm:py-2.5">
+                <p className="whitespace-nowrap text-xl font-extrabold tracking-tighter text-slate-950 dark:text-neutral-50 sm:text-2xl md:text-2xl">
+                  {firmName}
+                </p>
               </div>
             </div>
 
@@ -128,3 +130,4 @@ export async function Footer() {
     </footer>
   );
 }
+
