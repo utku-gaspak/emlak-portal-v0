@@ -3,9 +3,9 @@ import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getListingById, getListings, removeListingById, updateListingById } from "@/lib/listings-store";
 import { validateListingForm } from "@/lib/validation";
-import { HouseListing, LandListing, Listing, ListingType } from "@/lib/types";
-import { deleteUploadedFiles, saveUploadedPhotos } from "@/lib/listing-media";
+import { Listing, ListingType } from "@/lib/types";
 import { normalizeCurrency } from "@/lib/currency";
+import { deleteUploadedFiles } from "@/lib/listing-media";
 import { resolveListingTypeFromCategoryId } from "@/lib/categories";
 
 type RouteParams = Promise<{
@@ -25,13 +25,13 @@ function parseOptionalNumber(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function parseOptionalNumberWithFallback(value: string, fallback: number | null): number | null {
-  if (!value.trim()) {
-    return fallback;
-  }
+function extractImageUrls(formData: FormData, fallbackImages: string[] = []): string[] {
+  const urls = [...formData.getAll("imageUrls"), ...formData.getAll("existingImages"), ...formData.getAll("existingPhotos")]
+    .map((item) => String(item).trim())
+    .filter((item) => item.length > 0);
 
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
+  const merged = urls.length > 0 ? urls : fallbackImages;
+  return Array.from(new Set(merged));
 }
 
 export async function GET(_request: Request, { params }: { params: RouteParams }) {
@@ -45,7 +45,6 @@ export async function GET(_request: Request, { params }: { params: RouteParams }
   const listing = await getListingById(id);
 
   if (!listing) {
-    const t = await getDictionary();
     return NextResponse.json({ ok: false, error: t.errors.listingNotFound }, { status: 404 });
   }
 
@@ -105,15 +104,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
     const islandNumber = String(formData.get("islandNumber") ?? "");
     const parcelNumber = String(formData.get("parcelNumber") ?? "");
     const isFeatured = formData.get("isFeatured") === "on" || formData.get("isFeatured") === "true";
-    const uploadedPhotos = formData
-      .getAll("photos")
-      .filter((item): item is File => item instanceof File)
-      .filter((item) => item.size > 0);
-    const existingImages = [...formData.getAll("existingImages"), ...formData.getAll("existingPhotos")]
-      .map((photo) => String(photo).trim())
-      .filter((photo) => photo.length > 0);
-
-    const preservedImages = existingImages.length > 0 ? existingImages : existingListing.images;
+    const imageUrls = extractImageUrls(formData, existingListing.images);
 
     const errors = await validateListingForm({
       type,
@@ -133,8 +124,8 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       zoningStatus,
       islandNumber,
       parcelNumber,
-      photos: uploadedPhotos,
-      existingPhotos: preservedImages
+      photos: [],
+      existingPhotos: imageUrls
     });
 
     if (Object.keys(errors).length > 0) {
@@ -167,15 +158,6 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       );
     }
 
-    const listingId = existingListing.id;
-    const savedNewPhotoPaths: string[] = [];
-
-    if (uploadedPhotos.length > 0) {
-      const savedPhotos = await saveUploadedPhotos(listingId, uploadedPhotos, preservedImages.length);
-      savedNewPhotoPaths.push(...savedPhotos);
-    }
-
-    const combinedImages = [...preservedImages, ...savedNewPhotoPaths];
     const baseListing = {
       id: existingListing.id,
       refId: existingListing.refId,
@@ -190,10 +172,10 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       currency,
       location: location.trim(),
       areaSqm: Number(areaSqm),
-      latitude: parseOptionalNumberWithFallback(latitude, existingListing.latitude ?? null),
-      longitude: parseOptionalNumberWithFallback(longitude, existingListing.longitude ?? null),
+      latitude: parseOptionalNumber(latitude),
+      longitude: parseOptionalNumber(longitude),
       description: description.trim(),
-      images: combinedImages
+      images: imageUrls
     };
 
     const updatedListing: Listing =
@@ -213,13 +195,9 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
             parcelNumber: parcelNumber.trim()
           };
 
-    const savedListing = await updateListingById(listingId, updatedListing);
+    const savedListing = await updateListingById(id, updatedListing);
 
     if (!savedListing) {
-      if (savedNewPhotoPaths.length > 0) {
-        await deleteUploadedFiles(listingId, savedNewPhotoPaths);
-      }
-
       return NextResponse.json({ ok: false, errors: { listing: t.errors.listingNotFound } }, { status: 404 });
     }
 

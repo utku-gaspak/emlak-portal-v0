@@ -1,13 +1,15 @@
-﻿"use client";
+"use client";
 
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import imageCompression from "browser-image-compression";
 import { Listing, ListingStatus, ListingType, Category } from "@/lib/types";
 import { useTranslation } from "@/context/TranslationContext";
 import { useToast } from "@/components/ToastProvider";
 import { CategoryDropdown } from "@/components/CategoryDropdown";
 import { StatusDropdown } from "@/components/StatusDropdown";
 import { LocationPickerModal } from "@/components/LocationPickerModal";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 import { ChevronDown } from "lucide-react";
 import {
   determineListingTypeFromCategory,
@@ -164,11 +166,17 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
   const [globalError, setGlobalError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [addressQuery, setAddressQuery] = useState("");
   const [isSearchingAddress, setIsSearchingAddress] = useState(false);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const [openLocationMethod, setOpenLocationMethod] = useState<"manual" | "address" | "map" | "">("");
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
+  const [uploadSessionId] = useState(() => initialData?.id ?? crypto.randomUUID());
   const formRef = useRef<HTMLFormElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const categoriesById = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
   const parentCategories = useMemo(() => categories.filter((category) => !category.parentId), [categories]);
   const selectedParentCategory = formState.parentCategoryId ? categoriesById.get(formState.parentCategoryId) ?? null : null;
@@ -237,6 +245,102 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
       latitude: typeof latitude === "number" && Number.isFinite(latitude) ? String(latitude) : "",
       longitude: typeof longitude === "number" && Number.isFinite(longitude) ? String(longitude) : ""
     }));
+  }
+
+  function handlePhotoSelection(event: ChangeEvent<HTMLInputElement>) {
+    setSuccess(false);
+    const files = Array.from(event.target.files ?? []).filter((file) => file.size > 0);
+    setSelectedPhotos(files);
+  }
+
+  function getFileExtension(file: File) {
+    const fileNameExtension = file.name.split(".").pop()?.trim().toLowerCase();
+    if (fileNameExtension) {
+      return fileNameExtension.replace(/[^a-z0-9]/gi, "");
+    }
+
+    const mimeExtension = file.type.split("/").pop()?.trim().toLowerCase();
+    if (mimeExtension) {
+      return mimeExtension.replace(/[^a-z0-9]/gi, "");
+    }
+
+    return "jpg";
+  }
+
+  function getExtensionFromMime(mimeType: string) {
+    const extension = mimeType.split("/").pop()?.trim().toLowerCase();
+    if (!extension) {
+      return "jpg";
+    }
+
+    return extension.replace(/[^a-z0-9]/gi, "") || "jpg";
+  }
+
+  function toUploadFile(input: File | Blob, originalName: string) {
+    const resolvedType = input.type || "image/jpeg";
+    const extension = getExtensionFromMime(resolvedType);
+    const baseName = originalName.replace(/\.[^.]+$/, "") || "photo";
+
+    return new File([input], `${baseName}.${extension}`, {
+      type: resolvedType,
+      lastModified: Date.now()
+    });
+  }
+
+  function buildStoragePath(file: File, index: number) {
+    const extension = getFileExtension(file) || "jpg";
+    return `${uploadSessionId}/${String(index + 1).padStart(3, "0")}-${Date.now()}.${extension}`;
+  }
+
+  async function compressAndUploadPhotos() {
+    if (selectedPhotos.length === 0) {
+      return [] as string[];
+    }
+
+    const uploadedUrls: string[] = [];
+    setUploadProgress(0);
+
+    for (let index = 0; index < selectedPhotos.length; index += 1) {
+      const originalFile = selectedPhotos[index];
+      setIsCompressing(true);
+      setIsUploadingPhotos(false);
+
+      const compressed = await imageCompression(
+        originalFile,
+        {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+          onProgress: (progress: number) => {
+            const normalized = Math.max(0, Math.min(100, progress));
+            const stepProgress = ((index + normalized / 100) / selectedPhotos.length) * 100;
+            setUploadProgress(Math.max(0, Math.min(100, stepProgress)));
+          }
+        } as any
+      );
+
+      setIsCompressing(false);
+      setIsUploadingPhotos(true);
+
+      const uploadFile = toUploadFile(compressed, originalFile.name);
+      const storagePath = buildStoragePath(uploadFile, index);
+      const { error: uploadError } = await supabaseBrowser.storage.from("listings").upload(storagePath, uploadFile, {
+        contentType: uploadFile.type || originalFile.type || "image/jpeg",
+        upsert: true
+      });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabaseBrowser.storage.from("listings").getPublicUrl(storagePath);
+      uploadedUrls.push(data.publicUrl);
+      setUploadProgress(((index + 1) / selectedPhotos.length) * 100);
+    }
+
+    setIsUploadingPhotos(false);
+    setIsCompressing(false);
+    return uploadedUrls;
   }
 
   async function handleAddressSearch() {
@@ -343,6 +447,7 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
     setErrors({});
     setGlobalError("");
     setIsSubmitting(true);
+    setUploadProgress(0);
 
     const formData = new FormData(event.currentTarget);
     formData.set("status", formState.status);
@@ -357,41 +462,60 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
       formData.delete("isFeatured");
     }
 
-    const response = await fetch(actionPath, {
-      method: mode === "edit" ? "PUT" : "POST",
-      body: formData
-    });
+    try {
+      const uploadedImageUrls = await compressAndUploadPhotos();
+      uploadedImageUrls.forEach((url) => formData.append("imageUrls", url));
 
-    const contentType = response.headers.get("content-type") ?? "";
-    const payload = contentType.includes("application/json")
-      ? await response.json()
-      : { ok: false, error: await response.text() };
+      const response = await fetch(actionPath, {
+        method: mode === "edit" ? "PUT" : "POST",
+        body: formData
+      });
 
-    if (!response.ok) {
-      const responseErrors = payload?.errors ?? {};
-      setErrors(responseErrors);
-      if (responseErrors.auth) {
-        setGlobalError(String(responseErrors.auth));
-        showToast(String(responseErrors.auth), "error");
-      } else {
-        const message = payload?.error || Object.values(responseErrors)[0] || t.errors.invalidRequestBody;
-        setGlobalError(String(message));
-        showToast(String(message), "error");
+      const contentType = response.headers.get("content-type") ?? "";
+      const payload = contentType.includes("application/json")
+        ? await response.json()
+        : { ok: false, error: await response.text() };
+
+      if (!response.ok) {
+        const responseErrors = payload?.errors ?? {};
+        setErrors(responseErrors);
+        if (responseErrors.auth) {
+          setGlobalError(String(responseErrors.auth));
+          showToast(String(responseErrors.auth), "error");
+        } else {
+          const message = payload?.error || Object.values(responseErrors)[0] || t.errors.invalidRequestBody;
+          setGlobalError(String(message));
+          showToast(String(message), "error");
+        }
+        setIsSubmitting(false);
+        setIsCompressing(false);
+        setIsUploadingPhotos(false);
+        return;
       }
+
+      if (mode === "create") {
+        setFormState(buildFormState(undefined, categories));
+        formRef.current?.reset();
+        setAddressQuery("");
+        setSelectedPhotos([]);
+        if (photoInputRef.current) {
+          photoInputRef.current.value = "";
+        }
+      }
+
       setIsSubmitting(false);
-      return;
+      setUploadProgress(100);
+      setSuccess(true);
+      showToast(successMessage, "success");
+      router.push("/admin/listings");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t.errors.invalidRequestBody;
+      setGlobalError(message);
+      showToast(message, "error");
+      setIsSubmitting(false);
+      setIsCompressing(false);
+      setIsUploadingPhotos(false);
     }
-
-    if (mode === "create") {
-      setFormState(buildFormState(undefined, categories));
-      formRef.current?.reset();
-      setAddressQuery("");
-    }
-
-    setIsSubmitting(false);
-    setSuccess(true);
-    showToast(successMessage, "success");
-    router.push("/admin/listings");
   }
 
   return (
@@ -866,15 +990,38 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
           {photosLabel}
         </label>
         <input
+          ref={photoInputRef}
           id="prop-photos"
           data-automation="photos-input"
-          name="photos"
           type="file"
           multiple
           accept="image/*"
           className="input-base"
+          onChange={handlePhotoSelection}
           required={mode === "create" || !hasExistingPhotos}
         />
+        <div className="mt-2 flex items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <span>
+            {selectedPhotos.length > 0
+              ? `${selectedPhotos.length} ${selectedPhotos.length === 1 ? t.gallery.imageLabel : t.admin.form.photos}`
+              : mode === "edit" && hasExistingPhotos
+                ? `${initialData?.images.length ?? 0} ${t.admin.form.photos}`
+                : t.admin.form.photos}
+          </span>
+          {isCompressing || isUploadingPhotos ? (
+            <span className="font-medium text-brand-700 dark:text-amber-400">
+              {isCompressing ? "Sıkıştırılıyor..." : "Yükleniyor..."}
+            </span>
+          ) : null}
+        </div>
+        {isCompressing || isUploadingPhotos ? (
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-amber-500 to-brand-600 transition-all duration-300"
+              style={{ width: `${Math.max(4, uploadProgress)}%` }}
+            />
+          </div>
+        ) : null}
         {renderError("photos")}
       </div>
 
@@ -901,9 +1048,9 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
         data-automation="submit-listing-button"
         type="submit"
         className="button-primary"
-        disabled={isSubmitting}
+        disabled={isSubmitting || isCompressing || isUploadingPhotos}
       >
-        {isSubmitting ? t.admin.form.saving : submitLabel}
+        {isCompressing ? "Sıkıştırılıyor..." : isUploadingPhotos ? "Yükleniyor..." : isSubmitting ? t.admin.form.saving : submitLabel}
       </button>
 
       {success ? (
@@ -933,4 +1080,11 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
     </form>
   );
 }
+
+
+
+
+
+
+
 

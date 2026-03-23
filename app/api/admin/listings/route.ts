@@ -5,7 +5,6 @@ import { validateListingForm } from "@/lib/validation";
 import { LISTINGS_TABLE, supabase } from "@/lib/supabase";
 import { ListingType } from "@/lib/types";
 import { normalizeCurrency } from "@/lib/currency";
-import { saveUploadedPhotos, deleteUploadedFiles } from "@/lib/listing-media";
 import { resolveListingTypeFromCategoryId } from "@/lib/categories";
 
 function getListingType(formValue: string): ListingType | "" {
@@ -19,6 +18,14 @@ function parseOptionalNumber(value: string): number | null {
 
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function extractImageUrls(formData: FormData): string[] {
+  const urls = [...formData.getAll("imageUrls"), ...formData.getAll("existingImages"), ...formData.getAll("existingPhotos")]
+    .map((item) => String(item).trim())
+    .filter((item) => item.length > 0);
+
+  return Array.from(new Set(urls));
 }
 
 function buildInsertData(args: {
@@ -90,13 +97,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, errors: { auth: t.errors.authUnauthorized } }, { status: 401 });
   }
 
-  const listingId = crypto.randomUUID();
-  let uploadedImages: string[] = [];
-
   try {
     const formData = await request.formData();
     const body = Object.fromEntries(formData.entries());
     console.log("Payload:", body);
+
     const type = getListingType(String(formData.get("type") ?? ""));
     const title = String(formData.get("title") ?? "");
     const price = String(formData.get("price") ?? "");
@@ -116,10 +121,7 @@ export async function POST(request: Request) {
     const islandNumber = String(formData.get("islandNumber") ?? "");
     const parcelNumber = String(formData.get("parcelNumber") ?? "");
     const isFeatured = formData.get("isFeatured") === "on" || formData.get("isFeatured") === "true";
-    const photos = formData
-      .getAll("photos")
-      .filter((item): item is File => item instanceof File)
-      .filter((item) => item.size > 0);
+    const imageUrls = extractImageUrls(formData);
 
     const errors = await validateListingForm({
       type,
@@ -139,7 +141,8 @@ export async function POST(request: Request) {
       zoningStatus,
       islandNumber,
       parcelNumber,
-      photos
+      photos: [],
+      existingPhotos: imageUrls
     });
 
     if (Object.keys(errors).length > 0 || !type) {
@@ -178,8 +181,6 @@ export async function POST(request: Request) {
       );
     }
 
-    uploadedImages = await saveUploadedPhotos(listingId, photos);
-
     const insertData = buildInsertData({
       type: resolvedType,
       status,
@@ -199,7 +200,7 @@ export async function POST(request: Request) {
       islandNumber,
       parcelNumber,
       isFeatured,
-      images: uploadedImages
+      images: imageUrls
     });
 
     const { data: savedListing, error: dbError } = await supabase.from(LISTINGS_TABLE).insert(insertData).select("*").single();
@@ -219,10 +220,6 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    if (uploadedImages.length > 0) {
-      await deleteUploadedFiles(listingId, uploadedImages);
-    }
-
     return NextResponse.json(
       {
         ok: false,
