@@ -112,6 +112,11 @@ const CURRENCY_OPTIONS = [
   { value: "EUR", labelTr: "€ EUR", labelEn: "€ EUR" }
 ] as const;
 
+const ZONING_STATUS_OPTIONS = [
+  { value: "İmarlı", labelTr: "İmarlı", labelEn: "İmarlı" },
+  { value: "İmarsız", labelTr: "İmarsız", labelEn: "İmarsız" }
+] as const;
+
 function buildFormState(initialData?: Listing, categories: Category[] = []): FormState {
   const initialCategory = initialData?.categoryId ? findCategoryById(categories, initialData.categoryId) : null;
   const preferredParentId = initialCategory ? initialCategory.parentId ?? initialCategory.id : getPreferredParentCategoryId(categories, initialData?.type ?? "house");
@@ -925,23 +930,24 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
           </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            <div>
-              <label htmlFor="prop-zoning-status" className="label-base">
-                {t.admin.form.zoningStatus}
-              </label>
-              <input
-                id="prop-zoning-status"
-                data-automation="zoning-input"
-                name="zoningStatus"
-                type="text"
-                className="input-base"
-                placeholder={t.admin.form.zoningPlaceholder}
-                required
-                value={formState.zoningStatus}
-                onChange={(event) => updateField("zoningStatus", event.target.value)}
-              />
-              {renderError("zoningStatus")}
-            </div>
+              <div>
+                <StatusDropdown
+                  id="prop-zoning-status"
+                  label={t.admin.form.zoningStatus}
+                  placeholder={t.admin.form.zoningPlaceholder}
+                  value={formState.zoningStatus}
+                  options={ZONING_STATUS_OPTIONS.map((option) => ({
+                    value: option.value,
+                    label: isEnglish ? option.labelEn : option.labelTr
+                  }))}
+                  onChange={(nextValue) => updateField("zoningStatus", nextValue)}
+                  dataAutomation="zoning-input"
+                  clearLabel={t.common.clear}
+                  allowClear
+                  className="input-base"
+                />
+                {renderError("zoningStatus")}
+              </div>
 
             <div>
               <label htmlFor="prop-island-number" className="label-base">

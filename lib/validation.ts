@@ -3,6 +3,8 @@ import { getDictionary } from "@/lib/get-dictionary";
 import { getCategoryById } from "@/lib/categories";
 import { shouldShowHeatingType } from "@/lib/category-utils";
 
+const ALLOWED_ZONING_STATUSES = ["İmarlı", "İmarsız"] as const;
+
 type FormFields = Omit<ListingInput, "type" | "price" | "areaSqm" | "photos" | "isFeatured"> & {
   isFeatured?: boolean;
   type: ListingType | string;
@@ -117,7 +119,11 @@ export async function validateListingForm(fields: FormFields): Promise<Validatio
   }
 
   if (fields.type === "land") {
-    if (!fields.zoningStatus?.trim()) {
+    const zoningStatus = fields.zoningStatus?.trim() ?? "";
+
+    if (!zoningStatus) {
+      errors.zoningStatus = t.errors.zoningStatusRequired;
+    } else if (!ALLOWED_ZONING_STATUSES.includes(zoningStatus as (typeof ALLOWED_ZONING_STATUSES)[number])) {
       errors.zoningStatus = t.errors.zoningStatusRequired;
     }
 

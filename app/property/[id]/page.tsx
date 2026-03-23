@@ -111,10 +111,10 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
             </div>
 
             <div className="space-y-4">
-              <h1 id="detail-title" data-automation="detail-title" className="text-4xl font-black tracking-tight text-slate-950 dark:text-slate-100 sm:text-5xl">
+              <h1 id="detail-title" data-automation="detail-title" className="text-4xl font-black tracking-tight text-slate-900 dark:text-slate-100 sm:text-5xl">
                 {listing.title}
               </h1>
-              <p id="detail-price" data-automation="detail-price" className="text-3xl font-black text-brand-700 dark:text-amber-400 sm:text-4xl">
+              <p id="detail-price" data-automation="detail-price" className="text-3xl font-black text-slate-900 dark:text-slate-100 sm:text-4xl">
                 {formatListingPrice(listing.price, listing.currency)}
               </p>
               <div className="flex flex-wrap items-center gap-2.5">
@@ -223,9 +223,9 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
           </div>
         </div>
 
-        <aside className="rounded-[2.5rem] border border-slate-200 bg-white p-6 shadow-[0_22px_70px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900/80">
+        <aside className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
           <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700 dark:text-amber-400">{t.propertyDetail.description}</h2>
-          <p id="detail-description" data-automation="detail-description" className="mt-4 whitespace-pre-line text-base leading-8 text-slate-700 dark:text-slate-300">
+          <p id="detail-description" data-automation="detail-description" className="mt-4 whitespace-pre-line text-base leading-relaxed text-slate-700 dark:text-slate-300">
             {listing.description}
           </p>
         </aside>
