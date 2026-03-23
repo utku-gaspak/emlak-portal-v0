@@ -1,19 +1,60 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { validateListingForm } from "@/lib/validation";
-import { addListing, getListings } from "@/lib/listings-store";
-import { HouseListing, LandListing, ListingType } from "@/lib/types";
-import { deleteUploadedFiles, saveUploadedPhotos } from "@/lib/listing-media";
+import { LISTINGS_TABLE, supabase } from "@/lib/supabase";
+import { ListingType } from "@/lib/types";
 import { normalizeCurrency } from "@/lib/currency";
+import { saveUploadedPhotos, deleteUploadedFiles } from "@/lib/listing-media";
 
 function getListingType(formValue: string): ListingType | "" {
   return formValue === "house" || formValue === "land" ? formValue : "";
 }
 
+function buildInsertData(args: {
+  type: ListingType;
+  title: string;
+  price: string;
+  currency: string;
+  location: string;
+  areaSqm: string;
+  description: string;
+  roomCount: string;
+  floorNumber: string;
+  heatingType: string;
+  zoningStatus: string;
+  islandNumber: string;
+  parcelNumber: string;
+  isFeatured: boolean;
+  images: string[];
+}) {
+  return {
+    type: args.type,
+    title: args.title.trim(),
+    price: Number(args.price),
+    currency: args.currency,
+    location: args.location.trim(),
+    area_sqm: Number(args.areaSqm),
+    description: args.description.trim(),
+    images: args.images,
+    is_featured: args.isFeatured,
+    room_count: args.type === "house" ? args.roomCount.trim() : null,
+    floor_number: args.type === "house" ? args.floorNumber.trim() : null,
+    heating_type: args.type === "house" ? args.heatingType.trim() : null,
+    zoning_status: args.type === "land" ? args.zoningStatus.trim() : null,
+    island_number: args.type === "land" ? args.islandNumber.trim() : null,
+    parcel_number: args.type === "land" ? args.parcelNumber.trim() : null
+  };
+}
+
 export async function GET() {
-  const listings = await getListings();
-  return NextResponse.json({ ok: true, listings });
+  const { data, error } = await supabase.from(LISTINGS_TABLE).select("*").order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, listings: data }, { status: 200 });
 }
 
 export async function POST(request: Request) {
@@ -23,108 +64,104 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, errors: { auth: t.errors.authUnauthorized } }, { status: 401 });
   }
 
-  const formData = await request.formData();
-  const type = getListingType(String(formData.get("type") ?? ""));
-  const title = String(formData.get("title") ?? "");
-  const price = String(formData.get("price") ?? "");
-  const currency = normalizeCurrency(String(formData.get("currency") ?? ""));
-  const location = String(formData.get("location") ?? "");
-  const areaSqm = String(formData.get("areaSqm") ?? "");
-  const description = String(formData.get("description") ?? "");
-  const roomCount = String(formData.get("roomCount") ?? "");
-  const floorNumber = String(formData.get("floorNumber") ?? "");
-  const heatingType = String(formData.get("heatingType") ?? "");
-  const zoningStatus = String(formData.get("zoningStatus") ?? "");
-  const islandNumber = String(formData.get("islandNumber") ?? "");
-  const parcelNumber = String(formData.get("parcelNumber") ?? "");
-  const isFeatured = formData.get("isFeatured") === "on" || formData.get("isFeatured") === "true";
-  const photos = formData
-    .getAll("photos")
-    .filter((item): item is File => item instanceof File)
-    .filter((item) => item.size > 0);
-
-  const errors = await validateListingForm({
-    type,
-    title,
-    price,
-    currency,
-    location,
-    areaSqm,
-    description,
-    roomCount,
-    floorNumber,
-    heatingType,
-    zoningStatus,
-    islandNumber,
-    parcelNumber,
-    photos
-  });
-
-  if (Object.keys(errors).length > 0 || !type) {
-    return NextResponse.json(
-      {
-        ok: false,
-        errors: !type ? { ...errors, type: t.errors.propertyTypeRequired } : errors
-      },
-      { status: 400 }
-    );
-  }
-
   const listingId = crypto.randomUUID();
-  let savedImageNames: string[] = [];
+  let uploadedImages: string[] = [];
 
   try {
-    savedImageNames = await saveUploadedPhotos(listingId, photos);
+    const formData = await request.formData();
+    const type = getListingType(String(formData.get("type") ?? ""));
+    const title = String(formData.get("title") ?? "");
+    const price = String(formData.get("price") ?? "");
+    const currency = normalizeCurrency(String(formData.get("currency") ?? ""));
+    const location = String(formData.get("location") ?? "");
+    const areaSqm = String(formData.get("areaSqm") ?? "");
+    const description = String(formData.get("description") ?? "");
+    const roomCount = String(formData.get("roomCount") ?? "");
+    const floorNumber = String(formData.get("floorNumber") ?? "");
+    const heatingType = String(formData.get("heatingType") ?? "");
+    const zoningStatus = String(formData.get("zoningStatus") ?? "");
+    const islandNumber = String(formData.get("islandNumber") ?? "");
+    const parcelNumber = String(formData.get("parcelNumber") ?? "");
+    const isFeatured = formData.get("isFeatured") === "on" || formData.get("isFeatured") === "true";
+    const photos = formData
+      .getAll("photos")
+      .filter((item): item is File => item instanceof File)
+      .filter((item) => item.size > 0);
 
-    const baseListing = {
-      id: listingId,
-      refId: 0,
-      isFeatured,
+    const errors = await validateListingForm({
       type,
-      title: title.trim(),
-      price: Number(price),
+      title,
+      price,
       currency,
-      location: location.trim(),
-      areaSqm: Number(areaSqm),
-      description: description.trim(),
-      images: savedImageNames,
-      createdAt: new Date().toISOString()
-    };
+      location,
+      areaSqm,
+      description,
+      roomCount,
+      floorNumber,
+      heatingType,
+      zoningStatus,
+      islandNumber,
+      parcelNumber,
+      photos
+    });
 
-    const listing =
-      type === "house"
-        ? ({
-            ...baseListing,
-            type: "house",
-            roomCount: roomCount.trim(),
-            floorNumber: floorNumber.trim(),
-            heatingType: heatingType.trim()
-          } as HouseListing)
-        : ({
-            ...baseListing,
-            type: "land",
-            zoningStatus: zoningStatus.trim(),
-            islandNumber: islandNumber.trim(),
-            parcelNumber: parcelNumber.trim()
-          } as LandListing);
+    if (Object.keys(errors).length > 0 || !type) {
+      return NextResponse.json(
+        {
+          ok: false,
+          errors: !type ? { ...errors, type: t.errors.propertyTypeRequired } : errors
+        },
+        { status: 400 }
+      );
+    }
 
-    const savedListing = await addListing(listing);
+    uploadedImages = await saveUploadedPhotos(listingId, photos);
+
+    const insertData = buildInsertData({
+      type,
+      title,
+      price,
+      currency,
+      location,
+      areaSqm,
+      description,
+      roomCount,
+      floorNumber,
+      heatingType,
+      zoningStatus,
+      islandNumber,
+      parcelNumber,
+      isFeatured,
+      images: uploadedImages
+    });
+
+    const { data: savedListing, error: dbError } = await supabase.from(LISTINGS_TABLE).insert(insertData).select("*").single();
+
+    if (dbError) {
+      throw dbError;
+    }
 
     return NextResponse.json(
       {
         ok: true,
         listingId: savedListing.id,
-        refId: savedListing.refId,
+        refId: savedListing.ref_id ?? savedListing.refId,
         type: savedListing.type,
-        images: savedListing.images
+        images: savedListing.images ?? []
       },
       { status: 201 }
     );
   } catch (error) {
-    if (savedImageNames.length > 0) {
-      await deleteUploadedFiles(listingId, savedImageNames);
+    if (uploadedImages.length > 0) {
+      await deleteUploadedFiles(listingId, uploadedImages);
     }
 
-    throw error;
+    return NextResponse.json(
+      {
+        ok: false,
+        error: error instanceof Error ? error.message : String(error)
+      },
+      { status: 500 }
+    );
   }
 }

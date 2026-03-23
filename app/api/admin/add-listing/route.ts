@@ -72,48 +72,52 @@ export async function POST(request: Request) {
   try {
     savedImageNames = await saveUploadedPhotos(listingId, photos);
 
-    const baseListing = {
-      id: listingId,
-      refId: 0,
-      isFeatured,
-      type,
-      title: title.trim(),
-      price: Number(price),
-      currency,
-      location: location.trim(),
-      areaSqm: Number(areaSqm),
-      description: description.trim(),
-      images: savedImageNames,
-      photos: savedImageNames,
-      createdAt: new Date().toISOString()
-    };
-
     const listing =
       type === "house"
         ? ({
-            ...baseListing,
+            refId: 0,
+            isFeatured,
             type: "house",
+            title: title.trim(),
+            price: Number(price),
+            currency,
+            location: location.trim(),
+            areaSqm: Number(areaSqm),
+            description: description.trim(),
+            images: savedImageNames,
+            photos: savedImageNames,
+            createdAt: new Date().toISOString(),
             roomCount: roomCount.trim(),
             floorNumber: floorNumber.trim(),
             heatingType: heatingType.trim()
-          } as HouseListing)
+          } as Omit<HouseListing, "id">)
         : ({
-            ...baseListing,
+            refId: 0,
+            isFeatured,
             type: "land",
+            title: title.trim(),
+            price: Number(price),
+            currency,
+            location: location.trim(),
+            areaSqm: Number(areaSqm),
+            description: description.trim(),
+            images: savedImageNames,
+            photos: savedImageNames,
+            createdAt: new Date().toISOString(),
             zoningStatus: zoningStatus.trim(),
             islandNumber: islandNumber.trim(),
             parcelNumber: parcelNumber.trim()
-          } as LandListing);
+          } as Omit<LandListing, "id">);
 
-    await addListing(listing);
+    const savedListing = await addListing(listing);
 
     return NextResponse.json(
       {
         ok: true,
-        listingId: listing.id,
-        refId: listing.refId,
-        type: listing.type,
-        images: savedImageNames
+        listingId: savedListing.id,
+        refId: savedListing.refId,
+        type: savedListing.type,
+        images: savedListing.images
       },
       { status: 201 }
     );

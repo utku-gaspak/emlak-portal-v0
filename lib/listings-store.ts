@@ -19,6 +19,25 @@ export type ListingFilters = {
 };
 
 type SearchParamsLike = Record<string, string | string[] | undefined>;
+type ListingInsert = {
+  refId?: number;
+  type: ListingType;
+  isFeatured: boolean;
+  currency: Listing["currency"];
+  title: string;
+  price: number;
+  location: string;
+  areaSqm: number;
+  description: string;
+  images: string[];
+  createdAt: string;
+  roomCount?: string;
+  floorNumber?: string;
+  heatingType?: string;
+  zoningStatus?: string;
+  islandNumber?: string;
+  parcelNumber?: string;
+};
 
 function toText(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
@@ -198,10 +217,8 @@ function normalizeListingRow(raw: unknown): Listing | null {
   return listing;
 }
 
-function toDatabaseRow(listing: Listing, refId: number = listing.refId): Record<string, unknown> {
+function toDatabaseRow(listing: ListingInsert, refId: number = listing.refId ?? 0): Record<string, unknown> {
   const baseRow = {
-    id: listing.id,
-    ref_id: refId,
     is_featured: Boolean(listing.isFeatured),
     currency: normalizeCurrency(listing.currency),
     title: listing.title,
@@ -213,9 +230,12 @@ function toDatabaseRow(listing: Listing, refId: number = listing.refId): Record<
     created_at: listing.createdAt
   };
 
+  const refIdField = refId > 0 ? { ref_id: refId } : {};
+
   if (listing.type === "land") {
     return {
       ...baseRow,
+      ...refIdField,
       type: "land",
       zoning_status: listing.zoningStatus,
       island_number: listing.islandNumber,
@@ -228,6 +248,7 @@ function toDatabaseRow(listing: Listing, refId: number = listing.refId): Record<
 
   return {
     ...baseRow,
+    ...refIdField,
     type: "house",
     room_count: listing.roomCount,
     floor_number: listing.floorNumber,
@@ -280,7 +301,7 @@ async function fetchAllListingsFromDatabase(): Promise<Listing[]> {
     throw error;
   }
 
-  return (data ?? [])
+  return ((data ?? []) as unknown[])
     .map(normalizeListingRow)
     .filter((listing): listing is Listing => listing !== null);
 }
@@ -394,18 +415,16 @@ export async function getListingById(id: string): Promise<Listing | null> {
   }
 }
 
-export async function addListing(listing: Listing): Promise<Listing> {
+export async function addListing(listing: ListingInsert): Promise<Listing> {
   const supabase = getSupabaseServerClient();
-  const refId = listing.refId > 0 ? listing.refId : await getNextListingRefId();
   const row = toDatabaseRow(
     {
       ...listing,
-      refId,
       isFeatured: Boolean(listing.isFeatured),
       currency: normalizeCurrency(listing.currency),
       images: listing.images
     },
-    refId
+    listing.refId ?? 0
   );
 
   const { data, error } = await supabase.from(LISTINGS_TABLE).insert(row).select("*").single();
@@ -451,7 +470,6 @@ export async function updateListingById(id: string, updatedListing: Listing): Pr
   const row = toDatabaseRow(
     {
       ...updatedListing,
-      id: existingListing.id,
       refId: existingListing.refId,
       createdAt: existingListing.createdAt,
       isFeatured: Boolean(updatedListing.isFeatured),
