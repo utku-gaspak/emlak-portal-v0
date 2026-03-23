@@ -1,10 +1,9 @@
-import path from "node:path";
-import { promises as fs } from "node:fs";
-import { existsSync, writeFileSync } from "node:fs";
-import { normalizeCurrency } from "@/lib/currency";
-import { Listing, ListingType, LandListing, HouseListing } from "@/lib/types";
+import "server-only";
 
-const dataFilePath = path.join(process.cwd(), "data", "listings.json");
+import { normalizeCurrency } from "@/lib/currency";
+import { getSupabaseServerClient, LISTINGS_TABLE } from "@/lib/supabase";
+import { HouseListing, LandListing, Listing, ListingType } from "@/lib/types";
+
 const minimumRefId = 1000;
 
 export type ListingFilters = {
@@ -26,17 +25,13 @@ function toText(value: unknown, fallback = ""): string {
 }
 
 function toNumber(value: unknown, fallback = 0): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
-}
-
-function toBoolean(value: unknown, fallback = false): boolean {
-  if (typeof value === "boolean") {
+  if (typeof value === "number" && Number.isFinite(value)) {
     return value;
   }
 
-  if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase();
-    return normalized === "true" || normalized === "on" || normalized === "1";
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
   }
 
   return fallback;
@@ -52,6 +47,7 @@ function normalizeValue(value: string): string {
 
 function getListingSortTimestamp(listing: Listing): number {
   const createdAtTime = Date.parse(listing.createdAt);
+
   if (Number.isFinite(createdAtTime)) {
     return createdAtTime;
   }
@@ -77,62 +73,7 @@ function parseOptionalNumber(value: string): number | undefined {
 }
 
 function buildSearchableText(listing: Listing): string {
-  return [listing.title, listing.location].join(" ").toLowerCase();
-}
-
-function normalizeListingImage(value: unknown): string {
-  const image = typeof value === "string" ? value.trim() : "";
-
-  if (!image) {
-    return "";
-  }
-
-  if (/^https?:\/\//i.test(image)) {
-    return image;
-  }
-
-  if (image.startsWith("/")) {
-    return image;
-  }
-
-  return image;
-}
-
-function normalizeRefIds(listings: Listing[]): { listings: Listing[]; changed: boolean } {
-  const used = new Set<number>();
-  const existingRefIds = listings
-    .map((listing) => listing.refId)
-    .filter((refId) => Number.isInteger(refId) && refId > 0);
-  let nextRefId = Math.max(minimumRefId, ...existingRefIds, minimumRefId) + 1;
-  let changed = false;
-
-  const normalizedListings = listings.map((listing) => {
-    const currentRefId = listing.refId;
-
-    if (Number.isInteger(currentRefId) && currentRefId > 0 && !used.has(currentRefId)) {
-      used.add(currentRefId);
-      return listing;
-    }
-
-    while (used.has(nextRefId)) {
-      nextRefId += 1;
-    }
-
-    const refId = nextRefId;
-    used.add(refId);
-    nextRefId += 1;
-    changed = true;
-
-    return {
-      ...listing,
-      refId
-    };
-  });
-
-  return {
-    listings: changed ? normalizedListings : listings,
-    changed
-  };
+  return [listing.title, listing.location, listing.description].join(" ").toLowerCase();
 }
 
 function matchesOptionalValue(recordValue: string | undefined, filterValue: string | undefined): boolean {
@@ -145,6 +86,156 @@ function matchesOptionalValue(recordValue: string | undefined, filterValue: stri
   }
 
   return normalizeValue(recordValue) === normalizeValue(filterValue);
+}
+
+function getRecordText(record: Record<string, unknown>, keys: string[], fallback = ""): string {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) {
+      return value;
+    }
+  }
+
+  return fallback;
+}
+
+function getRecordNumber(record: Record<string, unknown>, keys: string[], fallback = 0): number {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value === "string" && value.trim()) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        return parsed;
+      }
+    }
+  }
+
+  return fallback;
+}
+
+function getRecordBoolean(record: Record<string, unknown>, keys: string[], fallback = false): boolean {
+  for (const key of keys) {
+    const value = record[key];
+
+    if (typeof value === "boolean") {
+      return value;
+    }
+
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "true" || normalized === "on" || normalized === "1") {
+        return true;
+      }
+
+      if (normalized === "false" || normalized === "off" || normalized === "0") {
+        return false;
+      }
+    }
+  }
+
+  return fallback;
+}
+
+function getRecordImages(record: Record<string, unknown>): string[] {
+  const rawImages = Array.isArray(record.images)
+    ? record.images
+    : Array.isArray(record.photos)
+      ? record.photos
+      : [];
+
+  return rawImages
+    .map((image) => (typeof image === "string" ? image.trim() : ""))
+    .filter((image) => image.length > 0);
+}
+
+function normalizeListingRow(raw: unknown): Listing | null {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const record = raw as Record<string, unknown>;
+  const type: ListingType = record.type === "land" ? "land" : "house";
+  const images = getRecordImages(record);
+
+  const commonFields = {
+    id: getRecordText(record, ["id"], crypto.randomUUID()),
+    refId: getRecordNumber(record, ["ref_id", "refId"], 0),
+    isFeatured: getRecordBoolean(record, ["is_featured", "isFeatured"], false),
+    currency: normalizeCurrency(getRecordText(record, ["currency"], "TL")),
+    title: getRecordText(record, ["title"]),
+    price: getRecordNumber(record, ["price"]),
+    location: getRecordText(record, ["location"]),
+    areaSqm: getRecordNumber(record, ["area_sqm", "areaSqm"]),
+    description: getRecordText(record, ["description"]),
+    images,
+    createdAt: getRecordText(record, ["created_at", "createdAt"], new Date().toISOString())
+  };
+
+  if (type === "land") {
+    const listing: LandListing = {
+      ...commonFields,
+      type,
+      zoningStatus: getRecordText(record, ["zoning_status", "zoningStatus"]),
+      islandNumber: getRecordText(record, ["island_number", "islandNumber"]),
+      parcelNumber: getRecordText(record, ["parcel_number", "parcelNumber"])
+    };
+
+    return listing;
+  }
+
+  const listing: HouseListing = {
+    ...commonFields,
+    type,
+    roomCount: getRecordText(record, ["room_count", "roomCount"]),
+    floorNumber: getRecordText(record, ["floor_number", "floorNumber"]),
+    heatingType: getRecordText(record, ["heating_type", "heatingType"])
+  };
+
+  return listing;
+}
+
+function toDatabaseRow(listing: Listing, refId: number = listing.refId): Record<string, unknown> {
+  const baseRow = {
+    id: listing.id,
+    ref_id: refId,
+    is_featured: Boolean(listing.isFeatured),
+    currency: normalizeCurrency(listing.currency),
+    title: listing.title,
+    price: Number(listing.price),
+    location: listing.location,
+    area_sqm: Number(listing.areaSqm),
+    description: listing.description,
+    images: listing.images,
+    created_at: listing.createdAt
+  };
+
+  if (listing.type === "land") {
+    return {
+      ...baseRow,
+      type: "land",
+      zoning_status: listing.zoningStatus,
+      island_number: listing.islandNumber,
+      parcel_number: listing.parcelNumber,
+      room_count: null,
+      floor_number: null,
+      heating_type: null
+    };
+  }
+
+  return {
+    ...baseRow,
+    type: "house",
+    room_count: listing.roomCount,
+    floor_number: listing.floorNumber,
+    heating_type: listing.heatingType,
+    zoning_status: null,
+    island_number: null,
+    parcel_number: null
+  };
 }
 
 export function parseListingFilters(searchParams?: SearchParamsLike): ListingFilters {
@@ -181,123 +272,22 @@ export function parseListingFilters(searchParams?: SearchParamsLike): ListingFil
   };
 }
 
-type NormalizedListingResult = {
-  listing: Listing;
-  changed: boolean;
-};
+async function fetchAllListingsFromDatabase(): Promise<Listing[]> {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase.from(LISTINGS_TABLE).select("*");
 
-function normalizeListing(raw: unknown): NormalizedListingResult | null {
-  if (!raw || typeof raw !== "object") {
-    return null;
+  if (error) {
+    throw error;
   }
 
-  const record = raw as Record<string, unknown>;
-  const type: ListingType = record.type === "land" ? "land" : "house";
-  const rawImages = Array.isArray(record.images)
-    ? record.images.map(normalizeListingImage).filter((image) => image.length > 0)
-    : Array.isArray(record.photos)
-      ? record.photos.map(normalizeListingImage).filter((photo) => photo.length > 0)
-      : [];
-  const normalizedImages = rawImages;
-  const rawCurrency = toText(record.currency, "");
-  const normalizedCurrency = normalizeCurrency(rawCurrency);
-  const currencyChanged = rawCurrency !== normalizedCurrency;
-
-  const commonFields = {
-    id: toText(record.id, crypto.randomUUID()),
-    refId: toNumber(record.refId, 0),
-    isFeatured: toBoolean(record.isFeatured, false),
-    currency: normalizedCurrency,
-    title: toText(record.title),
-    price: toNumber(record.price),
-    location: toText(record.location),
-    areaSqm: toNumber(record.areaSqm),
-    description: toText(record.description),
-    images: normalizedImages,
-    photos: normalizedImages,
-    createdAt: toText(record.createdAt, new Date().toISOString())
-  };
-
-  if (type === "land") {
-    const listing: LandListing = {
-      ...commonFields,
-      type,
-      zoningStatus: toText(record.zoningStatus),
-      islandNumber: toText(record.islandNumber),
-      parcelNumber: toText(record.parcelNumber)
-    };
-
-    return {
-      listing,
-      changed: currencyChanged
-    };
-  }
-
-  const listing: HouseListing = {
-    ...commonFields,
-    type,
-    roomCount: toText(record.roomCount),
-    floorNumber: toText(record.floorNumber),
-    heatingType: toText(record.heatingType)
-  };
-
-  return {
-    listing,
-    changed: currencyChanged
-  };
-}
-
-async function readListingsFile(): Promise<Listing[]> {
-  if (!existsSync(dataFilePath)) {
-    return [];
-  }
-
-  let fileContent = "";
-
-  try {
-    fileContent = await fs.readFile(dataFilePath, "utf8");
-  } catch {
-    return [];
-  }
-
-  const normalizedContent = fileContent.replace(/^\uFEFF/, "").trim();
-
-  if (!normalizedContent) {
-    return [];
-  }
-
-  let parsed: unknown;
-
-  try {
-    parsed = JSON.parse(normalizedContent);
-  } catch {
-    return [];
-  }
-
-  if (!Array.isArray(parsed)) {
-    return [];
-  }
-
-  const normalizedResults = parsed.map(normalizeListing).filter((result): result is NormalizedListingResult => result !== null);
-  const normalizedListings = normalizedResults.map((result) => result.listing);
-  const photosChanged = normalizedResults.some((result) => result.changed);
-  const { listings: withRefIds, changed: refChanged } = normalizeRefIds(normalizedListings);
-  const changed = photosChanged || refChanged;
-
-  if (changed) {
-    await fs.writeFile(dataFilePath, JSON.stringify(withRefIds, null, 2), "utf8");
-  }
-
-  return withRefIds;
-}
-
-async function writeListingsFile(listings: Listing[]): Promise<void> {
-  writeFileSync(dataFilePath, JSON.stringify(listings, null, 2), "utf8");
+  return (data ?? [])
+    .map(normalizeListingRow)
+    .filter((listing): listing is Listing => listing !== null);
 }
 
 export async function getListings(filters: ListingFilters = {}): Promise<Listing[]> {
   try {
-    const listings = await readListingsFile();
+    const listings = await fetchAllListingsFromDatabase();
     const query = filters.query?.trim().toLowerCase() ?? "";
     const queryIsNumeric = isPureNumber(query);
     const queryAsNumber = queryIsNumeric ? Number(query) : null;
@@ -381,7 +371,7 @@ export async function getListings(filters: ListingFilters = {}): Promise<Listing
 
 export async function getNextListingRefId(): Promise<number> {
   try {
-    const listings = await readListingsFile();
+    const listings = await fetchAllListingsFromDatabase();
     const maxRefId = listings.reduce((max, listing) => Math.max(max, listing.refId), minimumRefId);
     return maxRefId + 1;
   } catch {
@@ -391,65 +381,91 @@ export async function getNextListingRefId(): Promise<number> {
 
 export async function getListingById(id: string): Promise<Listing | null> {
   try {
-    const listings = await readListingsFile();
-    return listings.find((listing) => String(listing.id) === String(id)) ?? null;
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase.from(LISTINGS_TABLE).select("*").eq("id", String(id)).maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return normalizeListingRow(data);
   } catch {
     return null;
   }
 }
 
-export async function addListing(listing: Listing): Promise<void> {
-  const listings = await readListingsFile();
-  const nextRefId = listing.refId > 0 ? listing.refId : Math.max(minimumRefId, ...listings.map((item) => item.refId)) + 1;
-  const listingToStore = {
-    ...listing,
-    isFeatured: Boolean(listing.isFeatured),
-    currency: normalizeCurrency(listing.currency),
-    images: listing.images,
-    photos: listing.images,
-    refId: nextRefId
-  };
+export async function addListing(listing: Listing): Promise<Listing> {
+  const supabase = getSupabaseServerClient();
+  const refId = listing.refId > 0 ? listing.refId : await getNextListingRefId();
+  const row = toDatabaseRow(
+    {
+      ...listing,
+      refId,
+      isFeatured: Boolean(listing.isFeatured),
+      currency: normalizeCurrency(listing.currency),
+      images: listing.images
+    },
+    refId
+  );
 
-  listings.unshift(listingToStore);
-  await writeListingsFile(listings);
+  const { data, error } = await supabase.from(LISTINGS_TABLE).insert(row).select("*").single();
+
+  if (error) {
+    throw error;
+  }
+
+  const normalized = normalizeListingRow(data);
+
+  if (!normalized) {
+    throw new Error("Failed to normalize inserted listing.");
+  }
+
+  return normalized;
 }
 
 export async function removeListingById(id: string): Promise<Listing | null> {
-  const listings = await getListings();
-  const index = listings.findIndex((listing) => String(listing.id) === String(id));
+  const existingListing = await getListingById(id);
 
-  if (index === -1) {
+  if (!existingListing) {
     return null;
   }
 
-  const [removedListing] = listings.splice(index, 1);
-  await writeListingsFile(listings);
+  const supabase = getSupabaseServerClient();
+  const { error } = await supabase.from(LISTINGS_TABLE).delete().eq("id", String(id));
 
-  return removedListing;
+  if (error) {
+    throw error;
+  }
+
+  return existingListing;
 }
 
 export async function updateListingById(id: string, updatedListing: Listing): Promise<Listing | null> {
-  const listings = await readListingsFile();
-  const index = listings.findIndex((listing) => String(listing.id) === String(id));
+  const existingListing = await getListingById(id);
 
-  if (index === -1) {
+  if (!existingListing) {
     return null;
   }
 
-  const existingListing = listings[index];
-  const listingToStore = {
-    ...updatedListing,
-    isFeatured: Boolean(updatedListing.isFeatured),
-    currency: normalizeCurrency(updatedListing.currency),
-    images: updatedListing.images,
-    photos: updatedListing.images,
-    id: existingListing.id,
-    refId: existingListing.refId,
-    createdAt: existingListing.createdAt
-  } as Listing;
+  const supabase = getSupabaseServerClient();
+  const row = toDatabaseRow(
+    {
+      ...updatedListing,
+      id: existingListing.id,
+      refId: existingListing.refId,
+      createdAt: existingListing.createdAt,
+      isFeatured: Boolean(updatedListing.isFeatured),
+      currency: normalizeCurrency(updatedListing.currency),
+      images: updatedListing.images
+    },
+    existingListing.refId
+  );
 
-  listings[index] = listingToStore;
-  await writeListingsFile(listings);
+  const { data, error } = await supabase.from(LISTINGS_TABLE).update(row).eq("id", existingListing.id).select("*").single();
 
-  return listingToStore;
+  if (error) {
+    throw error;
+  }
+
+  return normalizeListingRow(data);
 }

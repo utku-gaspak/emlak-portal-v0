@@ -73,7 +73,7 @@ export function AdminListingsManager({
     setDeleteError("");
 
     try {
-      const response = await fetch(`/api/admin/delete-listing/${listingToDelete.id}`, {
+      const response = await fetch(`/api/admin/listings/${listingToDelete.id}`, {
         method: "DELETE"
       });
 
@@ -101,7 +101,7 @@ export function AdminListingsManager({
     setFeaturedPendingIds((current) => ({ ...current, [listing.id]: true }));
 
     try {
-      const response = await fetch(`/api/admin/edit-listing/${listing.id}`, {
+      const response = await fetch(`/api/admin/listings/${listing.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json"

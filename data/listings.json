@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": "62f57b6e-c5bd-4383-b096-6408d299db9a",
+    "refId": 1001,
+    "isFeatured": false,
+    "type": "house",
+    "title": "a",
+    "price": 123,
+    "currency": "TL",
+    "location": "d",
+    "areaSqm": 121,
+    "description": "asd",
+    "images": [
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774267449/real-estate-listings/62f57b6e-c5bd-4383-b096-6408d299db9a/1.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774267451/real-estate-listings/62f57b6e-c5bd-4383-b096-6408d299db9a/2.png"
+    ],
+    "photos": [
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774267449/real-estate-listings/62f57b6e-c5bd-4383-b096-6408d299db9a/1.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774267451/real-estate-listings/62f57b6e-c5bd-4383-b096-6408d299db9a/2.png"
+    ],
+    "createdAt": "2026-03-23T12:04:11.944Z",
+    "roomCount": "3",
+    "floorNumber": "4",
+    "heatingType": "a"
+  }
+]

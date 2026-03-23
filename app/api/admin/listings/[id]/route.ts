@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { getListings, getListingById, removeListingById, updateListingById } from "@/lib/listings-store";
+import { getListingById, getListings, removeListingById, updateListingById } from "@/lib/listings-store";
 import { validateListingForm } from "@/lib/validation";
-import { Listing, ListingType } from "@/lib/types";
+import { HouseListing, LandListing, Listing, ListingType } from "@/lib/types";
 import { deleteUploadedFiles, saveUploadedPhotos } from "@/lib/listing-media";
 import { normalizeCurrency } from "@/lib/currency";
 
@@ -13,6 +13,18 @@ type RouteParams = Promise<{
 
 function getListingType(formValue: string, fallback: ListingType): ListingType {
   return formValue === "house" || formValue === "land" ? formValue : fallback;
+}
+
+export async function GET(_request: Request, { params }: { params: RouteParams }) {
+  const { id } = await params;
+  const listing = await getListingById(id);
+
+  if (!listing) {
+    const t = await getDictionary();
+    return NextResponse.json({ ok: false, error: t.errors.listingNotFound }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true, listing }, { status: 200 });
 }
 
 export async function DELETE(_request: Request, { params }: { params: RouteParams }) {
@@ -67,12 +79,9 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
     .getAll("photos")
     .filter((item): item is File => item instanceof File)
     .filter((item) => item.size > 0);
-  const existingImages = [
-    ...formData.getAll("existingImages"),
-    ...formData.getAll("existingPhotos")
-  ]
+  const existingImages = [...formData.getAll("existingImages"), ...formData.getAll("existingPhotos")]
     .map((photo) => String(photo).trim())
-    .filter((photo) => photo.trim().length > 0);
+    .filter((photo) => photo.length > 0);
 
   const preservedImages = existingImages.length > 0 ? existingImages : existingListing.images;
 
@@ -120,8 +129,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       location: location.trim(),
       areaSqm: Number(areaSqm),
       description: description.trim(),
-      images: combinedImages,
-      photos: combinedImages
+      images: combinedImages
     };
 
     const updatedListing: Listing =
@@ -192,13 +200,7 @@ export async function PATCH(request: Request, { params }: { params: RouteParams 
     const featuredCount = allListings.filter((listing) => listing.isFeatured).length;
 
     if (featuredCount >= 10) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: t.adminListings.featuredLimitReached
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: t.adminListings.featuredLimitReached }, { status: 400 });
     }
   }
 

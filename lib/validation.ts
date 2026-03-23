@@ -1,20 +1,11 @@
-import { ListingType, ValidationErrors } from "@/lib/types";
+import { ListingInput, ListingType, ValidationErrors } from "@/lib/types";
 import { getDictionary } from "@/lib/get-dictionary";
 
-type FormFields = {
+type FormFields = Omit<ListingInput, "type" | "price" | "areaSqm" | "photos" | "isFeatured"> & {
+  isFeatured?: boolean;
   type: ListingType | string;
-  currency?: string;
-  title: string;
   price: string;
-  location: string;
   areaSqm: string;
-  description: string;
-  roomCount?: string;
-  floorNumber?: string;
-  heatingType?: string;
-  zoningStatus?: string;
-  islandNumber?: string;
-  parcelNumber?: string;
   photos: Array<File | string>;
   existingPhotos?: string[];
 };

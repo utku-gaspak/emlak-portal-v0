@@ -23,7 +23,7 @@ export function DeleteListingButton({ listingId }: DeleteListingButtonProps) {
     setIsDeleting(true);
 
     try {
-      const response = await fetch(`/api/admin/delete-listing/${listingId}`, {
+      const response = await fetch(`/api/admin/listings/${listingId}`, {
         method: "DELETE"
       });
 

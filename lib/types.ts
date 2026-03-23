@@ -1,4 +1,4 @@
-export type ListingType = "house" | "land";
+﻿export type ListingType = "house" | "land";
 export type ListingCurrency = "TL" | "USD" | "EUR";
 
 export type ListingCommonFields = {
@@ -12,7 +12,6 @@ export type ListingCommonFields = {
   areaSqm: number;
   description: string;
   images: string[];
-  photos?: string[];
   createdAt: string;
 };
 
@@ -33,9 +32,10 @@ export type LandListing = ListingCommonFields & {
 export type Listing = HouseListing | LandListing;
 
 export type ListingInput = {
+  refId?: number;
   type: ListingType;
-  isFeatured?: boolean;
-  currency?: ListingCurrency;
+  isFeatured: boolean;
+  currency: ListingCurrency;
   title: string;
   price: string;
   location: string;
@@ -48,24 +48,7 @@ export type ListingInput = {
   islandNumber?: string;
   parcelNumber?: string;
   photos: File[];
+  existingImages?: string[];
 };
 
-export type ValidationErrors = Partial<
-  Record<
-    | "type"
-    | "currency"
-    | "title"
-    | "price"
-    | "location"
-    | "areaSqm"
-    | "roomCount"
-    | "floorNumber"
-    | "heatingType"
-    | "zoningStatus"
-    | "islandNumber"
-    | "parcelNumber"
-    | "description"
-    | "photos",
-    string
-  >
->;
+export type ValidationErrors = Partial<Record<keyof ListingInput, string>>;
