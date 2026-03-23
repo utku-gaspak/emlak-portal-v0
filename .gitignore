@@ -14,7 +14,6 @@ build/
 .env.production.local
 
 # Project-specific uploads (Yüklediğin ilan resimlerini Git'e dahil etmiyoruz)
-public/uploads/
 
 # Project-specific data (Eğer listings.json'ı veritabanı gibi kullanıyorsan dışarıda tutabilirsin)
 # listings.json

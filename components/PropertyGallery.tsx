@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "@/context/TranslationContext";
-import { getPhotoFileName, getPublicPhotoSrc } from "@/lib/photo-path";
 
 type PropertyGalleryProps = {
   listingId: string;
@@ -14,7 +13,10 @@ const PLACEHOLDER_SRC = "/property-placeholder.svg";
 
 export function PropertyGallery({ listingId, title, images }: PropertyGalleryProps) {
   const { t } = useTranslation();
-  const normalizedImages = useMemo(() => images.map((image) => getPhotoFileName(image)), [images]);
+  const normalizedImages = useMemo(
+    () => images.map((image) => image.trim()).filter((image) => image.length > 0),
+    [images]
+  );
   const imageCount = normalizedImages.length;
   const hasPhotos = imageCount > 0;
 
@@ -63,7 +65,7 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
   }, [hasPhotos, imageCount, isLightboxOpen]);
 
   const currentImageFile = normalizedImages[selectedIndex];
-  const currentImageSrc = currentImageFile ? getPublicPhotoSrc(currentImageFile, listingId) : PLACEHOLDER_SRC;
+  const currentImageSrc = currentImageFile ?? PLACEHOLDER_SRC;
 
   const handleImageError = (index: number) => {
     setFailedImages((current) => (current[index] ? current : { ...current, [index]: true }));
@@ -98,10 +100,10 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
         aria-label={t.gallery.openPreviewAria}
       >
         <div className="relative aspect-[4/3] w-full bg-slate-200 sm:aspect-[16/9] dark:bg-slate-800">
-          <img
-            id={hasPhotos ? "main-image-display" : "image-placeholder"}
-            data-automation="main-property-image"
-            src={failedImages[selectedIndex] || !hasPhotos ? PLACEHOLDER_SRC : currentImageSrc}
+            <img
+              id={hasPhotos ? "main-image-display" : "image-placeholder"}
+              data-automation="main-property-image"
+              src={failedImages[selectedIndex] || !hasPhotos ? PLACEHOLDER_SRC : currentImageSrc}
             alt={hasPhotos ? `${title} photo ${selectedIndex + 1}` : t.propertyDetail.placeholderAlt}
             className="h-full w-full object-cover"
             onError={() => handleImageError(selectedIndex)}
@@ -118,7 +120,7 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
           {Array.from({ length: imageCount }).map((_, index) => {
             const isSelected = selectedIndex === index;
             const fileName = normalizedImages[index];
-            const imageSrc = failedImages[index] || !fileName ? PLACEHOLDER_SRC : getPublicPhotoSrc(fileName, listingId);
+            const imageSrc = failedImages[index] || !fileName ? PLACEHOLDER_SRC : fileName;
 
             return (
               <button

@@ -2,6 +2,14 @@
 const nextConfig = {
   reactStrictMode: true,
   turbopack: {},
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com"
+      }
+    ]
+  },
   webpack(config, { isServer }) {
     if (!isServer) {
       config.resolve = config.resolve || {};

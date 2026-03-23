@@ -4,8 +4,7 @@ import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { validateListingForm } from "@/lib/validation";
 import { HouseListing, LandListing, ListingType } from "@/lib/types";
-import { deleteUploadedFiles, ensurePublicDirectory, saveUploadedPhotos } from "@/lib/listing-media";
-import { getPhotoFileName } from "@/lib/photo-path";
+import { deleteUploadedFiles, saveUploadedPhotos } from "@/lib/listing-media";
 import { normalizeCurrency } from "@/lib/currency";
 
 function getListingType(formValue: string, fallback: ListingType): ListingType {
@@ -18,8 +17,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ ok: false, errors: { auth: t.errors.authUnauthorized } }, { status: 401 });
   }
-
-  ensurePublicDirectory();
 
   const { id } = params;
   const existingListing = await getListingById(id);
@@ -51,7 +48,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     ...formData.getAll("existingImages"),
     ...formData.getAll("existingPhotos")
   ]
-    .map((photo) => getPhotoFileName(String(photo)))
+    .map((photo) => String(photo).trim())
     .filter((photo) => photo.trim().length > 0);
 
   const preservedImages = existingImages.length > 0 ? existingImages : existingListing.images;

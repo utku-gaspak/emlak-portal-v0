@@ -1,24 +1,34 @@
 export function getPublicPhotoSrc(photoPath: string, listingId?: string): string {
-  const normalizedPath = photoPath.replace(/^\/+/, "");
+  const normalizedPath = photoPath.replace(/\\/g, "/").trim();
 
-  if (normalizedPath.startsWith("uploads/")) {
-    return `/${normalizedPath}`;
+  if (/^https?:\/\//i.test(normalizedPath)) {
+    return normalizedPath;
+  }
+
+  const withoutLeadingSlash = normalizedPath.replace(/^\/+/, "");
+
+  if (withoutLeadingSlash.startsWith("uploads/")) {
+    return `/${withoutLeadingSlash}`;
   }
 
   if (listingId) {
-    return `/uploads/${listingId}/${normalizedPath}`;
+    return `/uploads/${listingId}/${withoutLeadingSlash}`;
   }
 
-  return `/${normalizedPath}`;
+  return `/${withoutLeadingSlash}`;
 }
 
 export function getListingImageSrc(listingId: string, fileName: string): string {
-  const normalizedFileName = getPhotoFileName(fileName);
-  return `/uploads/${listingId}/${normalizedFileName}`;
+  return getPublicPhotoSrc(fileName, listingId);
 }
 
 export function getSequentialPhotoSrc(listingId: string, photoPath: string, index: number): string {
-  const normalizedPath = photoPath.replace(/^\/+/, "");
+  const normalizedPath = photoPath.replace(/\\/g, "/").replace(/^\/+/, "");
+
+  if (/^https?:\/\//i.test(normalizedPath)) {
+    return normalizedPath;
+  }
+
   const photoFileName = getPhotoFileName(normalizedPath);
   const lastDotIndex = photoFileName.lastIndexOf(".");
   const extension = lastDotIndex >= 0 ? photoFileName.slice(lastDotIndex).toLowerCase() : ".jpg";

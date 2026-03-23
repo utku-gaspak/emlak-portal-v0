@@ -5,7 +5,7 @@ import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { validateListingForm } from "@/lib/validation";
 import { HouseListing, LandListing, ListingType } from "@/lib/types";
 import { normalizeCurrency } from "@/lib/currency";
-import { deleteListingUploadDir, ensurePublicDirectory, saveUploadedPhotos } from "@/lib/listing-media";
+import { deleteUploadedFiles, saveUploadedPhotos } from "@/lib/listing-media";
 
 function getListingType(formValue: string): ListingType | "" {
   return formValue === "house" || formValue === "land" ? formValue : "";
@@ -17,8 +17,6 @@ export async function POST(request: Request) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ ok: false, errors: { auth: t.errors.authUnauthorized } }, { status: 401 });
   }
-
-  ensurePublicDirectory();
 
   const formData = await request.formData();
   const type = getListingType(String(formData.get("type") ?? ""));
@@ -69,8 +67,10 @@ export async function POST(request: Request) {
 
   const listingId = crypto.randomUUID();
 
+  let savedImageNames: string[] = [];
+
   try {
-    const savedImageNames = await saveUploadedPhotos(listingId, photos);
+    savedImageNames = await saveUploadedPhotos(listingId, photos);
 
     const baseListing = {
       id: listingId,
@@ -118,7 +118,9 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    await deleteListingUploadDir(listingId);
+    if (savedImageNames.length > 0) {
+      await deleteUploadedFiles(listingId, savedImageNames);
+    }
     throw error;
   }
 }

@@ -7,7 +7,6 @@ import { Check, ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Listing } from "@/lib/types";
 import { formatListingPrice } from "@/lib/currency";
-import { getListingImageSrc } from "@/lib/photo-path";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -217,7 +216,7 @@ export function AdminListingsManager({
             <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900/80">
               {visibleListings.length > 0 ? (
                 visibleListings.map((listing) => {
-                  const thumbnail = listing.images[0] ? getListingImageSrc(listing.id, listing.images[0]) : "/property-placeholder.svg";
+                  const thumbnail = listing.images[0] ?? "/property-placeholder.svg";
                   const isFeaturedPending = Boolean(featuredPendingIds[listing.id]);
 
                   return (

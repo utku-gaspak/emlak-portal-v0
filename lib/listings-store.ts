@@ -1,6 +1,5 @@
 import path from "node:path";
 import { promises as fs } from "node:fs";
-import { getPhotoFileName } from "@/lib/photo-path";
 import { normalizeCurrency } from "@/lib/currency";
 import { Listing, ListingType, LandListing, HouseListing } from "@/lib/types";
 
@@ -78,6 +77,24 @@ function parseOptionalNumber(value: string): number | undefined {
 
 function buildSearchableText(listing: Listing): string {
   return [listing.title, listing.location].join(" ").toLowerCase();
+}
+
+function normalizeListingImage(value: unknown): string {
+  const image = typeof value === "string" ? value.trim() : "";
+
+  if (!image) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(image)) {
+    return image;
+  }
+
+  if (image.startsWith("/")) {
+    return image;
+  }
+
+  return image;
 }
 
 function normalizeRefIds(listings: Listing[]): { listings: Listing[]; changed: boolean } {
@@ -176,12 +193,11 @@ function normalizeListing(raw: unknown): NormalizedListingResult | null {
   const record = raw as Record<string, unknown>;
   const type: ListingType = record.type === "land" ? "land" : "house";
   const rawImages = Array.isArray(record.images)
-    ? record.images.map((image) => String(image)).filter((image) => image.trim().length > 0)
+    ? record.images.map(normalizeListingImage).filter((image) => image.length > 0)
     : Array.isArray(record.photos)
-      ? record.photos.map((photo) => String(photo)).filter((photo) => photo.trim().length > 0)
+      ? record.photos.map(normalizeListingImage).filter((photo) => photo.length > 0)
       : [];
-  const normalizedImages = rawImages.map((image) => getPhotoFileName(image));
-  const imagesChanged = rawImages.some((image, index) => image !== normalizedImages[index]);
+  const normalizedImages = rawImages;
   const rawCurrency = toText(record.currency, "");
   const normalizedCurrency = normalizeCurrency(rawCurrency);
   const currencyChanged = rawCurrency !== normalizedCurrency;
@@ -212,7 +228,7 @@ function normalizeListing(raw: unknown): NormalizedListingResult | null {
 
     return {
       listing,
-      changed: imagesChanged || currencyChanged
+      changed: currencyChanged
     };
   }
 
@@ -226,7 +242,7 @@ function normalizeListing(raw: unknown): NormalizedListingResult | null {
 
   return {
     listing,
-    changed: imagesChanged || currencyChanged
+    changed: currencyChanged
   };
 }
 

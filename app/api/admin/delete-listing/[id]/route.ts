@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import { getDictionary } from "@/lib/get-dictionary";
-import path from "node:path";
-import { existsSync, rmSync } from "node:fs";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { removeListingById } from "@/lib/listings-store";
-
-const publicDir = path.join(process.cwd(), "public");
+import { deleteUploadedFiles } from "@/lib/listing-media";
 
 type DeleteListingRouteProps = {
   params: {
@@ -26,10 +23,7 @@ export async function DELETE(_request: Request, { params }: DeleteListingRoutePr
     return NextResponse.json({ ok: false, error: t.errors.listingNotFound }, { status: 404 });
   }
 
-  const listingUploadDir = path.join(publicDir, "uploads", params.id);
-  if (existsSync(listingUploadDir)) {
-    rmSync(listingUploadDir, { recursive: true });
-  }
+  await deleteUploadedFiles(params.id, deletedListing.images);
 
   return NextResponse.json(
     {

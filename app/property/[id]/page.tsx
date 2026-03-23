@@ -5,7 +5,6 @@ import { PropertyGallery } from "@/components/PropertyGallery";
 import { formatListingPrice } from "@/lib/currency";
 import { getListingById } from "@/lib/listings-store";
 import { getDictionary } from "@/lib/get-dictionary";
-import { getListingImageSrc } from "@/lib/photo-path";
 
 type PropertyDetailPageProps = {
   params: {
@@ -30,7 +29,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     notFound();
   }
 
-  const featuredImage = listing.images[0] ? getListingImageSrc(listing.id, listing.images[0]) : "/property-placeholder.svg";
+  const featuredImage = listing.images[0] ?? "/property-placeholder.svg";
   const featuredAlt = listing.images[0] ? `${listing.title} ${t.propertyDetail.featuredPhotoAlt}` : t.propertyDetail.placeholderAlt;
 
   return (

@@ -1,5 +1,33 @@
 [
   {
+    "id": "53ba862a-24e7-4fab-bf56-462e9b189b58",
+    "refId": 1002,
+    "isFeatured": false,
+    "type": "house",
+    "title": "a",
+    "price": 1,
+    "currency": "EUR",
+    "location": "2",
+    "areaSqm": 3,
+    "description": "asd",
+    "images": [
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774265476/real-estate-listings/53ba862a-24e7-4fab-bf56-462e9b189b58/1.png",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774265478/real-estate-listings/53ba862a-24e7-4fab-bf56-462e9b189b58/2.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774265479/real-estate-listings/53ba862a-24e7-4fab-bf56-462e9b189b58/3.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774265480/real-estate-listings/53ba862a-24e7-4fab-bf56-462e9b189b58/4.png"
+    ],
+    "photos": [
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774265476/real-estate-listings/53ba862a-24e7-4fab-bf56-462e9b189b58/1.png",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774265478/real-estate-listings/53ba862a-24e7-4fab-bf56-462e9b189b58/2.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774265479/real-estate-listings/53ba862a-24e7-4fab-bf56-462e9b189b58/3.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774265480/real-estate-listings/53ba862a-24e7-4fab-bf56-462e9b189b58/4.png"
+    ],
+    "createdAt": "2026-03-23T11:31:20.830Z",
+    "roomCount": "4",
+    "floorNumber": "6",
+    "heatingType": "6"
+  },
+  {
     "id": "b023cdcf-de8f-4911-b1db-2038c46f9b38",
     "refId": 1001,
     "isFeatured": true,
@@ -10,20 +38,20 @@
     "areaSqm": 124,
     "description": "asd",
     "images": [
-      "1.jpg",
-      "2.png",
-      "3.jpeg",
-      "4.jpg",
-      "5.png",
-      "6.png"
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264993/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/1.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264994/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/2.png",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264995/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/3.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264996/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/4.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264997/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/5.png",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264998/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/6.png"
     ],
     "photos": [
-      "1.jpg",
-      "2.png",
-      "3.jpeg",
-      "4.jpg",
-      "5.png",
-      "6.png"
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264993/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/1.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264994/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/2.png",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264995/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/3.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264996/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/4.jpg",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264997/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/5.png",
+      "https://res.cloudinary.com/dqnuwxwqy/image/upload/v1774264998/real-estate-listings/b023cdcf-de8f-4911-b1db-2038c46f9b38/6.png"
     ],
     "createdAt": "2026-03-21T17:14:49.236Z",
     "type": "house",

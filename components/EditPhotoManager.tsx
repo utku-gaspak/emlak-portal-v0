@@ -5,7 +5,6 @@ import Image from "next/image";
 import { Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/context/TranslationContext";
-import { getPhotoFileName, getPublicPhotoSrc } from "@/lib/photo-path";
 
 type EditPhotoManagerProps = {
   listingId: string;
@@ -19,7 +18,7 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
   const router = useRouter();
   const [processingIndex, setProcessingIndex] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const normalizedImages = images.map((image) => getPhotoFileName(image));
+  const normalizedImages = images.map((image) => image.trim()).filter((image) => image.length > 0);
 
   async function handleDeletePhoto(index: number) {
     setProcessingIndex(index);
@@ -73,7 +72,7 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
         {Array.from({ length: normalizedImages.length }).map((_, index) => {
           const isProcessing = processingIndex === index;
           const imageFile = normalizedImages[index];
-          const imageSrc = imageFile ? getPublicPhotoSrc(imageFile, listingId) : PLACEHOLDER_SRC;
+          const imageSrc = imageFile ?? PLACEHOLDER_SRC;
 
           return (
             <div
