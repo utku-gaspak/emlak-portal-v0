@@ -1,19 +1,38 @@
 import { NextResponse } from "next/server";
-import { updateListingById, getListingById, getListings } from "@/lib/listings-store";
 import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { getListings, getListingById, removeListingById, updateListingById } from "@/lib/listings-store";
 import { validateListingForm } from "@/lib/validation";
-import { HouseListing, LandListing, ListingType } from "@/lib/types";
+import { Listing, ListingType } from "@/lib/types";
 import { deleteUploadedFiles, saveUploadedPhotos } from "@/lib/listing-media";
 import { normalizeCurrency } from "@/lib/currency";
+
+type RouteParams = Promise<{
+  id: string;
+}>;
 
 function getListingType(formValue: string, fallback: ListingType): ListingType {
   return formValue === "house" || formValue === "land" ? formValue : fallback;
 }
 
-type RouteParams = Promise<{
-  id: string;
-}>;
+export async function DELETE(_request: Request, { params }: { params: RouteParams }) {
+  const t = await getDictionary();
+
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const deletedListing = await removeListingById(id);
+
+  if (!deletedListing) {
+    return NextResponse.json({ ok: false, error: t.errors.listingNotFound }, { status: 404 });
+  }
+
+  await deleteUploadedFiles(id, deletedListing.images);
+
+  return NextResponse.json({ ok: true, deletedId: id }, { status: 200 });
+}
 
 export async function PUT(request: Request, { params }: { params: RouteParams }) {
   const t = await getDictionary();
@@ -26,7 +45,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
   const existingListing = await getListingById(id);
 
   if (!existingListing) {
-    return NextResponse.json({ ok: false, errors: { listing: "Listing not found." } }, { status: 404 });
+    return NextResponse.json({ ok: false, errors: { listing: t.errors.listingNotFound } }, { status: 404 });
   }
 
   const formData = await request.formData();
@@ -105,22 +124,22 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       photos: combinedImages
     };
 
-    const updatedListing =
+    const updatedListing: Listing =
       type === "house"
-        ? ({
+        ? {
             ...baseListing,
             type: "house",
             roomCount: roomCount.trim(),
             floorNumber: floorNumber.trim(),
             heatingType: heatingType.trim()
-          } as HouseListing)
-        : ({
+          }
+        : {
             ...baseListing,
             type: "land",
             zoningStatus: zoningStatus.trim(),
             islandNumber: islandNumber.trim(),
             parcelNumber: parcelNumber.trim()
-          } as LandListing);
+          };
 
     const savedListing = await updateListingById(listingId, updatedListing);
 
@@ -129,7 +148,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
         await deleteUploadedFiles(listingId, savedNewPhotoPaths);
       }
 
-      return NextResponse.json({ ok: false, errors: { listing: "Listing not found." } }, { status: 404 });
+      return NextResponse.json({ ok: false, errors: { listing: t.errors.listingNotFound } }, { status: 404 });
     }
 
     return NextResponse.json(

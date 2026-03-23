@@ -24,7 +24,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={t.meta.lang} suppressHydrationWarning>
-      <body className="bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-100">
+      <body suppressHydrationWarning className="bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-100">
         <ThemeProvider>
           <TranslationProvider dictionary={t}>
             <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/75 backdrop-blur-md dark:border-slate-800/70 dark:bg-slate-950/75">

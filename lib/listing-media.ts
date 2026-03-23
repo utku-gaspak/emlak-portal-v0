@@ -1,16 +1,8 @@
 import { deleteCloudinaryFolder, deleteCloudinaryImage, deleteCloudinaryImages, renameCloudinaryImage, uploadListingImages } from "@/lib/cloudinary";
 
-export function ensurePublicDirectory(): void {
-  return;
-}
-
 export async function saveUploadedPhotos(listingId: string, files: File[], startIndex = 0): Promise<string[]> {
   const uploadedImages = await uploadListingImages(listingId, files, startIndex);
   return uploadedImages.map((image) => image.secure_url);
-}
-
-export async function deleteListingUploadDir(listingId: string): Promise<void> {
-  await deleteCloudinaryFolder(listingId);
 }
 
 export async function deleteUploadedFiles(_listingId: string, imageUrls: string[]): Promise<void> {

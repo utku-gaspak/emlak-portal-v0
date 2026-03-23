@@ -9,7 +9,13 @@ type ThemeProviderProps = {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange storageKey="emlak-theme">
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem={true}
+      disableTransitionOnChange
+      storageKey="emlak-theme"
+    >
       {children}
     </NextThemesProvider>
   );

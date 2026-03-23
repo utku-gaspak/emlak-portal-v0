@@ -5,9 +5,9 @@ import { removeListingById } from "@/lib/listings-store";
 import { deleteUploadedFiles } from "@/lib/listing-media";
 
 type DeleteListingRouteProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function DELETE(_request: Request, { params }: DeleteListingRouteProps) {
@@ -17,18 +17,19 @@ export async function DELETE(_request: Request, { params }: DeleteListingRoutePr
     return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });
   }
 
-  const deletedListing = await removeListingById(params.id);
+  const { id } = await params;
+  const deletedListing = await removeListingById(id);
 
   if (!deletedListing) {
     return NextResponse.json({ ok: false, error: t.errors.listingNotFound }, { status: 404 });
   }
 
-  await deleteUploadedFiles(params.id, deletedListing.images);
+  await deleteUploadedFiles(id, deletedListing.images);
 
   return NextResponse.json(
     {
       ok: true,
-      deletedId: params.id
+      deletedId: id
     },
     { status: 200 }
   );

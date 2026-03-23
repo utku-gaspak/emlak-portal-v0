@@ -7,9 +7,9 @@ import { getListingById } from "@/lib/listings-store";
 import { getDictionary } from "@/lib/get-dictionary";
 
 type PropertyDetailPageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 function SpecificationItem({ label, value }: { label: string; value: string }) {
@@ -23,7 +23,8 @@ function SpecificationItem({ label, value }: { label: string; value: string }) {
 
 export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
   const t = await getDictionary();
-  const listing = await getListingById(params.id);
+  const resolvedParams = await params;
+  const listing = await getListingById(resolvedParams.id);
 
   if (!listing) {
     notFound();

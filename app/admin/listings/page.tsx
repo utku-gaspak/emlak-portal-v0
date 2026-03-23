@@ -6,7 +6,7 @@ import { isAdminAuthenticated } from "@/lib/admin-auth";
 const ITEMS_PER_PAGE = 10;
 
 type AdminListingsPageProps = {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams: Promise<any>;
 };
 
 function firstSearchValue(value: string | string[] | undefined): string {
@@ -39,8 +39,9 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
     redirect("/admin/login");
   }
 
-  const searchTerm = firstSearchValue(searchParams?.q).trim();
-  const pageNumber = Number(firstSearchValue(searchParams?.page));
+  const resolvedParams = await searchParams;
+  const searchTerm = firstSearchValue(resolvedParams?.q).trim();
+  const pageNumber = Number(firstSearchValue(resolvedParams?.page));
   const currentPage = Number.isFinite(pageNumber) && pageNumber > 0 ? Math.floor(pageNumber) : 1;
   const allListings = await getListings();
   const normalizedSearch = searchTerm.toLowerCase();

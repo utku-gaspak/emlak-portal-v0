@@ -21,12 +21,25 @@ export function ThemeToggle() {
     setTheme(isDark ? "light" : "dark");
   }
 
+  if (!mounted) {
+    return (
+      <button
+        type="button"
+        disabled
+        aria-hidden="true"
+        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200"
+      >
+        <span className="h-4 w-4 rounded-full bg-slate-200 dark:bg-slate-700" />
+        <span className="h-3 w-10 rounded-full bg-slate-200 dark:bg-slate-700" />
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={handleToggle}
       aria-label={t.theme.toggleAria}
-      disabled={!mounted}
       className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:bg-slate-800"
     >
       {isDark ? <Moon className="h-4 w-4" /> : <SunMedium className="h-4 w-4" />}

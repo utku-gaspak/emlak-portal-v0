@@ -7,7 +7,7 @@ import { getDictionary } from "@/lib/get-dictionary";
 export const dynamic = "force-dynamic";
 
 type HomePageProps = {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams: Promise<any>;
 };
 
 function uniqueSorted(values: string[]): string[] {
@@ -18,7 +18,8 @@ function uniqueSorted(values: string[]): string[] {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const t = await getDictionary();
-  const filters = parseListingFilters(searchParams);
+  const resolvedParams = await searchParams;
+  const filters = parseListingFilters(resolvedParams);
   const [allListings, filteredListings] = await Promise.all([getListings(), getListings(filters)]);
   const canDelete = await isAdminAuthenticated();
 

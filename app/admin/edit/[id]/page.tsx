@@ -10,9 +10,9 @@ import { getListingById } from "@/lib/listings-store";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 type EditListingPageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default async function EditListingPage({ params }: EditListingPageProps) {
@@ -22,7 +22,8 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
     redirect("/admin/login");
   }
 
-  const listing = await getListingById(params.id);
+  const resolvedParams = await params;
+  const listing = await getListingById(resolvedParams.id);
 
   if (!listing) {
     notFound();

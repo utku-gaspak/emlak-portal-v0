@@ -1,5 +1,6 @@
 import path from "node:path";
 import { promises as fs } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { normalizeCurrency } from "@/lib/currency";
 import { Listing, ListingType, LandListing, HouseListing } from "@/lib/types";
 
@@ -247,9 +248,31 @@ function normalizeListing(raw: unknown): NormalizedListingResult | null {
 }
 
 async function readListingsFile(): Promise<Listing[]> {
-  const fileContent = await fs.readFile(dataFilePath, "utf8");
-  const normalizedContent = fileContent.replace(/^\uFEFF/, "");
-  const parsed = JSON.parse(normalizedContent) as unknown;
+  if (!existsSync(dataFilePath)) {
+    return [];
+  }
+
+  let fileContent = "";
+
+  try {
+    fileContent = await fs.readFile(dataFilePath, "utf8");
+  } catch {
+    return [];
+  }
+
+  const normalizedContent = fileContent.replace(/^\uFEFF/, "").trim();
+
+  if (!normalizedContent) {
+    return [];
+  }
+
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(normalizedContent);
+  } catch {
+    return [];
+  }
 
   if (!Array.isArray(parsed)) {
     return [];
@@ -269,7 +292,7 @@ async function readListingsFile(): Promise<Listing[]> {
 }
 
 async function writeListingsFile(listings: Listing[]): Promise<void> {
-  await fs.writeFile(dataFilePath, JSON.stringify(listings, null, 2), "utf8");
+  writeFileSync(dataFilePath, JSON.stringify(listings, null, 2), "utf8");
 }
 
 export async function getListings(filters: ListingFilters = {}): Promise<Listing[]> {
@@ -369,7 +392,7 @@ export async function getNextListingRefId(): Promise<number> {
 export async function getListingById(id: string): Promise<Listing | null> {
   try {
     const listings = await readListingsFile();
-    return listings.find((listing) => listing.id === id) ?? null;
+    return listings.find((listing) => String(listing.id) === String(id)) ?? null;
   } catch {
     return null;
   }
@@ -393,7 +416,7 @@ export async function addListing(listing: Listing): Promise<void> {
 
 export async function removeListingById(id: string): Promise<Listing | null> {
   const listings = await getListings();
-  const index = listings.findIndex((listing) => listing.id === id);
+  const index = listings.findIndex((listing) => String(listing.id) === String(id));
 
   if (index === -1) {
     return null;
@@ -407,7 +430,7 @@ export async function removeListingById(id: string): Promise<Listing | null> {
 
 export async function updateListingById(id: string, updatedListing: Listing): Promise<Listing | null> {
   const listings = await readListingsFile();
-  const index = listings.findIndex((listing) => listing.id === id);
+  const index = listings.findIndex((listing) => String(listing.id) === String(id));
 
   if (index === -1) {
     return null;
