@@ -8,6 +8,7 @@ export const supabase = createClient(
 );
 
 export const LISTINGS_TABLE = "listings";
+export const CATEGORIES_TABLE = "categories";
 
 export function getSupabaseServerClient() {
   return supabase;

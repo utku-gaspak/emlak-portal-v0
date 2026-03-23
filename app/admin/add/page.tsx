@@ -4,11 +4,13 @@ import { AddListingForm } from "@/components/AddListingForm";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { getCategories } from "@/lib/categories";
 import { getDictionary } from "@/lib/get-dictionary";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default async function AddListingPage() {
   const t = await getDictionary();
+  const categories = await getCategories();
 
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
@@ -36,7 +38,7 @@ export default async function AddListingPage() {
           <AdminLogoutButton className="border-slate-200 bg-slate-700 text-white hover:bg-slate-900 hover:text-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700" />
         </div>
 
-        <AddListingForm />
+        <AddListingForm categories={categories} />
       </section>
 
         <div className="flex flex-wrap gap-3">

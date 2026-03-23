@@ -1,10 +1,20 @@
-﻿export type ListingType = "house" | "land";
+export type ListingType = "house" | "land";
+export type ListingStatus = "satilik" | "kiralik";
 export type ListingCurrency = "TL" | "USD" | "EUR";
+
+export type Category = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  slug?: string | null;
+};
 
 export type ListingCommonFields = {
   id: string;
   refId: number;
   isFeatured: boolean;
+  status: ListingStatus;
+  categoryId: string;
   currency: ListingCurrency;
   title: string;
   price: number;
@@ -34,6 +44,8 @@ export type Listing = HouseListing | LandListing;
 export type ListingInput = {
   refId?: number;
   type: ListingType;
+  status: ListingStatus;
+  categoryId: string;
   isFeatured: boolean;
   currency: ListingCurrency;
   title: string;

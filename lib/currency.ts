@@ -9,7 +9,10 @@ const currencySymbols: Record<ListingCurrency, string> = {
 };
 
 export function normalizeCurrency(value: unknown): ListingCurrency {
-  if (value === "USD" || value === "EUR" || value === "TL") {
+  if (value === "USD" || value === "EUR" || value === "TL" || value === "TRY") {
+    if (value === "TRY") {
+      return "TL";
+    }
     return value;
   }
 

@@ -22,6 +22,16 @@ export async function validateListingForm(fields: FormFields): Promise<Validatio
     errors.type = t.errors.propertyTypeRequired;
   }
 
+  if (!fields.status?.trim()) {
+    errors.status = t.errors.statusRequired;
+  } else if (!["satilik", "kiralik"].includes(fields.status)) {
+    errors.status = t.errors.statusInvalid;
+  }
+
+  if (!fields.categoryId?.trim()) {
+    errors.categoryId = t.errors.categoryRequired;
+  }
+
   if (!fields.title.trim()) {
     errors.title = t.errors.titleRequired;
   }

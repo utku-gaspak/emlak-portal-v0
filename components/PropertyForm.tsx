@@ -1,11 +1,22 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useMemo, useRef, useState } from "react";
-import { Listing, ListingType } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import { Listing, ListingStatus, ListingType, Category } from "@/lib/types";
 import { useTranslation } from "@/context/TranslationContext";
 import { useToast } from "@/components/ToastProvider";
+import { CategoryDropdown } from "@/components/CategoryDropdown";
+import { StatusDropdown } from "@/components/StatusDropdown";
+import {
+  determineListingTypeFromCategory,
+  findCategoryById,
+  getChildCategories,
+  getPreferredParentCategoryId
+} from "@/lib/category-utils";
 
 type ListingField =
+  | "status"
+  | "categoryId"
   | "type"
   | "currency"
   | "title"
@@ -26,10 +37,14 @@ type ListingErrors = Partial<Record<ListingField, string>>;
 type PropertyFormProps = {
   mode: "create" | "edit";
   initialData?: Listing;
+  categories?: Category[];
 };
 
 type FormState = {
   isFeatured: boolean;
+  status: ListingStatus;
+  parentCategoryId: string;
+  categoryId: string;
   currency: "TL" | "USD" | "EUR";
   title: string;
   price: string;
@@ -47,6 +62,8 @@ type FormState = {
 type TextFormField = Exclude<keyof FormState, "isFeatured">;
 
 const errorIdByField: Record<ListingField, string> = {
+  status: "error-status",
+  categoryId: "error-category-id",
   type: "error-type",
   currency: "error-currency",
   title: "error-title",
@@ -63,9 +80,15 @@ const errorIdByField: Record<ListingField, string> = {
   photos: "error-photos"
 };
 
-function buildFormState(initialData?: Listing): FormState {
+function buildFormState(initialData?: Listing, categories: Category[] = []): FormState {
+  const initialCategory = initialData?.categoryId ? findCategoryById(categories, initialData.categoryId) : null;
+  const preferredParentId = initialCategory ? initialCategory.parentId ?? initialCategory.id : getPreferredParentCategoryId(categories, initialData?.type ?? "house");
+
   return {
     isFeatured: initialData?.isFeatured ?? false,
+    status: initialData?.status ?? "satilik",
+    parentCategoryId: preferredParentId,
+    categoryId: initialCategory?.parentId ? initialCategory.id : "",
     currency: initialData?.currency ?? "TL",
     title: initialData?.title ?? "",
     price: initialData ? String(initialData.price) : "",
@@ -81,17 +104,46 @@ function buildFormState(initialData?: Listing): FormState {
   };
 }
 
-export function PropertyForm({ mode, initialData }: PropertyFormProps) {
+function resetIncompatibleFields(current: FormState, nextType: ListingType): FormState {
+  if (nextType === "land") {
+    return {
+      ...current,
+      roomCount: "",
+      floorNumber: "",
+      heatingType: ""
+    };
+  }
+
+  return {
+    ...current,
+    zoningStatus: "",
+    islandNumber: "",
+    parcelNumber: ""
+  };
+}
+
+export function PropertyForm({ mode, initialData, categories = [] }: PropertyFormProps) {
   const { t } = useTranslation();
   const { showToast } = useToast();
-  const initialType = initialData?.type ?? "house";
-  const [listingType, setListingType] = useState<ListingType>(initialType);
-  const [formState, setFormState] = useState<FormState>(() => buildFormState(initialData));
+  const router = useRouter();
+  const [formState, setFormState] = useState<FormState>(() => buildFormState(initialData, categories));
   const [errors, setErrors] = useState<ListingErrors>({});
   const [globalError, setGlobalError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const categoriesById = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
+  const parentCategories = useMemo(() => categories.filter((category) => !category.parentId), [categories]);
+  const selectedParentCategory = formState.parentCategoryId ? categoriesById.get(formState.parentCategoryId) ?? null : null;
+  const subCategories = useMemo(
+    () => (formState.parentCategoryId ? getChildCategories(categories, formState.parentCategoryId) : []),
+    [categories, formState.parentCategoryId]
+  );
+  const selectedCategory = formState.categoryId ? categoriesById.get(formState.categoryId) ?? null : null;
+  const listingType = useMemo(
+    () => determineListingTypeFromCategory(selectedCategory, selectedParentCategory),
+    [selectedCategory, selectedParentCategory]
+  );
 
   const actionPath = useMemo(() => {
     if (mode === "edit" && initialData) {
@@ -107,21 +159,61 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
   const successMessage = mode === "edit" ? t.admin.form.updateSuccessMessage : t.admin.form.successMessage;
   const photosLabel = mode === "edit" && hasExistingPhotos ? t.admin.form.addMorePhotosLabel : t.admin.form.photos;
 
-  const updateField = (field: TextFormField, value: string) => {
+  function updateField(field: TextFormField, value: string) {
     setSuccess(false);
     setFormState((current) => ({
       ...current,
       [field]: value
     }));
-  };
+  }
 
-  const updateCheckbox = (field: "isFeatured", value: boolean) => {
+  function updateCheckbox(field: "isFeatured", value: boolean) {
     setSuccess(false);
     setFormState((current) => ({
       ...current,
       [field]: value
     }));
-  };
+  }
+
+  function updateStatus(value: ListingStatus) {
+    setSuccess(false);
+    setFormState((current) => ({
+      ...current,
+      status: value
+    }));
+  }
+
+  function handleParentCategoryChange(parentCategoryId: string) {
+    setSuccess(false);
+    setErrors({});
+    setGlobalError("");
+
+    const nextParent = parentCategoryId ? categoriesById.get(parentCategoryId) ?? null : null;
+    const nextType = determineListingTypeFromCategory(nextParent, null);
+
+    setFormState((current) => ({
+      ...resetIncompatibleFields(current, nextType),
+      parentCategoryId,
+      categoryId: ""
+    }));
+  }
+
+  function handleSubCategoryChange(categoryId: string) {
+    setSuccess(false);
+    setErrors({});
+    setGlobalError("");
+
+    const nextCategory = categoryId ? categoriesById.get(categoryId) ?? null : null;
+    const nextParentId = nextCategory?.parentId ?? formState.parentCategoryId;
+    const nextParent = nextParentId ? categoriesById.get(nextParentId) ?? null : null;
+    const nextType = determineListingTypeFromCategory(nextCategory, nextParent);
+
+    setFormState((current) => ({
+      ...resetIncompatibleFields(current, nextType),
+      parentCategoryId: nextParentId ?? "",
+      categoryId
+    }));
+  }
 
   const renderError = (field: ListingField) => {
     if (!errors[field]) {
@@ -137,13 +229,6 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
         {errors[field]}
       </div>
     );
-  };
-
-  const handleTypeChange = (value: ListingType) => {
-    setListingType(value);
-    setErrors({});
-    setGlobalError("");
-    setSuccess(false);
   };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -176,14 +261,14 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
     }
 
     if (mode === "create") {
-      setListingType("house");
-      setFormState(buildFormState());
+      setFormState(buildFormState(undefined, categories));
       formRef.current?.reset();
     }
 
     setIsSubmitting(false);
     setSuccess(true);
     showToast(successMessage, "success");
+    router.push("/admin/listings");
   }
 
   return (
@@ -194,23 +279,51 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
       className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] sm:p-8 dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-[0_20px_60px_rgba(2,6,23,0.35)]"
       onSubmit={handleSubmit}
     >
+      <input type="hidden" name="type" value={listingType} />
+      <input type="hidden" name="category_id" value={formState.categoryId} />
+
       <div className="rounded-3xl bg-slate-50 p-4 sm:p-5 dark:bg-slate-950/50">
-        <label htmlFor="prop-type" className="label-base">
-          {t.admin.form.propertyType}
-        </label>
-        <select
-          id="prop-type"
-          data-automation="type-selector"
-          name="type"
-          value={listingType}
-          onChange={(event) => handleTypeChange(event.target.value as ListingType)}
-          required
-          className="input-base"
-        >
-          <option value="house">{t.admin.form.typeHouse}</option>
-          <option value="land">{t.admin.form.typeLand}</option>
-        </select>
-        {renderError("type")}
+        <div className="grid gap-4 md:grid-cols-3">
+          <StatusDropdown
+            id="prop-status"
+            label={t.admin.form.statusLabel}
+            placeholder={t.admin.form.statusAll}
+            value={formState.status}
+            options={[
+              { value: "satilik", label: t.admin.form.statusForSale },
+              { value: "kiralik", label: t.admin.form.statusForRent }
+            ]}
+            onChange={(nextValue) => updateStatus(nextValue as ListingStatus)}
+            dataAutomation="status-selector"
+            clearLabel={t.common.clear}
+          />
+
+          <CategoryDropdown
+            id="prop-parent-category"
+            label={t.admin.form.parentCategoryLabel}
+            placeholder={t.admin.form.parentCategoryPlaceholder}
+            value={formState.parentCategoryId}
+            options={parentCategories}
+            onChange={handleParentCategoryChange}
+            dataAutomation="parent-category-filter"
+            clearLabel={t.common.clear}
+            allowClear
+          />
+
+          <CategoryDropdown
+            id="prop-sub-category"
+            label={t.admin.form.subCategoryLabel}
+            placeholder={t.admin.form.subCategoryPlaceholder}
+            value={formState.categoryId}
+            options={subCategories}
+            onChange={handleSubCategoryChange}
+            dataAutomation="subcategory-filter"
+            clearLabel={t.common.clear}
+            allowClear
+            disabled={!formState.parentCategoryId}
+          />
+        </div>
+        {renderError("categoryId")}
       </div>
 
       <div className="rounded-3xl border border-amber-200/70 bg-amber-50/60 p-4 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10">
@@ -525,3 +638,4 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
     </form>
   );
 }
+

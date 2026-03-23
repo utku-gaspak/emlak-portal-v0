@@ -6,6 +6,7 @@ import { LISTINGS_TABLE, supabase } from "@/lib/supabase";
 import { ListingType } from "@/lib/types";
 import { normalizeCurrency } from "@/lib/currency";
 import { saveUploadedPhotos, deleteUploadedFiles } from "@/lib/listing-media";
+import { resolveListingTypeFromCategoryId } from "@/lib/categories";
 
 function getListingType(formValue: string): ListingType | "" {
   return formValue === "house" || formValue === "land" ? formValue : "";
@@ -13,6 +14,8 @@ function getListingType(formValue: string): ListingType | "" {
 
 function buildInsertData(args: {
   type: ListingType;
+  status: "satilik" | "kiralik";
+  categoryId: string;
   title: string;
   price: string;
   currency: string;
@@ -30,6 +33,8 @@ function buildInsertData(args: {
 }) {
   return {
     type: args.type,
+    status: args.status,
+    category_id: args.categoryId,
     title: args.title.trim(),
     price: Number(args.price),
     currency: args.currency,
@@ -69,6 +74,8 @@ export async function POST(request: Request) {
 
   try {
     const formData = await request.formData();
+    const body = Object.fromEntries(formData.entries());
+    console.log("Request Body:", body);
     const type = getListingType(String(formData.get("type") ?? ""));
     const title = String(formData.get("title") ?? "");
     const price = String(formData.get("price") ?? "");
@@ -76,6 +83,9 @@ export async function POST(request: Request) {
     const location = String(formData.get("location") ?? "");
     const areaSqm = String(formData.get("areaSqm") ?? "");
     const description = String(formData.get("description") ?? "");
+    const statusValue = String(formData.get("status") ?? "");
+    const status = statusValue === "kiralik" ? "kiralik" : "satilik";
+    const categoryId = String(formData.get("category_id") ?? formData.get("categoryId") ?? "");
     const roomCount = String(formData.get("roomCount") ?? "");
     const floorNumber = String(formData.get("floorNumber") ?? "");
     const heatingType = String(formData.get("heatingType") ?? "");
@@ -90,6 +100,8 @@ export async function POST(request: Request) {
 
     const errors = await validateListingForm({
       type,
+      status,
+      categoryId,
       title,
       price,
       currency,
@@ -115,10 +127,38 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!categoryId.trim()) {
+      return NextResponse.json(
+        {
+          ok: false,
+          errors: {
+            categoryId: t.errors.categoryRequired
+          }
+        },
+        { status: 400 }
+      );
+    }
+
+    const resolvedType = await resolveListingTypeFromCategoryId(categoryId.trim());
+
+    if (!resolvedType) {
+      return NextResponse.json(
+        {
+          ok: false,
+          errors: {
+            categoryId: t.errors.categoryInvalid
+          }
+        },
+        { status: 400 }
+      );
+    }
+
     uploadedImages = await saveUploadedPhotos(listingId, photos);
 
     const insertData = buildInsertData({
-      type,
+      type: resolvedType,
+      status,
+      categoryId: categoryId.trim(),
       title,
       price,
       currency,

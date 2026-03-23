@@ -1,32 +1,35 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Check, ChevronDown } from "lucide-react";
 import { useTranslation } from "@/context/TranslationContext";
-import type { ListingType } from "@/lib/types";
+import { Category } from "@/lib/types";
+import { CategoryDropdown } from "@/components/CategoryDropdown";
+import { StatusDropdown } from "@/components/StatusDropdown";
+import { getChildCategories, getParentCategoryById } from "@/lib/category-utils";
 
 type SearchFiltersProps = {
-  roomOptions: string[];
-  heatingOptions: string[];
-  zoningOptions: string[];
+  categories: Category[];
   showHeader?: boolean;
 };
 
 type FilterState = {
   query: string;
-  category: ListingType | "";
+  currency: "TRY" | "USD" | "EUR";
+  status: "" | "satilik" | "kiralik";
+  parentCategoryId: string;
+  categoryId: string;
   sortBy: "newest" | "oldest" | "price-asc" | "price-desc";
   minPrice: string;
   maxPrice: string;
-  rooms: string;
-  heatingType: string;
-  zoningStatus: string;
 };
 
 function readFiltersFromParams(params: { get(name: string): string | null }): FilterState {
-  const categoryValue = params.get("category");
-  const category = categoryValue === "house" || categoryValue === "land" ? categoryValue : "";
+  const currencyValue = params.get("currency");
+  const currency = currencyValue === "USD" || currencyValue === "EUR" ? currencyValue : "TRY";
+  const statusValue = params.get("status");
+  const status = statusValue === "satilik" || statusValue === "kiralik" ? statusValue : "";
   const sortByValue = params.get("sortBy");
   const sortBy =
     sortByValue === "oldest" || sortByValue === "price-asc" || sortByValue === "price-desc" || sortByValue === "newest"
@@ -35,49 +38,45 @@ function readFiltersFromParams(params: { get(name: string): string | null }): Fi
 
   return {
     query: params.get("q") ?? "",
-    category,
+    currency,
+    status,
+    parentCategoryId: params.get("parentCategoryId") ?? "",
+    categoryId: params.get("categoryId") ?? "",
     sortBy,
     minPrice: params.get("minPrice") ?? "",
-    maxPrice: params.get("maxPrice") ?? "",
-    rooms: params.get("rooms") ?? "",
-    heatingType: params.get("heatingType") ?? "",
-    zoningStatus: params.get("zoningStatus") ?? ""
+    maxPrice: params.get("maxPrice") ?? ""
   };
 }
 
-function normalizeChoices(values: string[]): string[] {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort((a, b) =>
-    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
-  );
+function normalizeOptions(values: Category[]): Category[] {
+  return values
+    .filter((value, index, array) => array.findIndex((item) => item.id === value.id) === index)
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }));
 }
 
-export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, showHeader = true }: SearchFiltersProps) {
+export function SearchFilters({ categories, showHeader = true }: SearchFiltersProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const categoryMenuRef = useRef<HTMLDivElement>(null);
   const sortMenuRef = useRef<HTMLDivElement>(null);
   const searchSignature = searchParams.toString();
-  const normalizedRoomOptions = useMemo(() => normalizeChoices(roomOptions), [roomOptions]);
-  const normalizedHeatingOptions = useMemo(() => normalizeChoices(heatingOptions), [heatingOptions]);
-  const normalizedZoningOptions = useMemo(() => normalizeChoices(zoningOptions), [zoningOptions]);
+  const rootCategories = useMemo(() => normalizeOptions(categories.filter((category) => !category.parentId)), [categories]);
   const currentFilters = useMemo(() => readFiltersFromParams(searchParams), [searchSignature]);
   const [filters, setFilters] = useState<FilterState>(currentFilters);
-  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
 
-  const defaultFilters: FilterState = useMemo(
+  const defaultFilters = useMemo<FilterState>(
     () => ({
       query: "",
-      category: "",
+      currency: "TRY",
+      status: "",
+      parentCategoryId: "",
+      categoryId: "",
       sortBy: "newest",
       minPrice: "",
-      maxPrice: "",
-      rooms: "",
-      heatingType: "",
-      zoningStatus: ""
+      maxPrice: ""
     }),
     []
   );
@@ -92,6 +91,52 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
     [t.filters.sortNewestFirst, t.filters.sortPriceLowToHigh, t.filters.sortPriceHighToLow, t.filters.sortOldestFirst]
   );
 
+  const statusOptions = useMemo(
+    () => [
+      { value: "" as const, label: t.filters.statusAll },
+      { value: "satilik" as const, label: t.filters.statusForSale },
+      { value: "kiralik" as const, label: t.filters.statusForRent }
+    ],
+    [t.filters.statusAll, t.filters.statusForSale, t.filters.statusForRent]
+  );
+
+  const currencyOptions = useMemo(
+    () => [
+      { value: "TRY" as const, label: t.filters.currencyTL },
+      { value: "USD" as const, label: t.filters.currencyUSD },
+      { value: "EUR" as const, label: t.filters.currencyEUR }
+    ],
+    [t.filters.currencyTL, t.filters.currencyUSD, t.filters.currencyEUR]
+  );
+
+  const selectedParent = useMemo(
+    () => rootCategories.find((category) => category.id === filters.parentCategoryId) ?? null,
+    [filters.parentCategoryId, rootCategories]
+  );
+  const subCategories = useMemo(
+    () => (filters.parentCategoryId ? normalizeOptions(getChildCategories(categories, filters.parentCategoryId)) : []),
+    [categories, filters.parentCategoryId]
+  );
+  const selectedSubCategory = useMemo(
+    () => categories.find((category) => category.id === filters.categoryId) ?? null,
+    [categories, filters.categoryId]
+  );
+
+  useEffect(() => {
+    if (!filters.categoryId) {
+      return;
+    }
+
+    const parentFromSelection = getParentCategoryById(categories, filters.categoryId);
+
+    if (parentFromSelection?.id && parentFromSelection.id !== filters.parentCategoryId) {
+      setFilters((current) => ({
+        ...current,
+        parentCategoryId: parentFromSelection.id
+      }));
+    }
+  }, [categories, filters.categoryId, filters.parentCategoryId]);
+
   useEffect(() => {
     setFilters(currentFilters);
   }, [currentFilters]);
@@ -103,16 +148,11 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
       if (sortMenuRef.current && !sortMenuRef.current.contains(target)) {
         setIsSortMenuOpen(false);
       }
-
-      if (categoryMenuRef.current && !categoryMenuRef.current.contains(target)) {
-        setIsCategoryMenuOpen(false);
-      }
     }
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setIsSortMenuOpen(false);
-        setIsCategoryMenuOpen(false);
       }
     }
 
@@ -132,8 +172,18 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
       params.set("q", nextFilters.query.trim());
     }
 
-    if (nextFilters.category) {
-      params.set("category", nextFilters.category);
+    params.set("currency", nextFilters.currency);
+
+    if (nextFilters.status) {
+      params.set("status", nextFilters.status);
+    }
+
+    if (nextFilters.parentCategoryId) {
+      params.set("parentCategoryId", nextFilters.parentCategoryId);
+    }
+
+    if (nextFilters.categoryId) {
+      params.set("categoryId", nextFilters.categoryId);
     }
 
     if (nextFilters.sortBy) {
@@ -146,20 +196,6 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
 
     if (nextFilters.maxPrice.trim()) {
       params.set("maxPrice", nextFilters.maxPrice.trim());
-    }
-
-    if (nextFilters.category === "house") {
-      if (nextFilters.rooms.trim()) {
-        params.set("rooms", nextFilters.rooms.trim());
-      }
-
-      if (nextFilters.heatingType.trim()) {
-        params.set("heatingType", nextFilters.heatingType.trim());
-      }
-    }
-
-    if (nextFilters.category === "land" && nextFilters.zoningStatus.trim()) {
-      params.set("zoningStatus", nextFilters.zoningStatus.trim());
     }
 
     const queryString = params.toString();
@@ -178,15 +214,13 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
       ...patch
     };
 
-    if (nextFilters.category === "house") {
-      nextFilters.zoningStatus = "";
-    } else if (nextFilters.category === "land") {
-      nextFilters.rooms = "";
-      nextFilters.heatingType = "";
-    } else {
-      nextFilters.rooms = "";
-      nextFilters.heatingType = "";
-      nextFilters.zoningStatus = "";
+    if (patch.parentCategoryId !== undefined) {
+      nextFilters.categoryId = "";
+    }
+
+    if (patch.categoryId !== undefined) {
+      const nextSubCategory = categories.find((category) => category.id === patch.categoryId) ?? null;
+      nextFilters.parentCategoryId = nextSubCategory?.parentId ?? nextFilters.parentCategoryId;
     }
 
     setFilters(nextFilters);
@@ -198,22 +232,15 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
     pushFilters(filters);
   }
 
-  const isHouse = filters.category === "house";
-  const isLand = filters.category === "land";
-  const categoryOptions = [
-    { value: "" as const, label: t.filters.categoryAll },
-    { value: "house" as const, label: t.filters.categoryHouse },
-    { value: "land" as const, label: t.filters.categoryLand }
-  ];
   const hasActiveFilters =
     filters.query.trim().length > 0 ||
-    filters.category !== "" ||
+    filters.currency !== "TRY" ||
+    filters.status.length > 0 ||
+    filters.parentCategoryId.length > 0 ||
+    filters.categoryId.length > 0 ||
     filters.sortBy !== "newest" ||
     filters.minPrice.trim().length > 0 ||
-    filters.maxPrice.trim().length > 0 ||
-    filters.rooms.trim().length > 0 ||
-    filters.heatingType.trim().length > 0 ||
-    filters.zoningStatus.trim().length > 0;
+    filters.maxPrice.trim().length > 0;
 
   function resetAllFilters() {
     setFilters(defaultFilters);
@@ -228,7 +255,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
       className="relative z-30 overflow-visible rounded-[2.5rem] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.09)] ring-1 ring-slate-200/70 sm:p-6 lg:p-7 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-[0_24px_70px_rgba(2,6,23,0.35)] dark:ring-slate-800/70"
     >
       {showHeader ? (
-        <div className="flex flex-col gap-2 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
+        <div className="flex flex-col gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700 dark:text-amber-400">{t.filters.title}</p>
             <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-slate-100">{t.home.searchTitle}</h2>
@@ -241,265 +268,206 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
               onClick={resetAllFilters}
               className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:text-slate-100"
             >
-              {t.filters.resetAll}
+              {t.common.clear}
             </button>
           ) : null}
         </div>
       ) : null}
 
-      <form
+            <form
         id="property-search-filters-form"
         data-automation="property-search-filters-form"
         className="mt-5 space-y-4"
         onSubmit={handleSubmit}
       >
-        <div className="grid gap-4 lg:grid-cols-[1.3fr_0.85fr_0.95fr_auto] lg:items-end">
-          <div className="space-y-2">
-            <label htmlFor="search-filters-query" className="label-base">
-              {t.filters.searchLabel}
-            </label>
-            <input
-              id="search-filters-query"
-              data-automation="search-input"
-              name="q"
-              type="search"
-              value={filters.query}
-              onChange={(event) => updateFilters({ query: event.target.value })}
-              placeholder={t.filters.searchPlaceholder}
-              className="input-base"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="search-filters-category-trigger" className="label-base">
-              {t.filters.categoryLabel}
-            </label>
-            <div ref={categoryMenuRef} className="relative">
-              <button
-                id="search-filters-category-trigger"
-                data-automation="category-filter"
-                type="button"
-                aria-haspopup="listbox"
-                aria-expanded={isCategoryMenuOpen}
-                onClick={() => setIsCategoryMenuOpen((value) => !value)}
-                className="input-base relative w-full overflow-hidden pr-10 text-left whitespace-nowrap dark:bg-slate-900"
-              >
-                <span className="block truncate text-sm leading-6">
-                  {categoryOptions.find((option) => option.value === filters.category)?.label ?? t.filters.categoryAll}
-                </span>
-                <ChevronDown
-                  className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition ${
-                    isCategoryMenuOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {isCategoryMenuOpen ? (
-                <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_22px_55px_rgba(2,6,23,0.35)]">
-                  <div role="listbox" aria-label={t.filters.categoryLabel} className="p-1">
-                    {categoryOptions.map((option) => {
-                      const isActive = option.value === filters.category;
-
-                      return (
-                        <button
-                          key={option.value || "all"}
-                          type="button"
-                          data-automation={`category-option-${option.value || "all"}`}
-                          role="option"
-                          aria-selected={isActive}
-                          onClick={() => {
-                            updateFilters({ category: option.value });
-                            setIsCategoryMenuOpen(false);
-                          }}
-                          className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
-                            isActive
-                              ? "bg-slate-950 text-white"
-                              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                          }`}
-                        >
-                          <span>{option.label}</span>
-                          {isActive ? <Check className="h-4 w-4" /> : null}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="search-filters-sort-by-trigger" className="label-base">
-              {t.filters.sortByLabel}
-            </label>
-            <div ref={sortMenuRef} className="relative">
-              <button
-                id="search-filters-sort-by-trigger"
-                data-automation="sort-by-filter"
-                type="button"
-                aria-haspopup="listbox"
-                aria-expanded={isSortMenuOpen}
-                onClick={() => setIsSortMenuOpen((value) => !value)}
-                className="input-base relative w-full overflow-hidden pr-10 text-left whitespace-nowrap dark:bg-slate-900"
-              >
-                <span className="block truncate text-sm leading-6">
-                  {sortOptions.find((option) => option.value === filters.sortBy)?.label ?? t.filters.sortNewestFirst}
-                </span>
-                <ChevronDown
-                  className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition ${
-                    isSortMenuOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {isSortMenuOpen ? (
-                <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_22px_55px_rgba(2,6,23,0.35)]">
-                  <div role="listbox" aria-label={t.filters.sortByLabel} className="p-1">
-                    {sortOptions.map((option) => {
-                      const isActive = option.value === filters.sortBy;
-
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          data-automation={`sort-by-option-${option.value}`}
-                          role="option"
-                          aria-selected={isActive}
-                          onClick={() => {
-                            updateFilters({ sortBy: option.value });
-                            setIsSortMenuOpen(false);
-                          }}
-                          className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
-                            isActive
-                              ? "bg-slate-950 text-white"
-                              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                          }`}
-                        >
-                          <span>{option.label}</span>
-                          {isActive ? <Check className="h-4 w-4" /> : null}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <button
-            id="submit-button"
-            data-automation="submit-button"
-            type="submit"
-            className="inline-flex h-[52px] w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
-            disabled={isPending}
-          >
-            {t.filters.submitButton}
-          </button>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <label htmlFor="search-filters-min-price" className="label-base">
-              {t.filters.minPriceLabel}
-            </label>
-            <input
-              id="search-filters-min-price"
-              data-automation="min-price-filter"
-              name="minPrice"
-              type="number"
-              min="0"
-              value={filters.minPrice}
-              onChange={(event) => updateFilters({ minPrice: event.target.value })}
-            className="input-base dark:bg-slate-900"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="search-filters-max-price" className="label-base">
-              {t.filters.maxPriceLabel}
-            </label>
-            <input
-              id="search-filters-max-price"
-              data-automation="max-price-filter"
-              name="maxPrice"
-              type="number"
-              min="0"
-              value={filters.maxPrice}
-              onChange={(event) => updateFilters({ maxPrice: event.target.value })}
-            className="input-base dark:bg-slate-900"
-            />
-          </div>
-        </div>
-
-        {isHouse ? (
-          <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:col-span-4 md:grid-cols-4">
             <div className="space-y-2">
-              <label htmlFor="search-filters-rooms" className="label-base">
-                {t.filters.roomCountLabel}
+              <label htmlFor="search-filters-query" className="label-base">
+                {t.filters.searchLabel}
               </label>
-              <select
-                id="search-filters-rooms"
-                data-automation="rooms-filter"
-                name="rooms"
-                value={filters.rooms}
-                onChange={(event) => updateFilters({ rooms: event.target.value })}
-                className="input-base dark:bg-slate-900"
-              >
-                <option value="">{t.filters.anyOption}</option>
-                {normalizedRoomOptions.map((room) => (
-                  <option key={room} value={room}>
-                    {room}
-                  </option>
-                ))}
-              </select>
+              <input
+                id="search-filters-query"
+                data-automation="search-input"
+                name="q"
+                type="search"
+                value={filters.query}
+                onChange={(event) => updateFilters({ query: event.target.value })}
+                placeholder={t.filters.searchPlaceholder}
+                className="input-base h-[52px] bg-white/5 dark:bg-slate-800/50"
+              />
+            </div>
+
+            <StatusDropdown
+              id="search-filters-status"
+              label={t.filters.statusLabel}
+              placeholder={t.filters.statusAll}
+              value={filters.status}
+              options={statusOptions}
+              onChange={(nextValue) => updateFilters({ status: nextValue as FilterState["status"] })}
+              dataAutomation="status-filter"
+              clearLabel={t.common.clear}
+              allowClear
+              className="input-base h-[52px] bg-white/5 dark:bg-slate-800/50"
+            />
+
+            <div className="space-y-2">
+              <CategoryDropdown
+                id="search-filters-parent-category"
+                label={t.filters.parentCategoryLabel}
+                placeholder={t.filters.parentCategoryPlaceholder}
+                value={selectedParent?.id ?? ""}
+                options={rootCategories}
+                onChange={(nextParentId) => updateFilters({ parentCategoryId: nextParentId })}
+                dataAutomation="category-filter"
+                clearLabel={t.common.clear}
+                allowClear
+                className="input-base h-[52px] bg-white/5 dark:bg-slate-800/50"
+              />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="search-filters-heating" className="label-base">
-                {t.filters.heatingTypeLabel}
+              <CategoryDropdown
+                id="search-filters-subcategory"
+                label={t.filters.subcategoryLabel}
+                placeholder={t.filters.subcategoryPlaceholder}
+                value={selectedSubCategory?.id ?? ""}
+                options={subCategories}
+                onChange={(nextCategoryId) => updateFilters({ categoryId: nextCategoryId })}
+                dataAutomation="subcategory-filter"
+                clearLabel={t.common.clear}
+                allowClear
+                disabled={!selectedParent}
+                className="input-base h-[52px] bg-white/5 dark:bg-slate-800/50"
+              />
+            </div>
+
+            <StatusDropdown
+              id="search-filters-currency"
+              label={t.filters.currencyLabel}
+              placeholder={t.filters.currencyTL}
+              value={filters.currency}
+              options={currencyOptions}
+              onChange={(nextValue) => updateFilters({ currency: nextValue as FilterState["currency"] })}
+              dataAutomation="currency-filter"
+              className="input-base h-[52px] bg-white/5 dark:bg-slate-800/50"
+            />
+
+            <div className="space-y-2">
+              <label htmlFor="search-filters-min-price" className="label-base">
+                {t.filters.minPriceLabel}
               </label>
-              <select
-                id="search-filters-heating"
-                data-automation="heating-filter"
-                name="heatingType"
-                value={filters.heatingType}
-                onChange={(event) => updateFilters({ heatingType: event.target.value })}
-                className="input-base dark:bg-slate-900"
-              >
-                <option value="">{t.filters.anyOption}</option>
-                {normalizedHeatingOptions.map((heating) => (
-                  <option key={heating} value={heating}>
-                    {heating}
-                  </option>
-                ))}
-              </select>
+              <input
+                id="search-filters-min-price"
+                data-automation="min-price-filter"
+                name="minPrice"
+                type="text"
+                inputMode="numeric"
+                maxLength={10}
+                value={filters.minPrice}
+                onChange={(event) => {
+                  const nextValue = event.target.value.replace(/\D/g, "").slice(0, 10);
+                  updateFilters({ minPrice: nextValue });
+                }}
+                className="input-base h-[52px] w-full bg-white/5 dark:bg-slate-800/50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="search-filters-max-price" className="label-base">
+                {t.filters.maxPriceLabel}
+              </label>
+              <input
+                id="search-filters-max-price"
+                data-automation="max-price-filter"
+                name="maxPrice"
+                type="text"
+                inputMode="numeric"
+                maxLength={10}
+                value={filters.maxPrice}
+                onChange={(event) => {
+                  const nextValue = event.target.value.replace(/\D/g, "").slice(0, 10);
+                  updateFilters({ maxPrice: nextValue });
+                }}
+                className="input-base h-[52px] w-full bg-white/5 dark:bg-slate-800/50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="search-filters-sort-by-trigger" className="label-base">
+                {t.filters.sortByLabel}
+              </label>
+              <div ref={sortMenuRef} className="relative">
+                <button
+                  id="search-filters-sort-by-trigger"
+                  data-automation="sort-by-filter"
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={isSortMenuOpen}
+                  onClick={() => setIsSortMenuOpen((value) => !value)}
+                  className="input-base relative h-[52px] w-full overflow-hidden pr-10 text-left whitespace-nowrap bg-white/5 dark:bg-slate-800/50"
+                >
+                  <span className="block truncate text-sm leading-6">
+                    {sortOptions.find((option) => option.value === filters.sortBy)?.label ?? t.filters.sortNewestFirst}
+                  </span>
+                  <ChevronDown
+                    className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition ${
+                      isSortMenuOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {isSortMenuOpen ? (
+                  <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_22px_55px_rgba(2,6,23,0.35)]">
+                    <div role="listbox" aria-label={t.filters.sortByLabel} className="p-1">
+                      {sortOptions.map((option) => {
+                        const isActive = option.value === filters.sortBy;
+
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            data-automation={`sort-by-option-${option.value}`}
+                            role="option"
+                            aria-selected={isActive}
+                            onClick={() => {
+                              updateFilters({ sortBy: option.value });
+                              setIsSortMenuOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
+                              isActive
+                                ? "bg-slate-950 text-white"
+                                : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                            }`}
+                          >
+                            <span>{option.label}</span>
+                            {isActive ? <Check className="h-4 w-4" /> : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
-        ) : null}
 
-        {isLand ? (
-          <div className="space-y-2">
-            <label htmlFor="search-filters-zoning" className="label-base">
-              {t.filters.zoningStatusLabel}
-            </label>
-            <select
-              id="search-filters-zoning"
-              data-automation="zoning-filter"
-              name="zoningStatus"
-              value={filters.zoningStatus}
-              onChange={(event) => updateFilters({ zoningStatus: event.target.value })}
-            className="input-base dark:bg-slate-900"
+          <div className="md:col-span-4 mt-1">
+            <button
+              id="submit-button"
+              data-automation="submit-button"
+              type="submit"
+              className="inline-flex h-[48px] w-full items-center justify-center rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(249,115,22,0.26)] transition hover:-translate-y-0.5 hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={isPending}
             >
-              <option value="">{t.filters.anyOption}</option>
-              {normalizedZoningOptions.map((zoning) => (
-                <option key={zoning} value={zoning}>
-                  {zoning}
-                </option>
-              ))}
-            </select>
+              {t.filters.submitButton}
+            </button>
           </div>
-        ) : null}
+        </div>
       </form>
     </section>
   );
 }
+
+
+

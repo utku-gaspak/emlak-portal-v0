@@ -6,6 +6,7 @@ import { validateListingForm } from "@/lib/validation";
 import { HouseListing, LandListing, ListingType } from "@/lib/types";
 import { deleteUploadedFiles, saveUploadedPhotos } from "@/lib/listing-media";
 import { normalizeCurrency } from "@/lib/currency";
+import { resolveListingTypeFromCategoryId } from "@/lib/categories";
 
 function getListingType(formValue: string, fallback: ListingType): ListingType {
   return formValue === "house" || formValue === "land" ? formValue : fallback;
@@ -31,6 +32,8 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
 
   const formData = await request.formData();
   const type = getListingType(String(formData.get("type") ?? existingListing.type), existingListing.type);
+  const status = String(formData.get("status") ?? existingListing.status ?? "satilik");
+  const categoryId = String(formData.get("categoryId") ?? existingListing.categoryId ?? "");
   const title = String(formData.get("title") ?? "");
   const price = String(formData.get("price") ?? "");
   const currency = normalizeCurrency(String(formData.get("currency") ?? existingListing.currency ?? "TL"));
@@ -59,6 +62,8 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
 
   const errors = await validateListingForm({
     type,
+    status: status as "satilik" | "kiralik",
+    categoryId,
     currency,
     title,
     price,
@@ -79,6 +84,30 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
     return NextResponse.json({ ok: false, errors }, { status: 400 });
   }
 
+  if (!categoryId.trim()) {
+    return NextResponse.json(
+      {
+        ok: false,
+        errors: {
+          categoryId: t.errors.categoryRequired
+        }
+      },
+      { status: 400 }
+    );
+  }
+
+  const resolvedType = (await resolveListingTypeFromCategoryId(categoryId.trim())) ?? type;
+  if (!resolvedType) {
+    return NextResponse.json(
+      {
+        ok: false,
+        errors: {
+          categoryId: t.errors.categoryInvalid
+        }
+      },
+      { status: 400 }
+    );
+  }
   const listingId = existingListing.id;
   const savedNewPhotoPaths: string[] = [];
 
@@ -94,7 +123,9 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       refId: existingListing.refId,
       createdAt: existingListing.createdAt,
       isFeatured,
-      type,
+      status: status as "satilik" | "kiralik",
+      categoryId: categoryId.trim(),
+      type: resolvedType,
       title: title.trim(),
       price: Number(price),
       currency,
@@ -106,7 +137,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
     };
 
     const updatedListing =
-      type === "house"
+      resolvedType === "house"
         ? ({
             ...baseListing,
             type: "house",

@@ -5,6 +5,7 @@ import { EditPhotoManager } from "@/components/EditPhotoManager";
 import { PropertyForm } from "@/components/PropertyForm";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { getCategories } from "@/lib/categories";
 import { getDictionary } from "@/lib/get-dictionary";
 import { getListingById } from "@/lib/listings-store";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -17,6 +18,7 @@ type EditListingPageProps = {
 
 export default async function EditListingPage({ params }: EditListingPageProps) {
   const t = await getDictionary();
+  const categories = await getCategories();
 
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
@@ -54,7 +56,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
         </div>
 
         <EditPhotoManager listingId={listing.id} listingTitle={listing.title} images={listing.images} />
-        <PropertyForm mode="edit" initialData={listing} />
+        <PropertyForm mode="edit" initialData={listing} categories={categories} />
       </section>
 
       <div className="flex flex-wrap gap-3">

@@ -1,5 +1,10 @@
 import { PropertyForm } from "@/components/PropertyForm";
+import type { Category } from "@/lib/types";
 
-export function AddListingForm() {
-  return <PropertyForm mode="create" />;
+type AddListingFormProps = {
+  categories?: Category[];
+};
+
+export function AddListingForm({ categories = [] }: AddListingFormProps) {
+  return <PropertyForm mode="create" categories={categories} />;
 }

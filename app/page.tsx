@@ -1,5 +1,6 @@
 import { PropertyCard } from "@/components/PropertyCard";
 import { SearchFilters } from "@/components/SearchFilters";
+import { getCategories } from "@/lib/categories";
 import { getListings, parseListingFilters } from "@/lib/listings-store";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getDictionary } from "@/lib/get-dictionary";
@@ -10,25 +11,12 @@ type HomePageProps = {
   searchParams: Promise<any>;
 };
 
-function uniqueSorted(values: string[]): string[] {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort((a, b) =>
-    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
-  );
-}
-
 export default async function HomePage({ searchParams }: HomePageProps) {
   const t = await getDictionary();
   const resolvedParams = await searchParams;
   const filters = parseListingFilters(resolvedParams);
-  const [allListings, filteredListings] = await Promise.all([getListings(), getListings(filters)]);
+  const [allListings, filteredListings, categories] = await Promise.all([getListings(), getListings(filters), getCategories()]);
   const canDelete = await isAdminAuthenticated();
-
-  const houseListings = allListings.filter((listing) => listing.type === "house");
-  const landListings = allListings.filter((listing) => listing.type === "land");
-
-  const roomOptions = uniqueSorted(houseListings.map((listing) => listing.roomCount));
-  const heatingOptions = uniqueSorted(houseListings.map((listing) => listing.heatingType));
-  const zoningOptions = uniqueSorted(landListings.map((listing) => listing.zoningStatus));
 
   return (
     <div className="space-y-10 sm:space-y-12">
@@ -70,7 +58,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
 
           <div className="relative z-20 mt-10 w-full max-w-6xl overflow-visible px-0 sm:px-4">
-            <SearchFilters roomOptions={roomOptions} heatingOptions={heatingOptions} zoningOptions={zoningOptions} showHeader={false} />
+            <SearchFilters categories={categories} showHeader={false} />
           </div>
         </div>
       </section>
@@ -82,32 +70,40 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl space-y-4">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-600 dark:text-amber-400">
-              {t.home.aboutEyebrow}
+              {t.features.badge}
             </p>
             <h2 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-              {t.home.aboutTitle}
+              {t.features.title}
             </h2>
-            <p className="text-sm leading-7 text-slate-600 dark:text-slate-400 sm:text-base">{t.home.aboutDescription}</p>
+            <p className="text-sm leading-7 text-slate-600 dark:text-slate-400 sm:text-base">{t.features.subtitle}</p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[36rem] lg:flex-1">
             {[
-              { key: "curated", tone: "from-amber-500/15 to-amber-500/5" },
-              { key: "fast", tone: "from-sky-500/15 to-sky-500/5" },
-              { key: "rpaReady", tone: "from-emerald-500/15 to-emerald-500/5" }
-            ].map((item) => {
-              const stat = t.home.stats[item.key as keyof typeof t.home.stats];
-
-              return (
-                <div
-                  key={item.key}
-                  className={`rounded-3xl border border-slate-200 bg-gradient-to-br ${item.tone} p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/60`}
-                >
-                  <p className="text-lg font-black text-slate-950 dark:text-white sm:text-xl">{stat.value}</p>
-                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{stat.label}</p>
-                </div>
-              );
-            })}
+              {
+                title: t.features.card1_title,
+                desc: t.features.card1_desc,
+                tone: "from-amber-500/15 to-amber-500/5"
+              },
+              {
+                title: t.features.card2_title,
+                desc: t.features.card2_desc,
+                tone: "from-sky-500/15 to-sky-500/5"
+              },
+              {
+                title: t.features.card3_title,
+                desc: t.features.card3_desc,
+                tone: "from-emerald-500/15 to-emerald-500/5"
+              }
+            ].map((item) => (
+              <div
+                key={item.title}
+                className={`rounded-3xl border border-slate-200 bg-gradient-to-br ${item.tone} p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/60`}
+              >
+                <p className="text-lg font-black text-slate-950 dark:text-white sm:text-xl">{item.title}</p>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

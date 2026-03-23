@@ -1,15 +1,19 @@
 import "server-only";
 
+import { getDescendantCategoryIdsByParentId } from "@/lib/categories";
 import { normalizeCurrency } from "@/lib/currency";
 import { getSupabaseServerClient, LISTINGS_TABLE } from "@/lib/supabase";
-import { HouseListing, LandListing, Listing, ListingType } from "@/lib/types";
+import { HouseListing, LandListing, Listing, ListingStatus, ListingType } from "@/lib/types";
 
 const minimumRefId = 1000;
 
 export type ListingFilters = {
   query?: string;
   refId?: number;
-  category?: ListingType;
+  currency?: "TRY" | Listing["currency"];
+  status?: ListingStatus;
+  parentCategoryId?: string;
+  categoryId?: string;
   sortBy?: "newest" | "oldest" | "price-asc" | "price-desc";
   minPrice?: number;
   maxPrice?: number;
@@ -22,6 +26,8 @@ type SearchParamsLike = Record<string, string | string[] | undefined>;
 type ListingInsert = {
   refId?: number;
   type: ListingType;
+  status: Listing["status"];
+  categoryId: string;
   isFeatured: boolean;
   currency: Listing["currency"];
   title: string;
@@ -184,6 +190,8 @@ function normalizeListingRow(raw: unknown): Listing | null {
     id: getRecordText(record, ["id"], crypto.randomUUID()),
     refId: getRecordNumber(record, ["ref_id", "refId"], 0),
     isFeatured: getRecordBoolean(record, ["is_featured", "isFeatured"], false),
+    status: getRecordText(record, ["status", "listing_status"], "satilik") as Listing["status"],
+    categoryId: getRecordText(record, ["category_id", "categoryId"], ""),
     currency: normalizeCurrency(getRecordText(record, ["currency"], "TL")),
     title: getRecordText(record, ["title"]),
     price: getRecordNumber(record, ["price"]),
@@ -220,6 +228,8 @@ function normalizeListingRow(raw: unknown): Listing | null {
 function toDatabaseRow(listing: ListingInsert, refId: number = listing.refId ?? 0): Record<string, unknown> {
   const baseRow = {
     is_featured: Boolean(listing.isFeatured),
+    status: listing.status,
+    category_id: listing.categoryId || null,
     currency: normalizeCurrency(listing.currency),
     title: listing.title,
     price: Number(listing.price),
@@ -265,8 +275,17 @@ export function parseListingFilters(searchParams?: SearchParamsLike): ListingFil
   }
 
   const query = toSearchParamValue(searchParams.q).trim();
-  const categoryValue = toSearchParamValue(searchParams.category);
-  const category = categoryValue === "house" || categoryValue === "land" ? categoryValue : undefined;
+  const currencyValue = toSearchParamValue(searchParams.currency);
+  const currency =
+    currencyValue === "TRY" || currencyValue === "TL" || currencyValue === "USD" || currencyValue === "EUR"
+      ? currencyValue === "TL"
+        ? "TRY"
+        : currencyValue
+      : "TRY";
+  const statusValue = toSearchParamValue(searchParams.status);
+  const status = statusValue === "satilik" || statusValue === "kiralik" ? statusValue : undefined;
+  const parentCategoryId = toSearchParamValue(searchParams.parentCategoryId).trim();
+  const categoryId = toSearchParamValue(searchParams.categoryId).trim();
   const sortByValue = toSearchParamValue(searchParams.sortBy);
   const sortBy =
     sortByValue === "oldest" ||
@@ -283,7 +302,10 @@ export function parseListingFilters(searchParams?: SearchParamsLike): ListingFil
 
   return {
     ...(query ? { query } : {}),
-    ...(category ? { category } : {}),
+    currency,
+    ...(status ? { status } : {}),
+    ...(parentCategoryId ? { parentCategoryId } : {}),
+    ...(categoryId ? { categoryId } : {}),
     ...(sortBy ? { sortBy } : {}),
     ...(minPrice !== undefined ? { minPrice } : {}),
     ...(maxPrice !== undefined ? { maxPrice } : {}),
@@ -314,6 +336,18 @@ export async function getListings(filters: ListingFilters = {}): Promise<Listing
     const queryAsNumber = queryIsNumeric ? Number(query) : null;
     const hasExplicitSort = typeof filters.sortBy !== "undefined";
     const sortBy = filters.sortBy ?? "newest";
+    const categoryFilterIds =
+      filters.categoryId?.trim() || filters.parentCategoryId?.trim()
+        ? filters.categoryId?.trim()
+          ? [filters.categoryId.trim()]
+          : filters.parentCategoryId?.trim()
+          ? await getDescendantCategoryIdsByParentId(filters.parentCategoryId.trim())
+          : []
+        : [];
+    const currencyFilter =
+      typeof filters.currency === "string" && filters.currency.trim()
+        ? normalizeCurrency(filters.currency === "TRY" ? "TL" : filters.currency)
+        : undefined;
 
     const filteredListings = listings.filter((listing) => {
       if (typeof filters.refId === "number" && listing.refId !== filters.refId) {
@@ -326,7 +360,15 @@ export async function getListings(filters: ListingFilters = {}): Promise<Listing
         }
       }
 
-      if (filters.category && listing.type !== filters.category) {
+      if (filters.status && listing.status !== filters.status) {
+        return false;
+      }
+
+      if (currencyFilter && listing.currency !== currencyFilter) {
+        return false;
+      }
+
+      if (categoryFilterIds.length > 0 && !categoryFilterIds.includes(listing.categoryId)) {
         return false;
       }
 

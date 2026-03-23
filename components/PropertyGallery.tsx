@@ -117,7 +117,7 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
           {t.gallery.placeholderMessage}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: imageCount }).map((_, index) => {
             const isSelected = selectedIndex === index;
             const fileName = normalizedImages[index];
@@ -136,10 +136,10 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
                 aria-label={`${t.gallery.thumbnailAria} ${index + 1}`}
               >
                 <div className="relative aspect-square w-full bg-slate-100 dark:bg-slate-800">
-                <img
-                  src={imageSrc}
-                  alt={`${title} thumbnail ${index + 1}`}
-                  className="h-full w-full object-cover"
+                  <img
+                    src={imageSrc}
+                    alt={`${title} thumbnail ${index + 1}`}
+                    className="h-full w-full object-cover"
                     onError={() => handleImageError(index)}
                   />
                 </div>

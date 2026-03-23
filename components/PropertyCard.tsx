@@ -92,7 +92,7 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
         href={`/property/${listing.id}`}
         id={`property-link-${listing.id}`}
         data-automation={`link-to-${listing.id}`}
-        className={`block ${canDelete ? "pr-28" : ""}`}
+        className="block"
       >
         <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
           <Image

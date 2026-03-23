@@ -6,6 +6,7 @@ import { validateListingForm } from "@/lib/validation";
 import { HouseListing, LandListing, ListingType } from "@/lib/types";
 import { normalizeCurrency } from "@/lib/currency";
 import { deleteUploadedFiles, saveUploadedPhotos } from "@/lib/listing-media";
+import { resolveListingTypeFromCategoryId } from "@/lib/categories";
 
 function getListingType(formValue: string): ListingType | "" {
   return formValue === "house" || formValue === "land" ? formValue : "";
@@ -26,6 +27,8 @@ export async function POST(request: Request) {
   const location = String(formData.get("location") ?? "");
   const areaSqm = String(formData.get("areaSqm") ?? "");
   const description = String(formData.get("description") ?? "");
+  const status = String(formData.get("status") ?? "");
+  const categoryId = String(formData.get("categoryId") ?? "");
   const roomCount = String(formData.get("roomCount") ?? "");
   const floorNumber = String(formData.get("floorNumber") ?? "");
   const heatingType = String(formData.get("heatingType") ?? "");
@@ -40,6 +43,8 @@ export async function POST(request: Request) {
 
   const errors = await validateListingForm({
     type,
+    status: status as "satilik" | "kiralik",
+    categoryId,
     title,
     price,
     currency,
@@ -65,6 +70,32 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!categoryId.trim()) {
+    return NextResponse.json(
+      {
+        ok: false,
+        errors: {
+          categoryId: t.errors.categoryRequired
+        }
+      },
+      { status: 400 }
+    );
+  }
+
+  const resolvedType = await resolveListingTypeFromCategoryId(categoryId.trim());
+
+  if (!resolvedType) {
+    return NextResponse.json(
+      {
+        ok: false,
+        errors: {
+          categoryId: t.errors.categoryInvalid
+        }
+      },
+      { status: 400 }
+    );
+  }
+
   const listingId = crypto.randomUUID();
 
   let savedImageNames: string[] = [];
@@ -73,10 +104,12 @@ export async function POST(request: Request) {
     savedImageNames = await saveUploadedPhotos(listingId, photos);
 
     const listing =
-      type === "house"
+      resolvedType === "house"
         ? ({
             refId: 0,
             isFeatured,
+            status: status as "satilik" | "kiralik",
+            categoryId: categoryId.trim(),
             type: "house",
             title: title.trim(),
             price: Number(price),
@@ -94,6 +127,8 @@ export async function POST(request: Request) {
         : ({
             refId: 0,
             isFeatured,
+            status: status as "satilik" | "kiralik",
+            categoryId: categoryId.trim(),
             type: "land",
             title: title.trim(),
             price: Number(price),
