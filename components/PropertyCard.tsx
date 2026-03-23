@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Bed, Maximize, Map, Star } from "lucide-react";
 import { DeleteListingButton } from "@/components/DeleteListingButton";
 import { formatListingPrice } from "@/lib/currency";
-import { getOptimizedCloudinaryUrl } from "@/lib/image-url";
 import { Listing } from "@/lib/types";
 import { useTranslation } from "@/context/TranslationContext";
 
@@ -69,7 +68,7 @@ function renderPrimarySpecs(listing: Listing, t: Translation) {
 
 export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) {
   const { t } = useTranslation();
-  const coverImage = listing.images[0] ? getOptimizedCloudinaryUrl(listing.images[0]) : "/property-placeholder.svg";
+  const coverImage = listing.images[0] ?? "/property-placeholder.svg";
   const isHouse = listing.type === "house";
 
   return (

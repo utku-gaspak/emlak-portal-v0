@@ -12,6 +12,7 @@ type FormFields = Omit<ListingInput, "type" | "price" | "areaSqm" | "photos" | "
   longitude?: string;
   photos: Array<File | string>;
   existingPhotos?: string[];
+  heatingType?: string | null;
 };
 
 function isListingType(value: string): value is ListingType {
@@ -94,8 +95,24 @@ export async function validateListingForm(fields: FormFields): Promise<Validatio
       errors.floorNumber = t.errors.floorNumberRequired;
     }
 
-    if (requiresHeatingType && !fields.heatingType?.trim()) {
+    const heatingType = fields.heatingType?.trim() ?? "";
+
+    if (requiresHeatingType && !heatingType) {
       errors.heatingType = t.errors.heatingTypeRequired;
+    } else if (heatingType) {
+      const allowedHeatingTypes = [
+        "Doğalgaz (Kombi)",
+        "Merkezi Sistem",
+        "Yerden Isıtma",
+        "Klima",
+        "Soba / Katı Yakıt",
+        "Isı Pompası",
+        "Yok"
+      ];
+
+      if (!allowedHeatingTypes.includes(heatingType)) {
+        errors.heatingType = t.errors.heatingTypeRequired;
+      }
     }
   }
 

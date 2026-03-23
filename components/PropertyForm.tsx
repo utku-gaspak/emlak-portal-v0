@@ -455,6 +455,11 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
     formData.set("currency", formState.currency);
     formData.set("latitude", formState.latitude);
     formData.set("longitude", formState.longitude);
+    formData.set("heatingType", isHouse && showHeatingType ? formState.heatingType.trim() : "");
+    console.log("Form submit values:", {
+      ...Object.fromEntries(formData.entries()),
+      heatingType: isHouse && showHeatingType ? formState.heatingType.trim() : ""
+    });
 
     if (formState.isFeatured) {
       formData.set("isFeatured", "on");

@@ -8,7 +8,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, MessageCircle, X } from "lucide-react";
 import { useTranslation } from "@/context/TranslationContext";
 import { getClientLocale } from "@/lib/locale";
-import { getOptimizedCloudinaryUrl } from "@/lib/image-url";
 import { getPropertyWhatsAppHref } from "@/lib/contact-links";
 
 type ImageGalleryProps = {
@@ -19,8 +18,6 @@ type ImageGalleryProps = {
 };
 
 const PLACEHOLDER_SRC = "/property-placeholder.svg";
-const DEFAULT_LIGHTBOX_WIDTH = 1600;
-const DEFAULT_THUMB_WIDTH = 700;
 const DEFAULT_LOCALE = "tr" as const;
 
 function buildAltText(title: string, index: number, suffix: string) {
@@ -109,9 +106,7 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
   }, [hasPhotos, imageCount, isLightboxOpen]);
 
   const currentImageFile = normalizedImages[selectedIndex];
-  const currentImageSrc = currentImageFile
-    ? getOptimizedCloudinaryUrl(currentImageFile, DEFAULT_LIGHTBOX_WIDTH)
-    : PLACEHOLDER_SRC;
+  const currentImageSrc = currentImageFile ? currentImageFile : PLACEHOLDER_SRC;
   const whatsappHref = listingRef ? getPropertyWhatsAppHref(title, listingRef, locale) : "";
 
   const handleImageError = (index: number) => {
@@ -299,7 +294,7 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
                   <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
                     {previewImages.map((image, index) => {
                       const isSelected = index === selectedIndex;
-                      const thumbSrc = failedImages[index] ? PLACEHOLDER_SRC : getOptimizedCloudinaryUrl(image, DEFAULT_THUMB_WIDTH);
+                      const thumbSrc = failedImages[index] ? PLACEHOLDER_SRC : image;
                       const previewKey = currentPreviewKey(index);
                       const hasLoaded = loadedImages[previewKey];
                       const isLastPreview = remainingCount > 0 && index === previewCount - 1;
@@ -366,7 +361,7 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
               <Image
                 id="main-image-display"
                 data-automation="main-property-image"
-                src={failedImages[selectedIndex] ? PLACEHOLDER_SRC : getOptimizedCloudinaryUrl(currentImageFile ?? "", DEFAULT_LIGHTBOX_WIDTH)}
+                src={failedImages[selectedIndex] ? PLACEHOLDER_SRC : currentImageSrc}
                 alt={buildAltText(title, selectedIndex, "featured photo")}
                 fill
                 sizes="(max-width: 1024px) 100vw, 720px"
@@ -382,7 +377,7 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {previewImages.map((image, index) => {
               const isSelected = selectedIndex === index;
-              const imageSrc = failedImages[index] || !image ? PLACEHOLDER_SRC : getOptimizedCloudinaryUrl(image, DEFAULT_THUMB_WIDTH);
+              const imageSrc = failedImages[index] || !image ? PLACEHOLDER_SRC : image;
               const previewKey = `${listingId ?? "listing"}-page-preview-${index}`;
               const hasLoaded = loadedImages[previewKey];
               const isLastPreview = remainingCount > 0 && index === previewCount - 1;

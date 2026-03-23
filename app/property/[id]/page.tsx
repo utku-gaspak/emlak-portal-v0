@@ -7,7 +7,6 @@ import { PropertyMap } from "@/components/PropertyMap";
 import { ViewCounter } from "@/components/ViewCounter";
 import { formatListingPrice } from "@/lib/currency";
 import { getListingById } from "@/lib/listings-store";
-import { getOptimizedCloudinaryUrl } from "@/lib/image-url";
 import { getFirmName } from "@/lib/brand";
 import { getDictionary } from "@/lib/get-dictionary";
 import { getSiteUrl } from "@/lib/site-url";
@@ -25,16 +24,10 @@ function buildOgImage(listingImage?: string | null): string | null {
     return null;
   }
 
-  const optimized = getOptimizedCloudinaryUrl(listingImage, 1000);
-
-  if (/^https?:\/\//i.test(optimized)) {
-    return optimized;
-  }
-
   try {
-    return new URL(optimized, SITE_URL).toString();
+    return new URL(listingImage, SITE_URL).toString();
   } catch {
-    return null;
+    return listingImage;
   }
 }
 

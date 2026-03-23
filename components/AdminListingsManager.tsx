@@ -7,7 +7,6 @@ import { Check, ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Listing } from "@/lib/types";
 import { formatListingPrice } from "@/lib/currency";
-import { getOptimizedCloudinaryUrl } from "@/lib/image-url";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -249,7 +248,7 @@ export function AdminListingsManager({
                       <td className="px-4 py-4">
                         <div className="relative h-16 w-24 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
                           <Image
-                            src={getOptimizedCloudinaryUrl(thumbnail)}
+                            src={thumbnail}
                             alt={`${listing.title} preview`}
                             fill
                             className="object-cover"

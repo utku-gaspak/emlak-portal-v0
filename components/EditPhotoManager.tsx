@@ -5,7 +5,6 @@ import Image from "next/image";
 import { Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/context/TranslationContext";
-import { getOptimizedCloudinaryUrl } from "@/lib/image-url";
 
 type EditPhotoManagerProps = {
   listingId: string;
@@ -74,7 +73,7 @@ export function EditPhotoManager({ listingId, listingTitle, images }: EditPhotoM
         {Array.from({ length: normalizedImages.length }).map((_, index) => {
           const isProcessing = processingIndex === index;
           const imageFile = normalizedImages[index];
-          const imageSrc = imageFile ? getOptimizedCloudinaryUrl(imageFile) : PLACEHOLDER_SRC;
+          const imageSrc = imageFile || PLACEHOLDER_SRC;
 
           return (
             <div

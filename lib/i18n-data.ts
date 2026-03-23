@@ -469,18 +469,18 @@ const trOverrides = {
     socialTwitter: "Twitter"
   },
   features: {
-    badge: "CORPORATE APPROACH",
-    title: "Making the real estate experience simpler, more elegant, and more reliable.",
-    subtitle: "We bring buyers and sellers together at the perfect point with exclusive portfolios, professional presentation, and transparent processes.",
-    card1_title: "Exclusive Portfolio",
-    card1_desc: "Hand-picked listings",
-    card2_title: "Smart Analysis",
-    card2_desc: "Detailed comparison",
-    card3_title: "Secure",
-    card3_desc: "Transparent process"
+    badge: "KURUMSAL YAKLAŞIM",
+    title: "Gayrimenkul deneyimini daha sade, daha şık ve daha güvenilir hale getiriyoruz.",
+    subtitle: "En özel portföyler, profesyonel sunum ve şeffaf işlem süreciyle alıcı ve satıcıyı en doğru noktada buluşturuyoruz.",
+    card1_title: "Özel Portföy",
+    card1_desc: "Sizin için seçilmiş ilanlar",
+    card2_title: "Hızlı Analiz",
+    card2_desc: "Detaylı karşılaştırma",
+    card3_title: "Güvenli",
+    card3_desc: "Şeffaf işlem süreci"
   },
-  feature_3_title: "Secure",
-  feature_3_desc: "Transparent process",
+  feature_3_title: "Güvenli",
+  feature_3_desc: "Şeffaf işlem süreci",
   propertyDetail: {
     houseTypeBadge: "Konut",
     landTypeBadge: "Arsa",
