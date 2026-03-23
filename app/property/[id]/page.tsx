@@ -130,50 +130,50 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
             </div>
 
             <div
-              className={`grid w-full grid-cols-2 gap-4 rounded-[1.2rem] border border-slate-200 bg-slate-950/20 p-2 shadow-[0_14px_34px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-950/15 ${
+              className={`grid w-full grid-cols-2 gap-4 overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-950 px-4 py-6 text-white shadow-[0_14px_34px_rgba(15,23,42,0.18)] backdrop-blur-md sm:px-6 ${
                 hasHeatingType ? "md:grid-cols-5" : "md:grid-cols-4"
               }`}
             >
-              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-center">
-                  <Ruler className="h-4 w-4 shrink-0 text-amber-300" />
-                  <div className="min-w-0 text-center">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.areaLabel}</p>
-                    <p className="truncate text-sm font-black text-white">
-                      {listing.areaSqm} {t.common.squareMetersUnit}
-                    </p>
-                  </div>
+              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-3 text-center">
+                <Ruler className="h-4 w-4 shrink-0 text-amber-500" />
+                <div className="min-w-0 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.areaLabel}</p>
+                  <p className="truncate text-sm font-semibold text-white">
+                    {listing.areaSqm} {t.common.squareMetersUnit}
+                  </p>
+                </div>
               </div>
 
-              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-center">
-                  <MapPin className="h-4 w-4 shrink-0 text-emerald-300" />
-                  <div className="min-w-0 text-center">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.locationLabel}</p>
-                    <p className="truncate text-sm font-black text-white">{listing.location}</p>
-                  </div>
+              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-3 text-center">
+                <MapPin className="h-4 w-4 shrink-0 text-amber-500" />
+                <div className="min-w-0 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.locationLabel}</p>
+                  <p className="truncate text-sm font-semibold text-white">{listing.location}</p>
+                </div>
               </div>
 
-                <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-center">
-                  <Tag className="h-4 w-4 shrink-0 text-brand-300" />
-                  <div className="min-w-0 text-center">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.filters.statusLabel}</p>
-                    <p className="truncate text-sm font-black text-white">{listingStatusLabel}</p>
-                  </div>
+              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-3 text-center">
+                <Tag className="h-4 w-4 shrink-0 text-amber-500" />
+                <div className="min-w-0 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.filters.statusLabel}</p>
+                  <p className="truncate text-sm font-semibold text-white">{listingStatusLabel}</p>
+                </div>
               </div>
 
-              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-center">
-                  <Camera className="h-4 w-4 shrink-0 text-sky-300" />
-                  <div className="min-w-0 text-center">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.photosLabel}</p>
-                    <p className="truncate text-sm font-black text-white">{listing.images.length}</p>
-                  </div>
+              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-3 text-center">
+                <Camera className="h-4 w-4 shrink-0 text-amber-500" />
+                <div className="min-w-0 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.photosLabel}</p>
+                  <p className="truncate text-sm font-semibold text-white">{listing.images.length}</p>
+                </div>
               </div>
 
               {hasHeatingType ? (
-                <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-center">
-                  <Thermometer className="h-4 w-4 shrink-0 text-rose-300" />
+                <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-3 text-center">
+                  <Thermometer className="h-4 w-4 shrink-0 text-amber-500" />
                   <div className="min-w-0 text-center">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.heatingLabel}</p>
-                    <p className="truncate text-sm font-black text-white">{heatingType}</p>
+                    <p className="truncate text-sm font-semibold text-white">{heatingType}</p>
                   </div>
                 </div>
               ) : null}
