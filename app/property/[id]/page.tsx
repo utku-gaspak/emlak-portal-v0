@@ -5,7 +5,7 @@ import { Eye } from "lucide-react";
 import { CommunicationActionBar } from "@/components/CommunicationActionBar";
 import { PropertyGallery } from "@/components/PropertyGallery";
 import { PropertyMap } from "@/components/PropertyMap";
-import { ViewCountTracker } from "@/components/ViewCountTracker";
+import { ViewCounter } from "@/components/ViewCounter";
 import { formatListingPrice } from "@/lib/currency";
 import { getListingById } from "@/lib/listings-store";
 import { getOptimizedCloudinaryUrl } from "@/lib/image-url";
@@ -158,8 +158,8 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
         </div>
       </section>
 
+      <ViewCounter id={listing.id} />
       <CommunicationActionBar listingTitle={listing.title} />
-      <ViewCountTracker listingId={listing.id} />
 
       <section className="space-y-5 rounded-[2.5rem] border border-slate-200 bg-white p-6 shadow-[0_22px_70px_rgba(15,23,42,0.06)] sm:p-8 dark:border-slate-800 dark:bg-slate-900/80">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

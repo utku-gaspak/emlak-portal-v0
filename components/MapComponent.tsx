@@ -7,6 +7,7 @@ type MapComponentProps = {
   title: string;
   latitude: number;
   longitude: number;
+  zoom?: number;
   selectable?: boolean;
   onChange?: (latitude: number, longitude: number) => void;
   markerLabel?: string;
@@ -29,6 +30,7 @@ export function MapComponent({
   title,
   latitude,
   longitude,
+  zoom = 14,
   selectable = false,
   onChange,
   markerLabel = "Gaspak Emlak",
@@ -88,7 +90,7 @@ export function MapComponent({
 
     const map = L.map(container, {
       center: [latitude, longitude],
-      zoom: 15,
+      zoom,
       scrollWheelZoom: false,
       zoomControl: true
     });
@@ -167,9 +169,9 @@ export function MapComponent({
     }
 
     const nextCenter: [number, number] = [latitude, longitude];
-    mapRef.current.setView(nextCenter, mapRef.current.getZoom(), { animate: true });
+    mapRef.current.setView(nextCenter, zoom, { animate: true });
     markerRef.current.setLatLng(nextCenter);
-  }, [latitude, longitude]);
+  }, [latitude, longitude, zoom]);
 
   if (!isMounted) {
     return <div className="h-full w-full animate-pulse bg-slate-100 dark:bg-slate-800/60" />;

@@ -26,8 +26,8 @@ type LocationPickerModalProps = {
 };
 
 const DEFAULT_CENTER: Coordinates = {
-  latitude: 41.0082,
-  longitude: 28.9784
+  latitude: 41.6771,
+  longitude: 26.5592
 };
 
 function isValidCoordinate(value: number | null, min: number, max: number): value is number {

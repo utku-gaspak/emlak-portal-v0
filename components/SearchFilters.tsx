@@ -327,11 +327,8 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
           </div>
         </div>
 
-        <div
-          id="advanced-search-panel"
-          className={`relative overflow-hidden transition-all duration-300 ease-out ${isAdvancedOpen ? "max-h-[2200px] opacity-100 translate-y-0 mt-0 pointer-events-auto" : "max-h-0 opacity-0 -translate-y-2 pointer-events-none"}`}
-        >
-          <div className="fixed inset-0 z-50 p-4 md:static md:inset-auto md:z-auto md:p-0">
+        <div id="advanced-search-panel" className="relative md:block">
+          <div className={`fixed inset-0 z-50 p-4 md:static md:inset-auto md:z-auto md:block md:p-0 ${isAdvancedOpen ? "block" : "hidden md:block"}`}>
             <button
               type="button"
               aria-label={closeLabel}
@@ -340,7 +337,7 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
             />
 
             <div
-              className={`relative flex h-full max-h-[calc(100vh-2rem)] w-full flex-col overflow-y-auto rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_28px_80px_rgba(15,23,42,0.18)] transition-all duration-300 ease-out sm:p-6 md:mt-4 md:max-h-none md:h-auto md:rounded-3xl dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_28px_80px_rgba(2,6,23,0.4)] ${isAdvancedOpen ? "scale-100 opacity-100" : "scale-[0.98] opacity-0 md:scale-100 md:opacity-100"}`}
+              className={`relative flex h-full max-h-[calc(100vh-2rem)] w-full flex-col overflow-y-auto rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_28px_80px_rgba(15,23,42,0.18)] transition-all duration-300 ease-out sm:p-6 md:mt-4 md:block md:max-h-none md:h-auto md:rounded-3xl dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_28px_80px_rgba(2,6,23,0.4)] ${isAdvancedOpen ? "scale-100 opacity-100" : "scale-[0.98] opacity-0 md:scale-100 md:opacity-100"}`}
             >
               <div className="mb-5 flex items-center justify-between gap-4 md:hidden">
                 <div>
@@ -545,9 +542,6 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
             </div>
           </div>
         </div>
-        <button type="submit" className="sr-only" aria-hidden="true" tabIndex={-1}>
-          {searchActionLabel}
-        </button>
       </form>
     </section>
   );
