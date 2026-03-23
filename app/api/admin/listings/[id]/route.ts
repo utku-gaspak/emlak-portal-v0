@@ -17,6 +17,12 @@ function getListingType(formValue: string, fallback: ListingType): ListingType {
 }
 
 export async function GET(_request: Request, { params }: { params: RouteParams }) {
+  const t = await getDictionary();
+
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });
+  }
+
   const { id } = await params;
   const listing = await getListingById(id);
 

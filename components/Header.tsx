@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Home, MessageCircle } from "lucide-react";
+import { Home, MessageCircle } from "lucide-react";
 import { getDictionary } from "@/lib/get-dictionary";
 import { getFirmName } from "@/lib/brand";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -62,13 +62,6 @@ export async function Header() {
             <ThemeToggle />
             <LanguageSwitcher />
 
-            <Link
-              href="/admin/add"
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-blue-600/25 transition hover:-translate-y-0.5 hover:shadow-xl sm:px-4 sm:py-2.5 sm:text-sm"
-            >
-              <ArrowUpRight className="h-4 w-4" />
-              <span>{t.siteHeader.listProperty}</span>
-            </Link>
           </div>
         </div>
 

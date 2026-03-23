@@ -14,8 +14,6 @@ export async function Footer() {
       : `© ${new Date().getFullYear()} ${firmName}. Tüm hakları saklıdır.`;
   const contact = getPublicContactConfig();
   const isAuthenticated = await isAdminAuthenticated();
-  const adminHref = isAuthenticated ? "/admin/listings" : "/admin/login";
-  const adminLabel = isAuthenticated ? t.siteHeader.dashboard : t.footer.adminLogin;
   const socialLinks = [
     { href: contact.instagramUrl || "#", label: t.footer.socialInstagram, icon: Instagram, external: Boolean(contact.instagramUrl) },
     { href: contact.facebookUrl || "#", label: t.footer.socialFacebook, icon: Facebook, external: Boolean(contact.facebookUrl) }
@@ -67,11 +65,13 @@ export async function Footer() {
                   {t.footer.allListings}
                 </Link>
               </li>
-              <li>
-                <Link className="text-slate-400 transition hover:text-white" href={adminHref}>
-                  {adminLabel}
-                </Link>
-              </li>
+              {isAuthenticated ? (
+                <li>
+                  <Link className="text-slate-400 transition hover:text-white" href="/admin/listings">
+                    {t.siteHeader.dashboard}
+                  </Link>
+                </li>
+              ) : null}
             </ul>
           </div>
 

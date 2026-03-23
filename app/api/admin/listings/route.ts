@@ -53,6 +53,12 @@ function buildInsertData(args: {
 }
 
 export async function GET() {
+  const t = await getDictionary();
+
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });
+  }
+
   const { data, error } = await supabase.from(LISTINGS_TABLE).select("*").order("created_at", { ascending: false });
 
   if (error) {
