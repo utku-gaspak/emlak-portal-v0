@@ -2,19 +2,20 @@
 
 import { useState } from "react";
 import { MessageCircle, Phone, Share2, Check } from "lucide-react";
-import { getCallHref, getWhatsAppHref } from "@/lib/contact-links";
+import { getCallHref, getPropertyWhatsAppHref } from "@/lib/contact-links";
 import { getClientLocale } from "@/lib/locale";
 import { useTranslation } from "@/context/TranslationContext";
 
 type CommunicationActionBarProps = {
   listingTitle: string;
+  listingRef: string | number;
 };
 
-export function CommunicationActionBar({ listingTitle }: CommunicationActionBarProps) {
+export function CommunicationActionBar({ listingTitle, listingRef }: CommunicationActionBarProps) {
   const { t } = useTranslation();
   const locale = getClientLocale();
   const [shareState, setShareState] = useState<"idle" | "copied" | "error">("idle");
-  const whatsappHref = getWhatsAppHref(listingTitle, locale);
+  const whatsappHref = getPropertyWhatsAppHref(listingTitle, listingRef, locale);
   const callHref = getCallHref();
   const availableActions = [whatsappHref, callHref, "share"].filter(Boolean).length;
 

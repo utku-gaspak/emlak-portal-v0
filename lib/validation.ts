@@ -1,5 +1,7 @@
-﻿import { ListingInput, ListingType, ValidationErrors } from "@/lib/types";
+import { ListingInput, ListingType, ValidationErrors } from "@/lib/types";
 import { getDictionary } from "@/lib/get-dictionary";
+import { getCategoryById } from "@/lib/categories";
+import { shouldShowHeatingType } from "@/lib/category-utils";
 
 type FormFields = Omit<ListingInput, "type" | "price" | "areaSqm" | "photos" | "isFeatured"> & {
   isFeatured?: boolean;
@@ -19,6 +21,9 @@ function isListingType(value: string): value is ListingType {
 export async function validateListingForm(fields: FormFields): Promise<ValidationErrors> {
   const t = await getDictionary();
   const errors: ValidationErrors = {};
+  const selectedCategory = fields.categoryId.trim() ? await getCategoryById(fields.categoryId.trim()) : null;
+  const selectedParentCategory = selectedCategory?.parentId ? await getCategoryById(selectedCategory.parentId) : null;
+  const requiresHeatingType = fields.type === "house" && shouldShowHeatingType(selectedCategory, selectedParentCategory);
 
   if (!isListingType(fields.type)) {
     errors.type = t.errors.propertyTypeRequired;
@@ -89,7 +94,7 @@ export async function validateListingForm(fields: FormFields): Promise<Validatio
       errors.floorNumber = t.errors.floorNumberRequired;
     }
 
-    if (!fields.heatingType?.trim()) {
+    if (requiresHeatingType && !fields.heatingType?.trim()) {
       errors.heatingType = t.errors.heatingTypeRequired;
     }
   }
@@ -110,4 +115,3 @@ export async function validateListingForm(fields: FormFields): Promise<Validatio
 
   return errors;
 }
-

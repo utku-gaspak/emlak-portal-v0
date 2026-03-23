@@ -38,6 +38,47 @@ export function determineListingTypeFromCategory(
   return "house";
 }
 
+export function shouldShowHeatingType(
+  category?: Pick<Category, "name" | "slug"> | null,
+  parentCategory?: Pick<Category, "name" | "slug"> | null
+): boolean {
+  const haystack = normalizeLookupValue([category?.name ?? "", category?.slug ?? "", parentCategory?.name ?? "", parentCategory?.slug ?? ""].join(" "));
+
+  if (
+    haystack.includes("arsa") ||
+    haystack.includes("tarla") ||
+    haystack.includes("land") ||
+    haystack.includes("plot") ||
+    haystack.includes("ticari") ||
+    haystack.includes("is yeri") ||
+    haystack.includes("isyeri") ||
+    haystack.includes("office") ||
+    haystack.includes("commercial") ||
+    haystack.includes("shop") ||
+    haystack.includes("magaza") ||
+    haystack.includes("depo") ||
+    haystack.includes("warehouse")
+  ) {
+    return false;
+  }
+
+  if (
+    haystack.includes("konut") ||
+    haystack.includes("daire") ||
+    haystack.includes("villa") ||
+    haystack.includes("mustakil") ||
+    haystack.includes("apart") ||
+    haystack.includes("ev") ||
+    haystack.includes("house") ||
+    haystack.includes("home") ||
+    haystack.includes("residence")
+  ) {
+    return true;
+  }
+
+  return determineListingTypeFromCategory(category, parentCategory) === "house";
+}
+
 export function findCategoryById(categories: Category[], categoryId: string): Category | null {
   return categories.find((category) => category.id === categoryId) ?? null;
 }

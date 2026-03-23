@@ -10,8 +10,8 @@ export async function Footer() {
   const firmName = getFirmName();
   const copyrightLine =
     t.meta.lang === "en"
-      ? `Â© ${new Date().getFullYear()} ${firmName}. All rights reserved.`
-      : `Â© ${new Date().getFullYear()} ${firmName}. TÃ¼m haklarÄ± saklÄ±dÄ±r.`;
+      ? `© ${new Date().getFullYear()} ${firmName}. All rights reserved.`
+      : `© ${new Date().getFullYear()} ${firmName}. Tüm hakları saklıdır.`;
   const contact = getPublicContactConfig();
   const isAuthenticated = await isAdminAuthenticated();
   const socialLinks = [
@@ -130,4 +130,5 @@ export async function Footer() {
     </footer>
   );
 }
+
 

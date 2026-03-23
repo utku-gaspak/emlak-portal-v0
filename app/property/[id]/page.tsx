@@ -1,9 +1,8 @@
-import Image from "next/image";
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Eye } from "lucide-react";
+import { Camera, Eye, MapPin, Ruler, Tag, Thermometer } from "lucide-react";
 import { CommunicationActionBar } from "@/components/CommunicationActionBar";
-import { PropertyGallery } from "@/components/PropertyGallery";
+import { ImageGallery } from "@/components/ImageGallery";
 import { PropertyMap } from "@/components/PropertyMap";
 import { ViewCounter } from "@/components/ViewCounter";
 import { formatListingPrice } from "@/lib/currency";
@@ -105,73 +104,97 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     notFound();
   }
 
-  const featuredImage = listing.images[0] ? getOptimizedCloudinaryUrl(listing.images[0]) : "/property-placeholder.svg";
-  const featuredAlt = listing.images[0] ? `${listing.title} ${t.propertyDetail.featuredPhotoAlt}` : t.propertyDetail.placeholderAlt;
+  const heatingType = listing.type === "house" ? listing.heatingType?.trim() ?? "" : "";
+  const hasHeatingType = Boolean(heatingType);
+  const listingStatusLabel = listing.status === "satilik" ? t.filters.statusForSale : t.filters.statusForRent;
 
   return (
     <div data-automation="property-detail-container" className="mx-auto max-w-5xl space-y-8">
       <section className="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-[0_22px_70px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-[0_22px_70px_rgba(2,6,23,0.35)]">
-        <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:p-10">
-          <div className="space-y-6">
+        <div className="space-y-8 p-6 sm:p-8 lg:p-10">
+          <div className="space-y-7 lg:space-y-8">
             <div className="inline-flex rounded-full bg-brand-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-brand-700 dark:bg-amber-500/10 dark:text-amber-400">
               {listing.type === "house" ? t.propertyDetail.houseTypeBadge : t.propertyDetail.landTypeBadge}
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <h1 id="detail-title" data-automation="detail-title" className="text-4xl font-black tracking-tight text-slate-950 dark:text-slate-100 sm:text-5xl">
                 {listing.title}
               </h1>
-              <p id="detail-price" data-automation="detail-price" className="text-3xl font-black text-brand-700 dark:text-amber-400">
+              <p id="detail-price" data-automation="detail-price" className="text-3xl font-black text-brand-700 dark:text-amber-400 sm:text-4xl">
                 {formatListingPrice(listing.price, listing.currency)}
               </p>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
-                {t.propertyCard.refLabel}: {listing.refId}
-              </p>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
-                <p className="max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">{listing.location}</p>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800/80 dark:text-slate-300">
-                  <Eye className="h-3.5 w-3.5" />
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
+                  {t.propertyCard.refLabel}: {listing.refId}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200">
+                  <Eye className="h-4 w-4" />
                   {listing.viewCount ?? 0}
                 </span>
               </div>
+
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl bg-slate-50 p-5 dark:bg-slate-950/60">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{t.propertyDetail.areaLabel}</p>
-                <p className="mt-2 text-lg font-bold text-slate-900 dark:text-slate-100">
-                  {listing.areaSqm} {t.common.squareMetersUnit}
-                </p>
+            <div
+              className={`grid w-full grid-cols-2 gap-4 rounded-[1.2rem] border border-slate-200 bg-slate-950/20 p-2 shadow-[0_14px_34px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-950/15 ${
+                hasHeatingType ? "md:grid-cols-5" : "md:grid-cols-4"
+              }`}
+            >
+              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-center">
+                  <Ruler className="h-4 w-4 shrink-0 text-amber-300" />
+                  <div className="min-w-0 text-center">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.areaLabel}</p>
+                    <p className="truncate text-sm font-black text-white">
+                      {listing.areaSqm} {t.common.squareMetersUnit}
+                    </p>
+                  </div>
               </div>
-              <div className="rounded-3xl bg-slate-50 p-5 dark:bg-slate-950/60">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{t.propertyDetail.photosLabel}</p>
-                <p className="mt-2 text-lg font-bold text-slate-900 dark:text-slate-100">{listing.images.length}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="relative overflow-hidden rounded-[2rem] bg-slate-100 shadow-[0_20px_60px_rgba(15,23,42,0.12)] dark:bg-slate-800">
-            <div className="relative aspect-[4/3] w-full sm:aspect-[16/10] lg:aspect-[4/3]">
-              <Image src={featuredImage} alt={featuredAlt} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 480px" priority />
+              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-center">
+                  <MapPin className="h-4 w-4 shrink-0 text-emerald-300" />
+                  <div className="min-w-0 text-center">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.locationLabel}</p>
+                    <p className="truncate text-sm font-black text-white">{listing.location}</p>
+                  </div>
+              </div>
+
+                <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-center">
+                  <Tag className="h-4 w-4 shrink-0 text-brand-300" />
+                  <div className="min-w-0 text-center">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.filters.statusLabel}</p>
+                    <p className="truncate text-sm font-black text-white">{listingStatusLabel}</p>
+                  </div>
+              </div>
+
+              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-center">
+                  <Camera className="h-4 w-4 shrink-0 text-sky-300" />
+                  <div className="min-w-0 text-center">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.photosLabel}</p>
+                    <p className="truncate text-sm font-black text-white">{listing.images.length}</p>
+                  </div>
+              </div>
+
+              {hasHeatingType ? (
+                <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-center">
+                  <Thermometer className="h-4 w-4 shrink-0 text-rose-300" />
+                  <div className="min-w-0 text-center">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.heatingLabel}</p>
+                    <p className="truncate text-sm font-black text-white">{heatingType}</p>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-3 shadow-[0_22px_70px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-[0_22px_70px_rgba(2,6,23,0.35)] sm:p-4 lg:p-5">
+        <ImageGallery listingId={listing.id} listingRef={listing.refId} title={listing.title} images={listing.images} />
       </section>
 
       <ViewCounter id={listing.id} />
-      <CommunicationActionBar listingTitle={listing.title} />
-
-      <section className="space-y-5 rounded-[2.5rem] border border-slate-200 bg-white p-6 shadow-[0_22px_70px_rgba(15,23,42,0.06)] sm:p-8 dark:border-slate-800 dark:bg-slate-900/80">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700 dark:text-amber-400">{t.propertyDetail.galleryEyebrow}</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-slate-100">{t.propertyDetail.galleryTitle}</h2>
-          </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{t.propertyDetail.galleryDescription}</p>
-        </div>
-
-        <PropertyGallery listingId={listing.id} title={listing.title} images={listing.images} />
-      </section>
+      <CommunicationActionBar listingTitle={listing.title} listingRef={listing.refId} />
 
       <section className="rounded-[2.5rem] bg-slate-950 px-6 py-8 text-white shadow-[0_22px_70px_rgba(15,23,42,0.2)] sm:px-8 dark:bg-slate-900 dark:shadow-[0_22px_70px_rgba(2,6,23,0.35)]">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-300 dark:text-slate-400">{t.propertyDetail.specifications}</p>
@@ -219,3 +242,5 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     </div>
   );
 }
+
+

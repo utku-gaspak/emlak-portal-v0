@@ -2,6 +2,7 @@ const phoneNumber = process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "";
 const emailAddress = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "";
 const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "";
 const facebookUrl = process.env.NEXT_PUBLIC_FACEBOOK_URL ?? "";
+const firmName = process.env.NEXT_PUBLIC_FIRM_NAME?.trim() || "Gaspak Emlak";
 
 type Locale = "tr" | "en";
 
@@ -13,8 +14,8 @@ type PublicContactConfig = {
 };
 
 const whatsappMessages: Record<Locale, (listingTitle: string) => string> = {
-  tr: (listingTitle) => `Merhaba, ${listingTitle} ilanı için bilgi almak istiyorum.`,
-  en: (listingTitle) => `Hello, I am interested in: ${listingTitle}`
+  tr: (listingTitle) => `Merhaba ${firmName}, ${listingTitle} ilanı için bilgi almak istiyorum.`,
+  en: (listingTitle) => `Hello ${firmName}, I am interested in the ${listingTitle} listing.`
 };
 
 function sanitizeWhatsAppNumber(value: string): string {
@@ -71,6 +72,21 @@ export function getWhatsAppHref(listingTitle: string, locale: Locale = "tr"): st
   const message = encodeURIComponent(whatsappMessages[locale]?.(listingTitle) ?? whatsappMessages.tr(listingTitle));
 
   return `https://wa.me/${number}?text=${message}`;
+}
+
+export function getPropertyWhatsAppHref(listingTitle: string, refId: string | number, locale: Locale = "tr"): string {
+  const number = sanitizeWhatsAppNumber(getPublicContactConfig().phone);
+
+  if (!number) {
+    return "";
+  }
+
+  const message =
+    locale === "en"
+      ? `Hello ${firmName}, I would like information about the ${listingTitle} listing (Ref: ${refId}).`
+      : `Merhaba ${firmName}, ${listingTitle} (Ref: ${refId}) ilanı hakkında bilgi almak istiyorum.`;
+
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
 
 export function getCallHref(): string {

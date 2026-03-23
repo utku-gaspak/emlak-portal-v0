@@ -8,11 +8,13 @@ import { useToast } from "@/components/ToastProvider";
 import { CategoryDropdown } from "@/components/CategoryDropdown";
 import { StatusDropdown } from "@/components/StatusDropdown";
 import { LocationPickerModal } from "@/components/LocationPickerModal";
+import { ChevronDown } from "lucide-react";
 import {
   determineListingTypeFromCategory,
   findCategoryById,
   getChildCategories,
-  getPreferredParentCategoryId
+  getPreferredParentCategoryId,
+  shouldShowHeatingType
 } from "@/lib/category-utils";
 
 type ListingField =
@@ -92,6 +94,22 @@ const ISTANBUL_COORDINATES = {
   longitude: 28.9784
 };
 
+const HEATING_TYPE_OPTIONS = [
+  { value: "Doğalgaz (Kombi)", labelTr: "Doğalgaz (Kombi)", labelEn: "Natural Gas (Combi)" },
+  { value: "Merkezi Sistem", labelTr: "Merkezi Sistem", labelEn: "Central System" },
+  { value: "Yerden Isıtma", labelTr: "Yerden Isıtma", labelEn: "Underfloor Heating" },
+  { value: "Klima", labelTr: "Klima", labelEn: "Air Conditioning" },
+  { value: "Soba / Katı Yakıt", labelTr: "Soba / Katı Yakıt", labelEn: "Stove / Solid Fuel" },
+  { value: "Isı Pompası", labelTr: "Isı Pompası", labelEn: "Heat Pump" },
+  { value: "Yok", labelTr: "Yok", labelEn: "None" }
+] as const;
+
+const CURRENCY_OPTIONS = [
+  { value: "TL", labelTr: "₺ TL", labelEn: "₺ TL" },
+  { value: "USD", labelTr: "$ USD", labelEn: "$ USD" },
+  { value: "EUR", labelTr: "€ EUR", labelEn: "€ EUR" }
+] as const;
+
 function buildFormState(initialData?: Listing, categories: Category[] = []): FormState {
   const initialCategory = initialData?.categoryId ? findCategoryById(categories, initialData.categoryId) : null;
   const preferredParentId = initialCategory ? initialCategory.parentId ?? initialCategory.id : getPreferredParentCategoryId(categories, initialData?.type ?? "house");
@@ -118,7 +136,7 @@ function buildFormState(initialData?: Listing, categories: Category[] = []): For
   };
 }
 
-function resetIncompatibleFields(current: FormState, nextType: ListingType): FormState {
+function resetIncompatibleFields(current: FormState, nextType: ListingType, showHeatingTypeField: boolean): FormState {
   if (nextType === "land") {
     return {
       ...current,
@@ -132,7 +150,8 @@ function resetIncompatibleFields(current: FormState, nextType: ListingType): For
     ...current,
     zoningStatus: "",
     islandNumber: "",
-    parcelNumber: ""
+    parcelNumber: "",
+    heatingType: showHeatingTypeField ? current.heatingType : ""
   };
 }
 
@@ -148,6 +167,7 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
   const [addressQuery, setAddressQuery] = useState("");
   const [isSearchingAddress, setIsSearchingAddress] = useState(false);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
+  const [openLocationMethod, setOpenLocationMethod] = useState<"manual" | "address" | "map" | "">("");
   const formRef = useRef<HTMLFormElement>(null);
   const categoriesById = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
   const parentCategories = useMemo(() => categories.filter((category) => !category.parentId), [categories]);
@@ -161,6 +181,7 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
     () => determineListingTypeFromCategory(selectedCategory, selectedParentCategory),
     [selectedCategory, selectedParentCategory]
   );
+  const showHeatingType = shouldShowHeatingType(selectedCategory, selectedParentCategory);
 
   const actionPath = useMemo(() => {
     if (mode === "edit" && initialData) {
@@ -179,6 +200,11 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
   const longitudeValue = formState.longitude.trim() ? Number(formState.longitude) : null;
   const hasManualCoordinates =
     typeof latitudeValue === "number" && Number.isFinite(latitudeValue) && typeof longitudeValue === "number" && Number.isFinite(longitudeValue);
+  const isEnglish = t.meta.lang === "en";
+
+  function toggleLocationMethod(method: "manual" | "address" | "map") {
+    setOpenLocationMethod((current) => (current === method ? "" : method));
+  }
 
   function updateField(field: TextFormField, value: string) {
     setSuccess(false);
@@ -271,7 +297,7 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
     const nextType = determineListingTypeFromCategory(nextParent, null);
 
     setFormState((current) => ({
-      ...resetIncompatibleFields(current, nextType),
+      ...resetIncompatibleFields(current, nextType, shouldShowHeatingType(nextParent, null)),
       parentCategoryId,
       categoryId: ""
     }));
@@ -288,7 +314,7 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
     const nextType = determineListingTypeFromCategory(nextCategory, nextParent);
 
     setFormState((current) => ({
-      ...resetIncompatibleFields(current, nextType),
+      ...resetIncompatibleFields(current, nextType, shouldShowHeatingType(nextCategory, nextParent)),
       parentCategoryId: nextParentId ?? "",
       categoryId
     }));
@@ -445,7 +471,7 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-[1.4fr_1fr_132px]">
         <div>
           <label htmlFor="prop-title" className="label-base">
             {t.admin.form.title}
@@ -468,34 +494,36 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
           <label htmlFor="prop-price" className="label-base">
             {t.admin.form.price}
           </label>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_140px]">
-            <input
-              id="prop-price"
-              data-automation="price-input"
-              name="price"
-              type="number"
-              min="1"
-              className="input-base"
-              required
-              value={formState.price}
-              onChange={(event) => updateField("price", event.target.value)}
-              placeholder={t.admin.form.pricePlaceholder}
-            />
-            <select
-              id="prop-currency"
-              data-automation="currency-select"
-              name="currency"
-              value={formState.currency}
-              onChange={(event) => updateField("currency", event.target.value)}
-              className="input-base"
-              aria-label={t.admin.form.currency}
-            >
-              <option value="TL">{t.admin.form.currencyTL}</option>
-              <option value="USD">{t.admin.form.currencyUSD}</option>
-              <option value="EUR">{t.admin.form.currencyEUR}</option>
-            </select>
-          </div>
+          <input
+            id="prop-price"
+            data-automation="price-input"
+            name="price"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            required
+            value={formState.price}
+            onChange={(event) => updateField("price", event.target.value)}
+            placeholder={t.admin.form.pricePlaceholder}
+            className="input-base h-11"
+          />
           {renderError("price")}
+        </div>
+
+        <div>
+          <StatusDropdown
+            id="prop-currency"
+            label={t.admin.form.currency}
+            placeholder={t.admin.form.currency}
+            value={formState.currency}
+            options={CURRENCY_OPTIONS.map((option) => ({
+              value: option.value,
+              label: isEnglish ? option.labelEn : option.labelTr
+            }))}
+            onChange={(nextValue) => updateField("currency", nextValue)}
+            dataAutomation="currency-select"
+            className="input-base h-11"
+          />
           {renderError("currency")}
         </div>
 
@@ -545,107 +573,149 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
           <p className="text-sm text-slate-600 dark:text-slate-400">{t.admin.form.locationSectionDescription}</p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-              {t.admin.form.manualLocationTitle}
-            </p>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="prop-latitude" className="label-base">
-                  {t.admin.form.latitude}
-                </label>
-                <input
-                  id="prop-latitude"
-                  data-automation="latitude-input"
-                  name="latitude"
-                  type="number"
-                  step="any"
-                  min="-90"
-                  max="90"
-                  className="input-base"
-                  value={formState.latitude}
-                  onChange={(event) => updateField("latitude", event.target.value)}
-                  placeholder={t.admin.form.latitudePlaceholder}
-                />
-                {renderError("latitude")}
-              </div>
+        <div className="grid grid-cols-1 gap-4">
+          <div className="rounded-3xl border border-sky-200/80 bg-sky-50/70 p-4 shadow-sm dark:border-sky-500/20 dark:bg-sky-500/10">
+            <button
+              type="button"
+              onClick={() => toggleLocationMethod("manual")}
+              className="flex w-full items-center justify-between gap-3 text-left"
+              aria-expanded={openLocationMethod === "manual"}
+            >
+              <span className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-300">
+                {t.admin.form.manualLocationTitle}
+              </span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-sky-500 transition ${openLocationMethod === "manual" ? "rotate-180" : ""}`} />
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                openLocationMethod === "manual" ? "mt-4 max-h-[240px] opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="prop-latitude" className="label-base">
+                    {t.admin.form.latitude}
+                  </label>
+                  <input
+                    id="prop-latitude"
+                    data-automation="latitude-input"
+                    name="latitude"
+                    type="number"
+                    step="any"
+                    min="-90"
+                    max="90"
+                    className="input-base"
+                    value={formState.latitude}
+                    onChange={(event) => updateField("latitude", event.target.value)}
+                    placeholder={t.admin.form.latitudePlaceholder}
+                  />
+                  {renderError("latitude")}
+                </div>
 
-              <div>
-                <label htmlFor="prop-longitude" className="label-base">
-                  {t.admin.form.longitude}
-                </label>
-                <input
-                  id="prop-longitude"
-                  data-automation="longitude-input"
-                  name="longitude"
-                  type="number"
-                  step="any"
-                  min="-180"
-                  max="180"
-                  className="input-base"
-                  value={formState.longitude}
-                  onChange={(event) => updateField("longitude", event.target.value)}
-                  placeholder={t.admin.form.longitudePlaceholder}
-                />
-                {renderError("longitude")}
+                <div>
+                  <label htmlFor="prop-longitude" className="label-base">
+                    {t.admin.form.longitude}
+                  </label>
+                  <input
+                    id="prop-longitude"
+                    data-automation="longitude-input"
+                    name="longitude"
+                    type="number"
+                    step="any"
+                    min="-180"
+                    max="180"
+                    className="input-base"
+                    value={formState.longitude}
+                    onChange={(event) => updateField("longitude", event.target.value)}
+                    placeholder={t.admin.form.longitudePlaceholder}
+                  />
+                  {renderError("longitude")}
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-              {t.admin.form.addressSearchTitle}
-            </p>
-            <div className="mt-4 space-y-3">
-              <div>
-                <label htmlFor="prop-address-search" className="label-base">
-                  {t.admin.form.addressSearchLabel}
-                </label>
-                <input
-                  id="prop-address-search"
-                  data-automation="address-search-input"
-                  type="text"
-                  className="input-base"
-                  value={addressQuery}
-                  onChange={(event) => setAddressQuery(event.target.value)}
-                  placeholder={t.admin.form.addressSearchPlaceholder}
-                />
-              </div>
+          <div className="rounded-3xl border border-emerald-200/80 bg-emerald-50/70 p-4 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/10">
+            <button
+              type="button"
+              onClick={() => toggleLocationMethod("address")}
+              className="flex w-full items-center justify-between gap-3 text-left"
+              aria-expanded={openLocationMethod === "address"}
+            >
+              <span className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300">
+                {t.admin.form.addressSearchTitle}
+              </span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-emerald-500 transition ${openLocationMethod === "address" ? "rotate-180" : ""}`} />
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                openLocationMethod === "address" ? "mt-4 max-h-[240px] opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <div className="space-y-3">
+                <div>
+                  <label htmlFor="prop-address-search" className="label-base">
+                    {t.admin.form.addressSearchLabel}
+                  </label>
+                  <input
+                    id="prop-address-search"
+                    data-automation="address-search-input"
+                    type="text"
+                    className="input-base"
+                    value={addressQuery}
+                    onChange={(event) => setAddressQuery(event.target.value)}
+                    placeholder={t.admin.form.addressSearchPlaceholder}
+                  />
+                </div>
 
-              <button
-                id="prop-address-search-button"
-                data-automation="address-search-button"
-                type="button"
-                onClick={handleAddressSearch}
-                disabled={isSearchingAddress}
-                className="button-primary w-full"
-              >
-                {isSearchingAddress ? t.admin.form.saving : t.admin.form.searchCoordinatesButton}
-              </button>
+                <button
+                  id="prop-address-search-button"
+                  data-automation="address-search-button"
+                  type="button"
+                  onClick={handleAddressSearch}
+                  disabled={isSearchingAddress}
+                  className="button-primary w-full"
+                >
+                  {isSearchingAddress ? t.admin.form.saving : t.admin.form.searchCoordinatesButton}
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-              {t.admin.form.mapPickerTitle}
-            </p>
-            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{t.admin.form.mapPickerDescription}</p>
-            <div className="mt-4 space-y-3">
-              <button
-                id="prop-open-map-picker"
-                data-automation="open-map-picker-button"
-                type="button"
-                onClick={() => setIsMapPickerOpen(true)}
-                className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-amber-300 hover:text-amber-700 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-200 dark:hover:border-amber-500/40 dark:hover:text-amber-400"
-              >
-                {t.admin.form.mapPickerButton}
-              </button>
+          <div className="rounded-3xl border border-amber-200/80 bg-amber-50/70 p-4 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10">
+            <button
+              type="button"
+              onClick={() => toggleLocationMethod("map")}
+              className="flex w-full items-center justify-between gap-3 text-left"
+              aria-expanded={openLocationMethod === "map"}
+            >
+              <span className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+                {t.admin.form.mapPickerTitle}
+              </span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-amber-500 transition ${openLocationMethod === "map" ? "rotate-180" : ""}`} />
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                openLocationMethod === "map" ? "mt-4 max-h-[320px] opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <p className="text-sm leading-6 text-slate-600 dark:text-slate-400">{t.admin.form.mapPickerDescription}</p>
+              <div className="mt-4 space-y-3">
+                <button
+                  id="prop-open-map-picker"
+                  data-automation="open-map-picker-button"
+                  type="button"
+                  onClick={() => setIsMapPickerOpen(true)}
+                  className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-amber-300 hover:text-amber-700 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-200 dark:hover:border-amber-500/40 dark:hover:text-amber-400"
+                >
+                  {t.admin.form.mapPickerButton}
+                </button>
 
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
-                {hasManualCoordinates
-                  ? `${t.propertyDetail.coordinatesLabel}: ${formState.latitude}, ${formState.longitude}`
-                  : t.admin.form.locationSectionDescription}
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
+                  {hasManualCoordinates
+                    ? `${t.propertyDetail.coordinatesLabel}: ${formState.latitude}, ${formState.longitude}`
+                    : t.admin.form.locationSectionDescription}
+                </div>
               </div>
             </div>
           </div>
@@ -696,23 +766,26 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
               {renderError("floorNumber")}
             </div>
 
-            <div>
-              <label htmlFor="prop-heating-type" className="label-base">
-                {t.admin.form.heatingType}
-              </label>
-              <input
-                id="prop-heating-type"
-                data-automation="heating-input"
-                name="heatingType"
-                type="text"
-                className="input-base"
-                placeholder={t.admin.form.heatingPlaceholder}
-                required
-                value={formState.heatingType}
-                onChange={(event) => updateField("heatingType", event.target.value)}
-              />
-              {renderError("heatingType")}
-            </div>
+            {showHeatingType ? (
+              <div>
+                <StatusDropdown
+                  id="prop-heating-type"
+                  label={t.admin.form.heatingType}
+                  placeholder={t.admin.form.heatingPlaceholder}
+                  value={formState.heatingType}
+                  options={HEATING_TYPE_OPTIONS.map((option) => ({
+                    value: option.value,
+                    label: isEnglish ? option.labelEn : option.labelTr
+                  }))}
+                  onChange={(nextValue) => updateField("heatingType", nextValue)}
+                  dataAutomation="heating-input"
+                  clearLabel={t.common.clear}
+                  allowClear
+                  className="input-base"
+                />
+                {renderError("heatingType")}
+              </div>
+            ) : null}
           </div>
         </div>
       ) : (

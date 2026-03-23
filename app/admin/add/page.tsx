@@ -2,11 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AddListingForm } from "@/components/AddListingForm";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getCategories } from "@/lib/categories";
 import { getDictionary } from "@/lib/get-dictionary";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default async function AddListingPage() {
   const t = await getDictionary();
@@ -24,10 +22,6 @@ export default async function AddListingPage() {
             <p className="text-sm font-semibold uppercase tracking-wide text-brand-700 dark:text-amber-400">{t.adminPage.eyebrow}</p>
             <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">{t.adminPage.title}</h1>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{t.adminPage.description}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <LanguageSwitcher />
           </div>
         </div>
       </header>
