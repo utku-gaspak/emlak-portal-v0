@@ -127,7 +127,11 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
     }
 
     return (
-      <div id={errorIdByField[field]} data-automation={errorIdByField[field]} className="mt-1 text-sm text-red-600">
+      <div
+        id={errorIdByField[field]}
+        data-automation={errorIdByField[field]}
+        className="mt-1 text-sm text-red-600 dark:text-red-400"
+      >
         {errors[field]}
       </div>
     );
@@ -181,10 +185,10 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
       ref={formRef}
       id={mode === "edit" ? "edit-listing-form" : "add-listing-form"}
       data-automation={mode === "edit" ? "edit-listing-form" : "add-listing-form"}
-      className="space-y-6 rounded-3xl bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] sm:p-8"
+      className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] sm:p-8 dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-[0_20px_60px_rgba(2,6,23,0.35)]"
       onSubmit={handleSubmit}
     >
-      <div className="rounded-3xl bg-slate-50 p-4 sm:p-5">
+      <div className="rounded-3xl bg-slate-50 p-4 sm:p-5 dark:bg-slate-950/50">
         <label htmlFor="prop-type" className="label-base">
           {t.listingForm.propertyTypeLabel}
         </label>
@@ -203,13 +207,13 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
         {renderError("type")}
       </div>
 
-      <div className="rounded-3xl border border-amber-200/70 bg-amber-50/60 p-4 shadow-sm">
+      <div className="rounded-3xl border border-amber-200/70 bg-amber-50/60 p-4 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10">
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-1">
-            <label htmlFor="prop-featured" className="block text-sm font-semibold text-slate-900">
+            <label htmlFor="prop-featured" className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
               {t.listingForm.featuredLabel}
             </label>
-            <p className="text-sm text-slate-600">{t.listingForm.featuredDescription}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t.listingForm.featuredDescription}</p>
           </div>
 
           <input
@@ -317,10 +321,10 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
       </div>
 
       {isHouse ? (
-        <div className="rounded-3xl bg-slate-50 p-5">
+        <div className="rounded-3xl bg-slate-50 p-5 dark:bg-slate-950/50">
           <div className="mb-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">{t.listingForm.houseSectionTitle}</p>
-            <p className="mt-1 text-sm text-slate-600">{t.listingForm.houseSectionDescription}</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700 dark:text-amber-400">{t.listingForm.houseSectionTitle}</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{t.listingForm.houseSectionDescription}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
@@ -380,10 +384,10 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
           </div>
         </div>
       ) : (
-        <div className="rounded-3xl bg-slate-50 p-5">
+        <div className="rounded-3xl bg-slate-50 p-5 dark:bg-slate-950/50">
           <div className="mb-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">{t.listingForm.landSectionTitle}</p>
-            <p className="mt-1 text-sm text-slate-600">{t.listingForm.landSectionDescription}</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700 dark:text-amber-400">{t.listingForm.landSectionTitle}</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{t.listingForm.landSectionDescription}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
@@ -499,16 +503,16 @@ export function PropertyForm({ mode, initialData }: PropertyFormProps) {
 
       {success ? (
         <div
-          id="success-indicator"
-          data-automation="success-indicator"
-          className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
-        >
-          {successMessage}
-        </div>
+        id="success-indicator"
+        data-automation="success-indicator"
+        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
+      >
+        {successMessage}
+      </div>
       ) : null}
 
       {globalError ? (
-        <div id="error-auth" data-automation="error-auth" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div id="error-auth" data-automation="error-auth" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
           {globalError}
         </div>
       ) : null}

@@ -17,7 +17,7 @@ function uniqueSorted(values: string[]): string[] {
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
-  const t = getDictionary();
+  const t = await getDictionary();
   const filters = parseListingFilters(searchParams);
   const [allListings, filteredListings] = await Promise.all([getListings(), getListings(filters)]);
   const canDelete = await isAdminAuthenticated();
@@ -77,10 +77,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <section
           id="empty-listings"
           data-automation="no-results"
-          className="rounded-[2rem] bg-white p-10 text-center shadow-[0_18px_55px_rgba(15,23,42,0.08)]"
+          className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-[0_18px_55px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/80"
         >
-          <p className="text-lg font-bold text-slate-900">{t.home.noResultsTitle}</p>
-          <p className="mt-2 text-sm text-slate-600">{t.home.noResultsDescription}</p>
+          <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.home.noResultsTitle}</p>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{t.home.noResultsDescription}</p>
         </section>
       ) : (
         <section id="listings-grid" data-automation="listings-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">

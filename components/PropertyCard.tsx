@@ -76,8 +76,8 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
     <article
       id={`property-card-${listing.id}`}
       data-automation="property-card"
-      className={`group relative overflow-hidden rounded-3xl border bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
-        listing.isFeatured ? "border-amber-300/70 ring-1 ring-amber-200/70" : "border-slate-200"
+      className={`group relative overflow-hidden rounded-3xl border bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl dark:bg-slate-900 dark:shadow-[0_18px_50px_rgba(2,6,23,0.35)] ${
+        listing.isFeatured ? "border-amber-300/70 ring-1 ring-amber-200/70 dark:border-amber-500/60 dark:ring-amber-500/20" : "border-slate-200 dark:border-slate-800"
       }`}
     >
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-500 via-emerald-400 to-cyan-400" />
@@ -94,7 +94,7 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
         data-automation={`link-to-${listing.id}`}
         className={`block ${canDelete ? "pr-28" : ""}`}
       >
-        <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+        <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
           <Image
             src={coverImage}
             alt={`${listing.title} cover image`}
@@ -102,7 +102,7 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
             className="object-cover transition duration-500 group-hover:scale-105"
             sizes="(max-width: 1024px) 100vw, 33vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent dark:from-slate-950/55" />
 
           <div
             id={`type-badge-${listing.id}`}
@@ -130,22 +130,22 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
 
         <div className="space-y-5 p-6">
           <div className="space-y-2">
-            <h2 className="text-2xl font-black tracking-tight text-slate-950">{listing.title}</h2>
-            <p className="text-3xl font-black text-brand-700">{formatListingPrice(listing.price, listing.currency)}</p>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+            <h2 className="text-2xl font-black tracking-tight text-slate-950 dark:text-slate-100">{listing.title}</h2>
+            <p className="text-3xl font-black text-brand-700 dark:text-amber-400">{formatListingPrice(listing.price, listing.currency)}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
               {t.propertyCard.refLabel}: {listing.refId}
             </p>
           </div>
 
-          <p className="text-sm font-medium text-slate-500">{listing.location}</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{listing.location}</p>
 
           <div className="flex flex-wrap gap-2">
             {renderPrimarySpecs(listing, t)}
           </div>
 
-          <p className="max-h-24 overflow-hidden text-sm leading-6 text-slate-600">{listing.description}</p>
+          <p className="max-h-24 overflow-hidden text-sm leading-6 text-slate-600 dark:text-slate-300">{listing.description}</p>
 
-          <div className="flex items-center justify-between text-sm text-slate-500">
+          <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
             <span>
               {listing.images.length} {listing.images.length === 1 ? t.propertyCard.photosSingular : t.propertyCard.photosPlural}
             </span>

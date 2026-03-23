@@ -6,8 +6,18 @@
   color-scheme: light;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
+* {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform;
+  transition-duration: 300ms;
+  transition-timing-function: ease;
+}
+
 body {
-  @apply min-h-screen bg-gradient-to-b from-brand-50 via-white to-slate-100 text-slate-900 antialiased;
+  @apply min-h-screen bg-gradient-to-b from-brand-50 via-white to-slate-100 text-slate-900 antialiased dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-slate-100;
 }
 
 main {
@@ -15,13 +25,13 @@ main {
 }
 
 .input-base {
-  @apply block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+  @apply block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-amber-500 dark:focus:ring-amber-500/20;
 }
 
 .label-base {
-  @apply mb-1.5 block text-sm font-medium text-slate-700;
+  @apply mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300;
 }
 
 .button-primary {
-  @apply inline-flex items-center justify-center rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900 focus:outline-none focus:ring-2 focus:ring-brand-100;
+  @apply inline-flex items-center justify-center rounded-2xl bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-amber-200 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400 dark:focus:ring-amber-500/20;
 }

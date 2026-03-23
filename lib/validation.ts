@@ -23,8 +23,8 @@ function isListingType(value: string): value is ListingType {
   return value === "house" || value === "land";
 }
 
-export function validateListingForm(fields: FormFields): ValidationErrors {
-  const t = getDictionary();
+export async function validateListingForm(fields: FormFields): Promise<ValidationErrors> {
+  const t = await getDictionary();
   const errors: ValidationErrors = {};
 
   if (!isListingType(fields.type)) {

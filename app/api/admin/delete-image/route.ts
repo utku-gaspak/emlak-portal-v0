@@ -36,7 +36,7 @@ function safeSortFiles(files: string[]): string[] {
 }
 
 export async function DELETE(request: Request) {
-  const t = getDictionary();
+  const t = await getDictionary();
 
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });

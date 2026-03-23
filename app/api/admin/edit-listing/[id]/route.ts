@@ -13,7 +13,7 @@ function getListingType(formValue: string, fallback: ListingType): ListingType {
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const t = getDictionary();
+  const t = await getDictionary();
 
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ ok: false, errors: { auth: t.errors.authUnauthorized } }, { status: 401 });
@@ -56,7 +56,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
   const preservedImages = existingImages.length > 0 ? existingImages : existingListing.images;
 
-  const errors = validateListingForm({
+  const errors = await validateListingForm({
     type,
     currency,
     title,
@@ -151,7 +151,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  const t = getDictionary();
+  const t = await getDictionary();
 
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });

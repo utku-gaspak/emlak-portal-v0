@@ -14,7 +14,7 @@ type DeleteListingRouteProps = {
 };
 
 export async function DELETE(_request: Request, { params }: DeleteListingRouteProps) {
-  const t = getDictionary();
+  const t = await getDictionary();
 
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });

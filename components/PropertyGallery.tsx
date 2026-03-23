@@ -94,10 +94,10 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
             setIsLightboxOpen(true);
           }
         }}
-        className="block w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-100"
+        className="block w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-100 dark:border-slate-800 dark:bg-slate-900"
         aria-label={t.gallery.openPreviewAria}
       >
-        <div className="relative aspect-[4/3] w-full bg-slate-200 sm:aspect-[16/9]">
+        <div className="relative aspect-[4/3] w-full bg-slate-200 sm:aspect-[16/9] dark:bg-slate-800">
           <img
             id={hasPhotos ? "main-image-display" : "image-placeholder"}
             data-automation="main-property-image"
@@ -110,7 +110,7 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
       </button>
 
       {!hasPhotos ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-600">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
           {t.gallery.placeholderMessage}
         </div>
       ) : (
@@ -127,12 +127,12 @@ export function PropertyGallery({ listingId, title, images }: PropertyGalleryPro
                 id={`thumbnail-image-${index + 1}`}
                 data-automation={`thumbnail-image-${index + 1}`}
                 onClick={() => setSelectedIndex(index)}
-                className={`overflow-hidden rounded-2xl border bg-white transition focus:outline-none focus:ring-2 focus:ring-brand-100 ${
-                  isSelected ? "border-brand-500 ring-2 ring-brand-100" : "border-slate-200"
+              className={`overflow-hidden rounded-2xl border bg-white transition focus:outline-none focus:ring-2 focus:ring-brand-100 dark:bg-slate-900 ${
+                  isSelected ? "border-brand-500 ring-2 ring-brand-100 dark:border-amber-400 dark:ring-amber-500/20" : "border-slate-200 dark:border-slate-800"
                 }`}
                 aria-label={`${t.gallery.thumbnailAria} ${index + 1}`}
               >
-                <div className="relative aspect-square w-full bg-slate-100">
+                <div className="relative aspect-square w-full bg-slate-100 dark:bg-slate-800">
                   <img
                     src={imageSrc}
                     alt={`${title} thumbnail ${index + 1}`}

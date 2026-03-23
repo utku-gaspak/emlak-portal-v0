@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { getDictionary } from "@/lib/get-dictionary";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = getDictionary();
+  const t = await getDictionary();
 
   return {
     title: `${t.adminPage.eyebrow} | ${t.siteHeader.brandName}`,

@@ -273,5 +273,10 @@
     "label": "Dil",
     "turkish": "TR",
     "english": "EN"
+  },
+  "theme": {
+    "toggleAria": "Temayı değiştir",
+    "light": "Açık",
+    "dark": "Koyu"
   }
 }

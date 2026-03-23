@@ -12,7 +12,7 @@ function getListingType(formValue: string): ListingType | "" {
 }
 
 export async function POST(request: Request) {
-  const t = getDictionary();
+  const t = await getDictionary();
 
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ ok: false, errors: { auth: t.errors.authUnauthorized } }, { status: 401 });
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     .filter((item): item is File => item instanceof File)
     .filter((item) => item.size > 0);
 
-  const errors = validateListingForm({
+  const errors = await validateListingForm({
     type,
     title,
     price,

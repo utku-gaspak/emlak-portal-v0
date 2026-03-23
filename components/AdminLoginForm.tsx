@@ -47,7 +47,7 @@ export function AdminLoginForm() {
       id="admin-login-form"
       data-automation="admin-login-form"
       onSubmit={handleSubmit}
-      className="mx-auto max-w-md space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+      className="mx-auto max-w-md space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
     >
       <div>
         <label htmlFor="admin-username" className="label-base">
@@ -59,7 +59,7 @@ export function AdminLoginForm() {
           name="username"
           type="text"
           autoComplete="username"
-          className="input-base"
+          className="input-base dark:bg-slate-900"
           placeholder={t.adminLogin.usernamePlaceholder}
           required
           value={username}
@@ -82,7 +82,7 @@ export function AdminLoginForm() {
           name="password"
           type="password"
           autoComplete="current-password"
-          className="input-base"
+          className="input-base dark:bg-slate-900"
           placeholder={t.adminLogin.passwordPlaceholder}
           required
           value={password}
@@ -96,7 +96,7 @@ export function AdminLoginForm() {
       </div>
 
       {errors.auth ? (
-        <div id="error-auth" data-automation="error-auth" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div id="error-auth" data-automation="error-auth" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
           {errors.auth}
         </div>
       ) : null}

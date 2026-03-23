@@ -10,6 +10,7 @@ import { formatListingPrice } from "@/lib/currency";
 import { getListingImageSrc } from "@/lib/photo-path";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTranslation } from "@/context/TranslationContext";
 
 type AdminListingsManagerProps = {
@@ -128,22 +129,23 @@ export function AdminListingsManager({
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
-      <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="mx-auto max-w-7xl space-y-6 text-slate-900 dark:text-slate-100">
+      <header className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">{t.adminPage.eyebrow}</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">{t.adminListings.title}</h1>
-            <p className="mt-2 text-sm text-slate-600">{t.adminListings.description}</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand-700 dark:text-amber-400">{t.adminPage.eyebrow}</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">{t.adminListings.title}</h1>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{t.adminListings.description}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <ThemeToggle />
             <LanguageSwitcher />
             <Link
               id="admin-add-button"
               data-automation="admin-add-button"
               href="/admin/add"
-              className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
             >
               {t.adminListings.addButton}
             </Link>
@@ -152,7 +154,7 @@ export function AdminListingsManager({
               id="admin-dashboard-home"
               data-automation="admin-dashboard-home"
               href="/"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               {t.adminPage.backHome}
             </Link>
@@ -160,7 +162,7 @@ export function AdminListingsManager({
         </div>
       </header>
 
-      <section className="rounded-3xl bg-white p-6 shadow-sm">
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         <form id="admin-listing-search-form" data-automation="admin-listing-search-form" method="get" className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <div className="space-y-2">
             <label htmlFor="admin-listing-search" className="label-base">
@@ -182,7 +184,7 @@ export function AdminListingsManager({
               id="admin-listing-search-button"
               data-automation="admin-listing-search-button"
               type="submit"
-              className="inline-flex items-center justify-center rounded-2xl bg-brand-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-800"
+              className="inline-flex items-center justify-center rounded-2xl bg-brand-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-800 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
             >
               {t.adminListings.searchButton}
             </button>
@@ -190,7 +192,7 @@ export function AdminListingsManager({
               id="admin-listing-search-clear"
               data-automation="admin-listing-search-clear"
               href="/admin/listings"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               {t.adminListings.clearButton}
             </Link>
@@ -198,11 +200,11 @@ export function AdminListingsManager({
         </form>
       </section>
 
-      <section className="overflow-hidden rounded-3xl bg-white shadow-sm">
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
-              <tr className="text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+            <thead className="bg-slate-50 dark:bg-slate-950/70">
+              <tr className="text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
                 <th className="px-4 py-4">{t.adminListings.thumbnail}</th>
                 <th className="px-4 py-4">{t.adminListings.refId}</th>
                 <th className="px-4 py-4">{t.adminListings.titleColumn}</th>
@@ -212,7 +214,7 @@ export function AdminListingsManager({
                 <th className="px-4 py-4">{t.adminListings.actions}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
+            <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900/80">
               {visibleListings.length > 0 ? (
                 visibleListings.map((listing) => {
                   const thumbnail = listing.images[0] ? getListingImageSrc(listing.id, listing.images[0]) : "/property-placeholder.svg";
@@ -232,14 +234,14 @@ export function AdminListingsManager({
                           openPublicListing(listing.id);
                         }
                       }}
-                      className="cursor-pointer text-sm text-slate-700 transition hover:bg-slate-50"
+                      className="cursor-pointer text-sm text-slate-700 transition hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
                     >
                       <td className="px-4 py-4">
-                        <div className="relative h-16 w-24 overflow-hidden rounded-2xl bg-slate-100">
+                        <div className="relative h-16 w-24 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
                           <Image src={thumbnail} alt={listing.title} fill className="object-cover" sizes="96px" />
                         </div>
                       </td>
-                      <td className="px-4 py-4 font-semibold text-slate-900">{listing.refId}</td>
+                      <td className="px-4 py-4 font-semibold text-slate-900 dark:text-slate-100">{listing.refId}</td>
                       <td className="px-4 py-4">
                         <Link
                           href={`/property/${listing.id}`}
@@ -247,14 +249,14 @@ export function AdminListingsManager({
                           rel="noreferrer"
                           data-automation={`view-public-link-${listing.id}`}
                           onClick={(event) => event.stopPropagation()}
-                          className="inline-flex items-center gap-2 font-semibold text-slate-900 transition hover:text-brand-700"
+                          className="inline-flex items-center gap-2 font-semibold text-slate-900 transition hover:text-brand-700 dark:text-slate-100 dark:hover:text-amber-400"
                         >
                           {listing.title}
                           <ExternalLink className="h-4 w-4" />
                         </Link>
                         <div className="text-xs text-slate-500">{listing.location}</div>
                       </td>
-                      <td className="px-4 py-4 font-semibold text-brand-700">{formatListingPrice(listing.price, listing.currency)}</td>
+                      <td className="px-4 py-4 font-semibold text-brand-700 dark:text-amber-400">{formatListingPrice(listing.price, listing.currency)}</td>
                       <td className="px-4 py-4">
                         <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold text-white ${listing.type === "house" ? "bg-blue-600" : "bg-emerald-600"}`}>
                           {listing.type === "house" ? t.adminListings.statusHouse : t.adminListings.statusLand}
@@ -263,7 +265,7 @@ export function AdminListingsManager({
                       <td className="px-4 py-4" onClick={(event) => event.stopPropagation()}>
                         <label
                           htmlFor={`quick-toggle-featured-${listing.id}`}
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-amber-300 hover:text-slate-950"
+                          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-amber-300 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-amber-500 dark:hover:text-slate-100"
                         >
                           <span className="relative flex h-5 w-5 items-center justify-center">
                             <input
@@ -280,7 +282,7 @@ export function AdminListingsManager({
                               className={`flex h-5 w-5 items-center justify-center rounded border transition ${
                                 featuredById.get(listing.id)
                                   ? "border-amber-500 bg-amber-500 text-white"
-                                  : "border-slate-300 bg-white text-transparent"
+                                  : "border-slate-300 bg-white text-transparent dark:border-slate-600 dark:bg-slate-900"
                               } ${isFeaturedPending ? "opacity-70" : ""}`}
                             >
                               {isFeaturedPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
@@ -296,7 +298,7 @@ export function AdminListingsManager({
                             data-automation={`edit-button-${listing.id}`}
                             href={`/admin/edit/${listing.id}`}
                           onClick={(event) => event.stopPropagation()}
-                          className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                          className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                         >
                             {t.adminListings.edit}
                           </Link>
@@ -309,7 +311,7 @@ export function AdminListingsManager({
                               setDeleteError("");
                               setListingToDelete(listing);
                             }}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 dark:border-red-900/60 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/30"
                           >
                             <Trash2 className="h-4 w-4" />
                             {t.deleteListing.button}
@@ -321,7 +323,7 @@ export function AdminListingsManager({
                 })
               ) : (
                 <tr>
-                  <td className="px-4 py-10 text-center text-sm text-slate-500" colSpan={7}>
+                  <td className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400" colSpan={7}>
                     {t.adminListings.noResults}
                   </td>
                 </tr>
@@ -331,8 +333,8 @@ export function AdminListingsManager({
         </div>
       </section>
 
-      <div className="flex items-center justify-between rounded-3xl bg-white px-4 py-4 shadow-sm">
-        <p className="text-sm text-slate-600">
+      <div className="flex items-center justify-between rounded-3xl border border-slate-200 bg-white px-4 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           {t.adminListings.showing} {listings.length} {t.adminListings.listingsUnit} / {totalListings} {t.adminListings.listingsUnit}
         </p>
 
@@ -340,19 +342,23 @@ export function AdminListingsManager({
           <Link
             href={previousHref}
             className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
-              currentPage <= 1 ? "pointer-events-none border-slate-100 bg-slate-50 text-slate-300" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              currentPage <= 1
+                ? "pointer-events-none border-slate-100 bg-slate-50 text-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             }`}
           >
             {t.adminListings.previous}
           </Link>
-          <span className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+          <span className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
             {currentPage} / {totalPages}
           </span>
           <Link
             href={nextHref}
             data-automation="admin-pagination-next"
             className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
-              currentPage >= totalPages ? "pointer-events-none border-slate-100 bg-slate-50 text-slate-300" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              currentPage >= totalPages
+                ? "pointer-events-none border-slate-100 bg-slate-50 text-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             }`}
           >
             {t.adminListings.next}
@@ -362,16 +368,16 @@ export function AdminListingsManager({
 
       {listingToDelete ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6">
-          <div className="w-full max-w-lg rounded-[2rem] bg-white p-6 shadow-[0_30px_100px_rgba(15,23,42,0.35)] sm:p-8">
+          <div className="w-full max-w-lg rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_30px_100px_rgba(15,23,42,0.35)] sm:p-8 dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-start gap-4">
-              <div className="rounded-2xl bg-red-50 p-3 text-red-700">
+              <div className="rounded-2xl bg-red-50 p-3 text-red-700 dark:bg-red-950/40 dark:text-red-400">
                 <Trash2 className="h-6 w-6" />
               </div>
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-slate-950">{t.adminListings.deleteTitle}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{t.adminListings.deleteDescription}</p>
-                <p className="mt-3 text-sm font-semibold text-slate-900">{listingToDelete.title}</p>
-                <p className="text-xs text-slate-500">
+                <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">{t.adminListings.deleteTitle}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{t.adminListings.deleteDescription}</p>
+                <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">{listingToDelete.title}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {t.adminListings.refId}: {listingToDelete.refId}
                 </p>
                 {deleteError ? <p className="mt-3 text-sm text-red-600">{deleteError}</p> : null}
@@ -387,7 +393,7 @@ export function AdminListingsManager({
                   setListingToDelete(null);
                   setDeleteError("");
                 }}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 {t.adminListings.cancel}
               </button>

@@ -225,21 +225,21 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
     <section
       id="search-filters-panel"
       data-automation="search-filters-panel"
-      className="rounded-[2.5rem] bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.09)] ring-1 ring-slate-200/70 sm:p-6 lg:p-7"
+      className="rounded-[2.5rem] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.09)] ring-1 ring-slate-200/70 sm:p-6 lg:p-7 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-[0_24px_70px_rgba(2,6,23,0.35)] dark:ring-slate-800/70"
     >
       {showHeader ? (
-        <div className="flex flex-col gap-2 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-2 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">{t.filters.title}</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950">{t.home.searchTitle}</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700 dark:text-amber-400">{t.filters.title}</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-slate-100">{t.home.searchTitle}</h2>
           </div>
-          <p className="max-w-xl text-sm leading-6 text-slate-600">{t.home.searchDescription}</p>
+          <p className="max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-400">{t.home.searchDescription}</p>
           {hasActiveFilters ? (
             <button
               type="button"
               data-automation="reset-all-filters"
               onClick={resetAllFilters}
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-950"
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:text-slate-100"
             >
               {t.filters.resetAll}
             </button>
@@ -282,7 +282,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
                 aria-haspopup="listbox"
                 aria-expanded={isCategoryMenuOpen}
                 onClick={() => setIsCategoryMenuOpen((value) => !value)}
-                className="input-base relative w-full overflow-hidden pr-10 text-left whitespace-nowrap"
+                className="input-base relative w-full overflow-hidden pr-10 text-left whitespace-nowrap dark:bg-slate-900"
               >
                 <span className="block truncate text-sm leading-6">
                   {categoryOptions.find((option) => option.value === filters.category)?.label ?? t.filters.categoryAll}
@@ -295,7 +295,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
               </button>
 
               {isCategoryMenuOpen ? (
-                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)]">
+                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_22px_55px_rgba(2,6,23,0.35)]">
                   <div role="listbox" aria-label={t.filters.categoryLabel} className="p-1">
                     {categoryOptions.map((option) => {
                       const isActive = option.value === filters.category;
@@ -314,7 +314,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
                           className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
                             isActive
                               ? "bg-slate-950 text-white"
-                              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                           }`}
                         >
                           <span>{option.label}</span>
@@ -340,7 +340,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
                 aria-haspopup="listbox"
                 aria-expanded={isSortMenuOpen}
                 onClick={() => setIsSortMenuOpen((value) => !value)}
-                className="input-base relative w-full overflow-hidden pr-10 text-left whitespace-nowrap"
+                className="input-base relative w-full overflow-hidden pr-10 text-left whitespace-nowrap dark:bg-slate-900"
               >
                 <span className="block truncate text-sm leading-6">
                   {sortOptions.find((option) => option.value === filters.sortBy)?.label ?? t.filters.sortNewestFirst}
@@ -353,7 +353,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
               </button>
 
               {isSortMenuOpen ? (
-                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)]">
+                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_22px_55px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_22px_55px_rgba(2,6,23,0.35)]">
                   <div role="listbox" aria-label={t.filters.sortByLabel} className="p-1">
                     {sortOptions.map((option) => {
                       const isActive = option.value === filters.sortBy;
@@ -372,7 +372,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
                           className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
                             isActive
                               ? "bg-slate-950 text-white"
-                              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                           }`}
                         >
                           <span>{option.label}</span>
@@ -390,7 +390,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
             id="submit-button"
             data-automation="submit-button"
             type="submit"
-            className="inline-flex h-[52px] w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex h-[52px] w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
             disabled={isPending}
           >
             {t.filters.submitButton}
@@ -410,7 +410,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
               min="0"
               value={filters.minPrice}
               onChange={(event) => updateFilters({ minPrice: event.target.value })}
-              className="input-base"
+            className="input-base dark:bg-slate-900"
             />
           </div>
 
@@ -426,7 +426,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
               min="0"
               value={filters.maxPrice}
               onChange={(event) => updateFilters({ maxPrice: event.target.value })}
-              className="input-base"
+            className="input-base dark:bg-slate-900"
             />
           </div>
         </div>
@@ -443,7 +443,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
                 name="rooms"
                 value={filters.rooms}
                 onChange={(event) => updateFilters({ rooms: event.target.value })}
-                className="input-base"
+                className="input-base dark:bg-slate-900"
               >
                 <option value="">{t.filters.anyOption}</option>
                 {normalizedRoomOptions.map((room) => (
@@ -464,7 +464,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
                 name="heatingType"
                 value={filters.heatingType}
                 onChange={(event) => updateFilters({ heatingType: event.target.value })}
-                className="input-base"
+                className="input-base dark:bg-slate-900"
               >
                 <option value="">{t.filters.anyOption}</option>
                 {normalizedHeatingOptions.map((heating) => (
@@ -488,7 +488,7 @@ export function SearchFilters({ roomOptions, heatingOptions, zoningOptions, show
               name="zoningStatus"
               value={filters.zoningStatus}
               onChange={(event) => updateFilters({ zoningStatus: event.target.value })}
-              className="input-base"
+            className="input-base dark:bg-slate-900"
             >
               <option value="">{t.filters.anyOption}</option>
               {normalizedZoningOptions.map((zoning) => (

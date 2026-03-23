@@ -51,23 +51,23 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
 
   if (normalizedImages.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">
+      <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
         {t.gallery.placeholderMessage}
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 rounded-3xl bg-white p-6 shadow-sm">
+    <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">{t.propertyDetail.galleryEyebrow}</p>
-          <h2 className="mt-1 text-2xl font-bold text-slate-950">{t.propertyDetail.galleryTitle}</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700 dark:text-amber-400">{t.propertyDetail.galleryEyebrow}</p>
+          <h2 className="mt-1 text-2xl font-bold text-slate-950 dark:text-slate-100">{t.propertyDetail.galleryTitle}</h2>
         </div>
-        <p className="text-sm text-slate-500">{t.propertyDetail.galleryDescription}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t.propertyDetail.galleryDescription}</p>
       </div>
 
-      {errorMessage ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage}</div> : null}
+      {errorMessage ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">{errorMessage}</div> : null}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {Array.from({ length: normalizedImages.length }).map((_, index) => {
@@ -80,9 +80,9 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
               key={`${listingId}-${index}`}
               id={`photo-item-${index}`}
               data-automation={`photo-item-${index}`}
-              className="rounded-3xl border border-slate-200 bg-slate-50 p-3 shadow-sm"
+              className="rounded-3xl border border-slate-200 bg-slate-50 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
             >
-              <div className="relative overflow-hidden rounded-2xl bg-slate-100">
+              <div className="relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
                 <div className="relative aspect-square w-full">
                   <Image
                     src={imageSrc}
@@ -102,7 +102,7 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
                   data-automation={`delete-photo-${index}`}
                   onClick={() => handleDeletePhoto(index)}
                   disabled={processingIndex !== null}
-                  className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-red-600 p-2 text-white shadow-lg transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-red-600 p-2 text-white shadow-lg transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
                   aria-label={`${t.deleteListing.button} ${index + 1}`}
                 >
                   {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
@@ -110,7 +110,7 @@ export function EditPhotoManager({ listingId, images }: EditPhotoManagerProps) {
 
                 {isProcessing ? (
                   <div className="absolute inset-0 flex items-center justify-center bg-slate-950/55">
-                    <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg">
+                    <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg dark:bg-slate-900 dark:text-slate-100">
                       {t.common.loading}
                     </div>
                   </div>

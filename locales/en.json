@@ -273,5 +273,10 @@
     "label": "Language",
     "turkish": "TR",
     "english": "EN"
+  },
+  "theme": {
+    "toggleAria": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark"
   }
 }
