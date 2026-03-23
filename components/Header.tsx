@@ -1,11 +1,14 @@
 import Link from "next/link";
-import { ArrowUpRight, Home } from "lucide-react";
+import { ArrowUpRight, Home, MessageCircle } from "lucide-react";
 import { getDictionary } from "@/lib/get-dictionary";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { getPublicContactConfig } from "@/lib/contact-links";
 
 export async function Header() {
   const t = await getDictionary();
+  const contact = getPublicContactConfig();
+  const whatsappHref = contact.phone ? `https://wa.me/${contact.phone.replace(/\D/g, "")}` : "#";
 
   const navItems = [
     { href: "/", label: t.siteHeader.navHome },
@@ -46,6 +49,17 @@ export async function Header() {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href={whatsappHref}
+              target={contact.phone ? "_blank" : undefined}
+              rel={contact.phone ? "noreferrer" : undefined}
+              aria-label="WhatsApp"
+              className="inline-flex h-11 items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 shadow-[0_10px_24px_rgba(16,185,129,0.18)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-300 dark:shadow-[0_10px_24px_rgba(16,185,129,0.16)] dark:hover:border-emerald-700 dark:hover:bg-emerald-900/70 dark:hover:text-emerald-200"
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span className="hidden sm:inline">WhatsApp</span>
+            </a>
+
             <ThemeToggle />
             <LanguageSwitcher />
 

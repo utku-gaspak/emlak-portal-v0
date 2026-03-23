@@ -1,13 +1,19 @@
 import Link from "next/link";
-import { Facebook, Instagram, Mail, MapPin, Phone, Twitter } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { getPublicContactConfig } from "@/lib/contact-links";
 
 export async function Footer() {
   const t = await getDictionary();
+  const contact = getPublicContactConfig();
   const isAuthenticated = await isAdminAuthenticated();
   const adminHref = isAuthenticated ? "/admin/listings" : "/admin/login";
   const adminLabel = isAuthenticated ? t.siteHeader.dashboard : t.footer.adminLogin;
+  const socialLinks = [
+    { href: contact.instagramUrl || "#", label: t.footer.socialInstagram, icon: Instagram, external: Boolean(contact.instagramUrl) },
+    { href: contact.facebookUrl || "#", label: t.footer.socialFacebook, icon: Facebook, external: Boolean(contact.facebookUrl) }
+  ];
 
   return (
     <footer id="contact" className="mt-16 border-t border-white/10 bg-gray-950 text-slate-300">
@@ -22,26 +28,22 @@ export async function Footer() {
             <p className="max-w-sm text-sm leading-7 text-slate-400">{t.footer.vision}</p>
 
             <div className="flex items-center gap-3">
-              {[
-                { href: "https://instagram.com", label: t.footer.socialInstagram, icon: Instagram },
-                { href: "https://facebook.com", label: t.footer.socialFacebook, icon: Facebook },
-                { href: "https://x.com", label: t.footer.socialTwitter, icon: Twitter }
-              ].map((item) => {
-                const Icon = item.icon;
+              {socialLinks.map((item) => {
+                  const Icon = item.icon;
 
-                return (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={item.label}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:border-amber-400/40 hover:bg-amber-400/10 hover:text-amber-300"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
-                );
-              })}
+                  return (
+                    <a
+                      key={item.label}
+                      href={item.href}
+                      target={item.external ? "_blank" : undefined}
+                      rel={item.external ? "noreferrer" : undefined}
+                      aria-label={item.label}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:border-amber-400/40 hover:bg-amber-400/10 hover:text-amber-300"
+                    >
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  );
+                })}
             </div>
           </div>
 
@@ -78,20 +80,33 @@ export async function Footer() {
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-white">{t.footer.contact}</h2>
             <ul className="mt-5 space-y-4 text-sm">
-              <li className="flex items-start gap-3 text-slate-400">
+              <li className="flex items-center gap-3 text-slate-400">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
                 <span>{t.footer.address}</span>
               </li>
               <li>
-                <a href={`tel:${t.footer.phone.replace(/\s/g, "")}`} className="flex items-start gap-3 text-slate-400 transition hover:text-white">
-                  <Phone className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
-                  <span>{t.footer.phone}</span>
+                <a
+                  href={contact.phone ? `https://wa.me/${contact.phone.replace(/\D/g, "")}` : "#"}
+                  target={contact.phone ? "_blank" : undefined}
+                  rel={contact.phone ? "noreferrer" : undefined}
+                  className="flex items-center gap-3 text-slate-400 transition hover:text-white"
+                >
+                  <MessageCircle className="h-4 w-4 shrink-0 text-emerald-400" />
+                  <span>{contact.phone || t.footer.phone}</span>
                 </a>
               </li>
+              {contact.phone ? (
+                <li>
+                  <a href={`tel:${contact.phone}`} className="flex items-center gap-3 text-slate-400 transition hover:text-white">
+                    <Phone className="h-4 w-4 shrink-0 text-amber-400" />
+                    <span>{contact.phone}</span>
+                  </a>
+                </li>
+              ) : null}
               <li>
-                <a href={`mailto:${t.footer.email}`} className="flex items-start gap-3 text-slate-400 transition hover:text-white">
+                <a href={contact.email ? `mailto:${contact.email}` : "#"} className="flex items-center gap-3 text-slate-400 transition hover:text-white">
                   <Mail className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
-                  <span>{t.footer.email}</span>
+                  <span>{contact.email || t.footer.email}</span>
                 </a>
               </li>
             </ul>
