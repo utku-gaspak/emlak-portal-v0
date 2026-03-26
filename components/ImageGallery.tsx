@@ -18,6 +18,8 @@ type ImageGalleryProps = {
 };
 
 const PLACEHOLDER_SRC = "/property-placeholder.svg";
+const MAIN_IMAGE_BLUR_DATA_URL =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxNiAxMCc+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSdnJyB4MT0nMCcgeDI9JzEnPjxzdG9wIHN0b3AtY29sb3I9JyNlMmU4ZjAnLz48c3RvcCBvZmZzZXQ9JzEnIHN0b3AtY29sb3I9JyNjYmQ1ZTEnLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0nMTYnIGhlaWdodD0nMTAnIGZpbGw9J3VybCgjZyknLz48Y2lyY2xlIGN4PSc0JyBjeT0nNCcgcj0nMicgZmlsbD0nI2Y1OWUwYicgZmlsbC1vcGFjaXR5PScuMTgnLz48L3N2Zz4=";
 const DEFAULT_LOCALE = "tr" as const;
 
 function buildAltText(title: string, index: number, suffix: string) {
@@ -358,18 +360,21 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
           >
             <div className="relative aspect-[4/3] w-full bg-slate-200 sm:aspect-[16/9] dark:bg-slate-800">
               {!loadedImages[currentMainKey] ? <div className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-800" /> : null}
-              <Image
-                id="main-image-display"
-                data-automation="main-property-image"
-                src={failedImages[selectedIndex] ? PLACEHOLDER_SRC : currentImageSrc}
-                alt={buildAltText(title, selectedIndex, "featured photo")}
-                fill
-                sizes="(max-width: 1024px) 100vw, 720px"
-                className="object-cover"
-                onError={() => handleImageError(selectedIndex)}
-                onLoadingComplete={() => markLoaded(currentMainKey)}
-                draggable={false}
-                priority
+                <Image
+                  id="main-image-display"
+                  data-automation="main-property-image"
+                  src={failedImages[selectedIndex] ? PLACEHOLDER_SRC : currentImageSrc}
+                  alt={buildAltText(title, selectedIndex, "featured photo")}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  quality={80}
+                  placeholder="blur"
+                  blurDataURL={MAIN_IMAGE_BLUR_DATA_URL}
+                  className="object-cover"
+                  onError={() => handleImageError(selectedIndex)}
+                  onLoadingComplete={() => markLoaded(currentMainKey)}
+                  draggable={false}
+                  priority
               />
             </div>
           </button>
