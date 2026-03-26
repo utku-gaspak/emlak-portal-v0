@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { PropertyCard } from "@/components/PropertyCard";
-import { SearchFilters } from "@/components/SearchFilters";
+import { SearchFiltersIsland } from "@/components/SearchFiltersIsland";
 import { FileBadge, Handshake, ShieldCheck } from "lucide-react";
 import { getCategories } from "@/lib/categories";
 import { getListings, parseListingFilters } from "@/lib/listings-store";
@@ -61,7 +61,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
 
           <div className="relative z-20 mt-10 w-full max-w-6xl overflow-visible px-0 sm:px-4">
-            <SearchFilters categories={categories} showHeader={false} />
+            <SearchFiltersIsland categories={categories} showHeader={false} />
           </div>
         </div>
       </section>
