@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { PropertyCard } from "@/components/PropertyCard";
 import { SearchFilters } from "@/components/SearchFilters";
 import { FileBadge, Handshake, ShieldCheck } from "lucide-react";
@@ -16,20 +17,21 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const t = await getDictionary();
   const resolvedParams = await searchParams;
   const filters = parseListingFilters(resolvedParams);
-  const [allListings, filteredListings, categories] = await Promise.all([getListings(), getListings(filters), getCategories()]);
+  const [filteredListings, categories] = await Promise.all([getListings(filters), getCategories()]);
   const canDelete = await isAdminAuthenticated();
 
   return (
     <div className="space-y-10 sm:space-y-12">
       <section className="relative isolate rounded-[3rem] bg-slate-950 text-white shadow-[0_32px_80px_rgba(15,23,42,0.3)]">
         <div className="absolute inset-0 overflow-hidden rounded-[3rem]" aria-hidden="true">
-          <div
-            data-automation="hero-background"
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1800&q=80')"
-            }}
+          <Image
+            src="https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1800&q=80"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            quality={75}
+            className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-black/55" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.14),_transparent_28%)]" />
