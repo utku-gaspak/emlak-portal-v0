@@ -1,5 +1,6 @@
 import { PropertyCard } from "@/components/PropertyCard";
 import { SearchFilters } from "@/components/SearchFilters";
+import { FileBadge, Handshake, ShieldCheck } from "lucide-react";
 import { getCategories } from "@/lib/categories";
 import { getListings, parseListingFilters } from "@/lib/listings-store";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
@@ -81,27 +82,35 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[36rem] lg:flex-1">
             {[
               {
-                title: t.features.card1_title,
-                desc: t.features.card1_desc,
-                tone: "from-amber-500/15 to-amber-500/5"
+                title: "Onaylı İlanlar",
+                desc: "Sitemizde yalnızca EIDS standartlarına uygun ve mülk sahibi tarafından yetkilendirilmiş resmi ilanlar yayınlanmaktadır.",
+                tone: "from-amber-500/15 to-amber-500/5",
+                icon: ShieldCheck
               },
               {
-                title: t.features.card2_title,
-                desc: t.features.card2_desc,
-                tone: "from-sky-500/15 to-sky-500/5"
+                title: "Yetki Belgesi",
+                desc: "Taşınmaz Ticareti Yetki Numarası: 220087. Gaspak Emlak, Ticaret Bakanlığı tarafından yetkilendirilmiş resmi bir işletmedir.",
+                tone: "from-sky-500/15 to-sky-500/5",
+                icon: FileBadge
               },
               {
-                title: t.features.card3_title,
-                desc: t.features.card3_desc,
-                tone: "from-emerald-500/15 to-emerald-500/5"
+                title: "Güvenilir Deneyim",
+                desc: "Edirne piyasasında yılların verdiği tecrübe ve şeffaf hizmet anlayışıyla, alım-satım süreçlerinizi güvenle yönetiyoruz.",
+                tone: "from-emerald-500/15 to-emerald-500/5",
+                icon: Handshake
               }
             ].map((item) => (
               <div
                 key={item.title}
                 className={`rounded-3xl border border-slate-200 bg-gradient-to-br ${item.tone} p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/60`}
               >
-                <p className="text-lg font-black text-slate-950 dark:text-white sm:text-xl">{item.title}</p>
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{item.desc}</p>
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-amber-500 shadow-sm">
+                    <item.icon className="h-5 w-5" />
+                  </span>
+                  <p className="text-lg font-black text-slate-950 dark:text-white sm:text-xl">{item.title}</p>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">{item.desc}</p>
               </div>
             ))}
           </div>
