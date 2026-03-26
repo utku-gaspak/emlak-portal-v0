@@ -28,7 +28,7 @@ export function ViewCountTracker({ listingId }: ViewCountTrackerProps) {
 
     (async () => {
       try {
-        await supabaseBrowser.rpc("increment_view_count", { row_id: listingId });
+        await supabaseBrowser.rpc("increment_view_count", { row_id: listingId } as never);
       } catch {
         await fetch(`/api/listings/${listingId}/view`, {
           method: "POST"

@@ -459,7 +459,13 @@ export async function getNextListingRefId(): Promise<number> {
 export async function getListingById(id: string): Promise<Listing | null> {
   try {
     const supabase = getSupabaseServerClient();
-    const { data, error } = await supabase.from(LISTINGS_TABLE).select("*").eq("id", String(id)).maybeSingle();
+    const { data, error } = await supabase
+      .from(LISTINGS_TABLE)
+      .select(
+        "id, ref_id, is_featured, status, category_id, currency, title, price, location, area_sqm, description, images, created_at, latitude, longitude, view_count, type, room_count, floor_number, heating_type, zoning_status, island_number, parcel_number"
+      )
+      .eq("id", String(id))
+      .maybeSingle();
 
     if (error) {
       throw error;

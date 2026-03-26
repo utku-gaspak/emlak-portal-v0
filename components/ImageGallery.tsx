@@ -260,7 +260,7 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
                             sizes="100vw"
                             className="object-contain"
                             onError={() => handleImageError(selectedIndex)}
-                            onLoadingComplete={() => markLoaded(currentImageFile ?? `fallback-${selectedIndex}`)}
+                            onLoad={() => markLoaded(currentImageFile ?? `fallback-${selectedIndex}`)}
                             draggable={false}
                             priority
                           />
@@ -321,7 +321,7 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
                             sizes="96px"
                             className="object-cover"
                             onError={() => handleImageError(index)}
-                            onLoadingComplete={() => markLoaded(previewKey)}
+                            onLoad={() => markLoaded(previewKey)}
                             draggable={false}
                           />
                           {isLastPreview ? (
@@ -366,15 +366,15 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
                   src={failedImages[selectedIndex] ? PLACEHOLDER_SRC : currentImageSrc}
                   alt={buildAltText(title, selectedIndex, "featured photo")}
                   fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  quality={80}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  quality={75}
                   placeholder="blur"
                   blurDataURL={MAIN_IMAGE_BLUR_DATA_URL}
-                  className="object-cover"
-                  onError={() => handleImageError(selectedIndex)}
-                  onLoadingComplete={() => markLoaded(currentMainKey)}
-                  draggable={false}
-                  priority
+                className="object-cover"
+                onError={() => handleImageError(selectedIndex)}
+                onLoad={() => markLoaded(currentMainKey)}
+                draggable={false}
+                priority
               />
             </div>
           </button>
@@ -406,11 +406,11 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
                       alt={buildAltText(title, index, "thumbnail")}
                       fill
                       sizes="(max-width: 1024px) 50vw, 25vw"
-                      className="object-cover"
-                      onError={() => handleImageError(index)}
-                      onLoadingComplete={() => markLoaded(previewKey)}
-                      draggable={false}
-                    />
+                        className="object-cover"
+                        onError={() => handleImageError(index)}
+                        onLoad={() => markLoaded(previewKey)}
+                        draggable={false}
+                      />
                     {isLastPreview ? (
                       <div className="absolute inset-0 flex items-center justify-center bg-slate-950/55 text-center backdrop-blur-[1px]">
                         <div className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-white">
