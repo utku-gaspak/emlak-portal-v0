@@ -1,68 +1,57 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 type ViewCounterProps = {
   id: string;
 };
 
 export function ViewCounter({ id }: ViewCounterProps) {
+  const hasTrackedRef = useRef(false);
   const router = useRouter();
 
   useEffect(() => {
-    if (!id) {
+    if (!id || hasTrackedRef.current) {
       return;
     }
 
-    const supabase = createClientComponentClient();
-    let cancelled = false;
     const storageKey = `view-count-tracked:${id}`;
 
     if (typeof window !== "undefined" && window.sessionStorage.getItem(storageKey) === "1") {
+      hasTrackedRef.current = true;
       return;
     }
 
+    hasTrackedRef.current = true;
+
     (async () => {
       try {
-        const { error } = await supabase.rpc("increment_view_count", {
-          row_id: id
+        const response = await fetch(`/api/listings/${id}/view`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          cache: "no-store"
         });
 
-        if (error) {
-          console.error("ViewCounter RPC error:", error.message);
-          const fallbackResponse = await fetch(`/api/listings/${id}/view`, {
-            method: "POST"
-          });
-
-          if (!fallbackResponse.ok) {
-            const fallbackText = await fallbackResponse.text();
-            console.error("ViewCounter fallback error:", fallbackText);
-            return;
-          }
-
-          if (!cancelled) {
-            console.log("ViewCounter fallback success:", id);
-          }
-        } else if (!cancelled) {
-          console.log("ViewCounter RPC success:", id);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("ViewCounter route error:", errorText);
+          return;
         }
 
         if (typeof window !== "undefined") {
           window.sessionStorage.setItem(storageKey, "1");
         }
 
+        console.log("ViewCounter route success:", id);
         router.refresh();
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown view counter error";
         console.error("ViewCounter unexpected error:", message);
       }
     })();
-
-    return () => {
-      cancelled = true;
-    };
   }, [id, router]);
 
   return null;
