@@ -29,6 +29,7 @@ function extractImageUrls(formData: FormData): string[] {
 }
 
 function buildInsertData(args: {
+  listingNo: string;
   type: ListingType;
   status: "satilik" | "kiralik";
   categoryId: string;
@@ -51,6 +52,7 @@ function buildInsertData(args: {
   viewCount?: number;
 }) {
   return {
+    listing_no: args.listingNo.trim(),
     type: args.type,
     status: args.status,
     category_id: args.categoryId,
@@ -104,6 +106,7 @@ export async function POST(request: Request) {
 
     const type = getListingType(String(formData.get("type") ?? ""));
     const title = String(formData.get("title") ?? "");
+    const listingNo = String(formData.get("listing_no") ?? formData.get("listingNo") ?? "").trim();
     const price = String(formData.get("price") ?? "");
     const currency = normalizeCurrency(String(formData.get("currency") ?? ""));
     const location = String(formData.get("location") ?? "");
@@ -127,6 +130,7 @@ export async function POST(request: Request) {
       type,
       status,
       categoryId,
+      listingNo,
       title,
       price,
       currency,
@@ -183,6 +187,7 @@ export async function POST(request: Request) {
 
     const insertData = buildInsertData({
       type: resolvedType,
+      listingNo,
       status,
       categoryId: categoryId.trim(),
       title,
@@ -213,7 +218,7 @@ export async function POST(request: Request) {
       {
         ok: true,
         listingId: savedListing.id,
-        refId: savedListing.ref_id ?? savedListing.refId,
+        listingNo: savedListing.listing_no ?? savedListing.listingNo,
         type: savedListing.type,
         images: savedListing.images ?? []
       },
@@ -229,3 +234,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { addListing } from "@/lib/listings-store";
 import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
@@ -22,6 +22,7 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const type = getListingType(String(formData.get("type") ?? ""));
   const title = String(formData.get("title") ?? "");
+  const listingNo = String(formData.get("listing_no") ?? formData.get("listingNo") ?? "").trim();
   const price = String(formData.get("price") ?? "");
   const currency = normalizeCurrency(String(formData.get("currency") ?? ""));
   const location = String(formData.get("location") ?? "");
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
     type,
     status: status as "satilik" | "kiralik",
     categoryId,
+    listingNo,
     title,
     price,
     currency,
@@ -106,7 +108,7 @@ export async function POST(request: Request) {
     const listing =
       resolvedType === "house"
         ? ({
-            refId: 0,
+            listingNo,
             isFeatured,
             status: status as "satilik" | "kiralik",
             categoryId: categoryId.trim(),
@@ -128,7 +130,7 @@ export async function POST(request: Request) {
             heatingType: heatingType.trim()
           } as Omit<HouseListing, "id">)
         : ({
-            refId: 0,
+            listingNo,
             isFeatured,
             status: status as "satilik" | "kiralik",
             categoryId: categoryId.trim(),
@@ -156,7 +158,7 @@ export async function POST(request: Request) {
       {
         ok: true,
         listingId: savedListing.id,
-        refId: savedListing.refId,
+        listingNo: savedListing.listingNo,
         type: savedListing.type,
         images: savedListing.images
       },
@@ -169,3 +171,4 @@ export async function POST(request: Request) {
     throw error;
   }
 }
+

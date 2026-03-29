@@ -1,4 +1,4 @@
-import tr from "@/locales/tr.json";
+﻿import tr from "@/locales/tr.json";
 import en from "@/locales/en.json";
 
 export type Locale = "tr" | "en";
@@ -114,6 +114,7 @@ const trOverrides = {
     categoryRequired: "Kategori se\u00e7imi gerekli.",
     categoryInvalid: "Kategori ge\u00e7ersiz.",
     titleRequired: "Ba\u015fl\u0131k gerekli.",
+    listingNoRequired: "Ta\u015f\u0131nmaz ilan numaras\u0131 gerekli.",
     priceInvalid: "Fiyat pozitif bir say\u0131 olmal\u0131.",
     locationRequired: "Konum gerekli.",
     areaInvalid: "Alan pozitif bir say\u0131 olmal\u0131.",
@@ -244,6 +245,8 @@ const trOverrides = {
       featuredDescription: "\u00d6ne \u00e7\u0131kan ilanlar varsay\u0131lan olarak ana sayfan\u0131n en \u00fcst\u00fcnde g\u00f6r\u00fcn\u00fcr.",
       title: "Ba\u015fl\u0131k",
       titlePlaceholder: "\u00d6rn. Bo\u011faz manzaral\u0131 daire",
+      listingNo: "Ta\u015f\u0131nmaz \u0130lan No",
+      listingNoPlaceholder: "\u00d6rn. 100245",
       price: "Fiyat",
       pricePlaceholder: "0",
       currency: "Para Birimi",
@@ -311,6 +314,8 @@ const trOverrides = {
     featuredDescription: "\u00d6ne \u00e7\u0131kan ilanlar varsay\u0131lan olarak ana sayfan\u0131n en \u00fcst\u00fcnde g\u00f6r\u00fcn\u00fcr.",
     titleLabel: "Ba\u015fl\u0131k",
     titlePlaceholder: "\u00d6rn. Bo\u011faz manzaral\u0131 daire",
+    listingNoLabel: "Ta\u015f\u0131nmaz \u0130lan No",
+    listingNoPlaceholder: "\u00d6rn. 100245",
     priceLabel: "Fiyat",
     pricePlaceholder: "0",
     currencyLabel: "Para Birimi",
@@ -379,7 +384,7 @@ const trOverrides = {
     zoningLabel: "\u0130mar",
     islandLabel: "Ada",
     parcelLabel: "Parsel",
-    refLabel: "\u0130lan No",
+    listingNo: "\u0130lan No",
     viewDetails: "Detaylar\u0131 G\u00f6r",
     photosSingular: "foto\u011fraf",
     photosPlural: "foto\u011fraf"
@@ -406,14 +411,14 @@ const trOverrides = {
   },
   adminListings: {
     title: "\u0130lan Y\u00f6neticisi",
-    description: "\u0130lanlar\u0131 y\u00f6netin, Ref No ile aray\u0131n ve kay\u0131tlar aras\u0131nda h\u0131zla ge\u00e7i\u015f yap\u0131n.",
+    description: "\u0130lanlar\u0131 y\u00f6netin, İlan No ile aray\u0131n ve kay\u0131tlar aras\u0131nda h\u0131zla ge\u00e7i\u015f yap\u0131n.",
     addButton: "Yeni \u0130lan Ekle",
-    searchLabel: "Ref No, ba\u015fl\u0131k veya konuma g\u00f6re aray\u0131n",
-    searchPlaceholder: "Ref No, ba\u015fl\u0131k veya konum girin",
+    searchLabel: "İlan No, ba\u015fl\u0131k veya konuma g\u00f6re aray\u0131n",
+    searchPlaceholder: "İlan No, ba\u015fl\u0131k veya konum girin",
     searchButton: "Ara",
     clearButton: "Temizle",
     thumbnail: "K\u00fc\u00e7\u00fck Resim",
-    refId: "Ref No",
+    listingNo: "İlan No",
     titleColumn: "Ba\u015fl\u0131k",
     price: "Fiyat",
     edit: "D\u00fczenle",
@@ -489,8 +494,9 @@ const trOverrides = {
     galleryDescription: "\u0130lan\u0131n t\u00fcm foto\u011fraflar\u0131n\u0131 inceleyin.",
     specifications: "\u00d6zellikler",
     overview: "Genel Bak\u0131\u015f",
-    description: "A\u00e7\u0131klama",
-    locationLabel: "Konum",
+      description: "A\u00e7\u0131klama",
+      listingNo: "Ta\u015f\u0131nmaz \u0130lan No",
+      locationLabel: "Konum",
     areaLabel: "Alan",
     photosLabel: "Foto\u011fraflar",
     roomsLabel: "Oda Say\u0131s\u0131",
@@ -520,3 +526,5 @@ export const dictionaries: Record<Locale, Dictionary> = {
 export function normalizeLocale(value: string | null | undefined): Locale {
   return value === "en" ? "en" : "tr";
 }
+
+

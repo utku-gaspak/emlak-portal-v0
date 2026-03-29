@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -14,7 +14,7 @@ type ImageGalleryProps = {
   title: string;
   images: string[];
   listingId?: string;
-  listingRef?: string | number;
+  listingNo?: string | number;
 };
 
 const PLACEHOLDER_SRC = "/property-placeholder.svg";
@@ -42,7 +42,7 @@ function getSwipeDirection(offsetX: number, velocityX: number) {
   return 0;
 }
 
-export function ImageGallery({ title, images, listingId, listingRef }: ImageGalleryProps) {
+export function ImageGallery({ title, images, listingId, listingNo }: ImageGalleryProps) {
   const { t } = useTranslation();
   const locale = getClientLocale() || DEFAULT_LOCALE;
   const [mounted, setMounted] = useState(false);
@@ -109,7 +109,7 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
 
   const currentImageFile = normalizedImages[selectedIndex];
   const currentImageSrc = currentImageFile ? currentImageFile : PLACEHOLDER_SRC;
-  const whatsappHref = listingRef ? getPropertyWhatsAppHref(title, listingRef, locale) : "";
+  const whatsappHref = listingNo ? getPropertyWhatsAppHref(title, listingNo, locale) : "";
 
   const handleImageError = (index: number) => {
     setFailedImages((current) => (current[index] ? current : { ...current, [index]: true }));
@@ -431,3 +431,4 @@ export function ImageGallery({ title, images, listingId, listingRef }: ImageGall
     </section>
   );
 }
+

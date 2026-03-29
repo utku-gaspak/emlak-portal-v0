@@ -46,6 +46,10 @@ export async function validateListingForm(fields: FormFields): Promise<Validatio
     errors.title = t.errors.titleRequired;
   }
 
+  if (!fields.listingNo?.trim()) {
+    errors.listingNo = t.errors.listingNoRequired;
+  }
+
   if (fields.currency !== undefined && !["TL", "USD", "EUR"].includes(fields.currency)) {
     errors.currency = t.errors.currencyInvalid;
   }

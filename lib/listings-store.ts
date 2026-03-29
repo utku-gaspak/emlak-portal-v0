@@ -5,11 +5,9 @@ import { normalizeCurrency } from "@/lib/currency";
 import { getSupabaseServerClient, LISTINGS_TABLE } from "@/lib/supabase";
 import { HouseListing, LandListing, Listing, ListingStatus, ListingType } from "@/lib/types";
 
-const minimumRefId = 1000;
-
 export type ListingFilters = {
   query?: string;
-  refId?: number;
+  listingNo?: string;
   currency?: "TRY" | Listing["currency"];
   status?: ListingStatus;
   parentCategoryId?: string;
@@ -24,7 +22,7 @@ export type ListingFilters = {
 
 type SearchParamsLike = Record<string, string | string[] | undefined>;
 type ListingInsert = {
-  refId?: number;
+  listingNo: string;
   type: ListingType;
   status: Listing["status"];
   categoryId: string;
@@ -65,10 +63,6 @@ function toNumber(value: unknown, fallback = 0): number {
   return fallback;
 }
 
-function isPureNumber(value: string): boolean {
-  return /^\d+$/.test(value.trim());
-}
-
 function normalizeValue(value: string): string {
   return value.trim().toLowerCase();
 }
@@ -80,7 +74,7 @@ function getListingSortTimestamp(listing: Listing): number {
     return createdAtTime;
   }
 
-  return Number.isFinite(listing.refId) ? listing.refId : 0;
+  return 0;
 }
 
 function toSearchParamValue(value: string | string[] | undefined): string {
@@ -196,7 +190,7 @@ function normalizeListingRow(raw: unknown): Listing | null {
 
   const commonFields = {
     id: getRecordText(record, ["id"], crypto.randomUUID()),
-    refId: getRecordNumber(record, ["ref_id", "refId"], 0),
+    listingNo: getRecordText(record, ["listing_no", "listingNo"], ""),
     isFeatured: getRecordBoolean(record, ["is_featured", "isFeatured"], false),
     status: getRecordText(record, ["status", "listing_status"], "satilik") as Listing["status"],
     categoryId: getRecordText(record, ["category_id", "categoryId"], ""),
@@ -236,7 +230,7 @@ function normalizeListingRow(raw: unknown): Listing | null {
   return listing;
 }
 
-function toDatabaseRow(listing: ListingInsert, refId: number = listing.refId ?? 0): Record<string, unknown> {
+function toDatabaseRow(listing: ListingInsert): Record<string, unknown> {
   const baseRow = {
     is_featured: Boolean(listing.isFeatured),
     status: listing.status,
@@ -254,12 +248,10 @@ function toDatabaseRow(listing: ListingInsert, refId: number = listing.refId ?? 
     view_count: typeof listing.viewCount === "number" ? listing.viewCount : 0
   };
 
-  const refIdField = refId > 0 ? { ref_id: refId } : {};
-
   if (listing.type === "land") {
     return {
       ...baseRow,
-      ...refIdField,
+      listing_no: listing.listingNo || null,
       type: "land",
       zoning_status: listing.zoningStatus,
       island_number: listing.islandNumber,
@@ -272,7 +264,7 @@ function toDatabaseRow(listing: ListingInsert, refId: number = listing.refId ?? 
 
   return {
     ...baseRow,
-    ...refIdField,
+    listing_no: listing.listingNo || null,
     type: "house",
     room_count: listing.roomCount,
     floor_number: listing.floorNumber,
@@ -346,8 +338,6 @@ export async function getListings(filters: ListingFilters = {}): Promise<Listing
   try {
     const listings = await fetchAllListingsFromDatabase();
     const query = filters.query?.trim().toLowerCase() ?? "";
-    const queryIsNumeric = isPureNumber(query);
-    const queryAsNumber = queryIsNumeric ? Number(query) : null;
     const hasExplicitSort = typeof filters.sortBy !== "undefined";
     const sortBy = filters.sortBy ?? "newest";
     const categoryFilterIds =
@@ -364,12 +354,12 @@ export async function getListings(filters: ListingFilters = {}): Promise<Listing
         : undefined;
 
     const filteredListings = listings.filter((listing) => {
-      if (typeof filters.refId === "number" && listing.refId !== filters.refId) {
+      if (typeof filters.listingNo === "string" && normalizeValue(listing.listingNo) !== normalizeValue(filters.listingNo)) {
         return false;
       }
 
       if (query && !buildSearchableText(listing).includes(query)) {
-        if (!(queryIsNumeric && listing.refId === queryAsNumber)) {
+        if (normalizeValue(listing.listingNo) !== normalizeValue(query)) {
           return false;
         }
       }
@@ -414,9 +404,10 @@ export async function getListings(filters: ListingFilters = {}): Promise<Listing
     });
 
     return filteredListings.sort((a, b) => {
-      if (queryIsNumeric && queryAsNumber !== null) {
-        const aExact = a.refId === queryAsNumber ? 0 : 1;
-        const bExact = b.refId === queryAsNumber ? 0 : 1;
+      if (query) {
+        const normalizedQuery = normalizeValue(query);
+        const aExact = normalizeValue(a.listingNo) === normalizedQuery ? 0 : 1;
+        const bExact = normalizeValue(b.listingNo) === normalizedQuery ? 0 : 1;
 
         if (aExact !== bExact) {
           return aExact - bExact;
@@ -446,23 +437,13 @@ export async function getListings(filters: ListingFilters = {}): Promise<Listing
   }
 }
 
-export async function getNextListingRefId(): Promise<number> {
-  try {
-    const listings = await fetchAllListingsFromDatabase();
-    const maxRefId = listings.reduce((max, listing) => Math.max(max, listing.refId), minimumRefId);
-    return maxRefId + 1;
-  } catch {
-    return minimumRefId + 1;
-  }
-}
-
 export async function getListingById(id: string): Promise<Listing | null> {
   try {
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
       .from(LISTINGS_TABLE)
       .select(
-        "id, ref_id, is_featured, status, category_id, currency, title, price, location, area_sqm, description, images, created_at, latitude, longitude, view_count, type, room_count, floor_number, heating_type, zoning_status, island_number, parcel_number"
+        "id, listing_no, is_featured, status, category_id, currency, title, price, location, area_sqm, description, images, created_at, latitude, longitude, view_count, type, room_count, floor_number, heating_type, zoning_status, island_number, parcel_number"
       )
       .eq("id", String(id))
       .maybeSingle();
@@ -479,15 +460,12 @@ export async function getListingById(id: string): Promise<Listing | null> {
 
 export async function addListing(listing: ListingInsert): Promise<Listing> {
   const supabase = getSupabaseServerClient();
-  const row = toDatabaseRow(
-    {
-      ...listing,
-      isFeatured: Boolean(listing.isFeatured),
-      currency: normalizeCurrency(listing.currency),
-      images: listing.images
-    },
-    listing.refId ?? 0
-  );
+  const row = toDatabaseRow({
+    ...listing,
+    isFeatured: Boolean(listing.isFeatured),
+    currency: normalizeCurrency(listing.currency),
+    images: listing.images
+  });
 
   const { data, error } = await supabase.from(LISTINGS_TABLE).insert(row).select("*").single();
 
@@ -532,13 +510,12 @@ export async function updateListingById(id: string, updatedListing: Listing): Pr
   const row = toDatabaseRow(
     {
       ...updatedListing,
-      refId: existingListing.refId,
+      listingNo: updatedListing.listingNo,
       createdAt: existingListing.createdAt,
       isFeatured: Boolean(updatedListing.isFeatured),
       currency: normalizeCurrency(updatedListing.currency),
       images: updatedListing.images
     },
-    existingListing.refId
   );
 
   const { data, error } = await supabase.from(LISTINGS_TABLE).update(row).eq("id", existingListing.id).select("*").single();
@@ -573,5 +550,7 @@ export async function incrementListingViewCount(id: string): Promise<Listing | n
 
   return normalizeListingRow(data);
 }
+
+
 
 

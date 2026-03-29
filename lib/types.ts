@@ -11,7 +11,7 @@ export type Category = {
 
 export type ListingCommonFields = {
   id: string;
-  refId: number;
+  listingNo: string;
   isFeatured: boolean;
   status: ListingStatus;
   categoryId: string;
@@ -45,7 +45,7 @@ export type LandListing = ListingCommonFields & {
 export type Listing = HouseListing | LandListing;
 
 export type ListingInput = {
-  refId?: number;
+  listingNo: string;
   type: ListingType;
   status: ListingStatus;
   categoryId: string;
@@ -69,3 +69,4 @@ export type ListingInput = {
 };
 
 export type ValidationErrors = Partial<Record<keyof ListingInput, string>>;
+

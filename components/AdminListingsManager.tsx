@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
@@ -215,7 +215,7 @@ export function AdminListingsManager({
             <thead className="bg-slate-50 dark:bg-slate-950/70">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
                 <th className="px-4 py-4">{t.adminListings.thumbnail}</th>
-                <th className="px-4 py-4">{t.adminListings.refId}</th>
+                <th className="px-4 py-4">{t.adminListings.listingNo}</th>
                 <th className="px-4 py-4">{t.adminListings.titleColumn}</th>
                 <th className="px-4 py-4">{t.adminListings.price}</th>
                 <th className="px-4 py-4">{t.adminListings.featured}</th>
@@ -256,7 +256,7 @@ export function AdminListingsManager({
                           />
                         </div>
                       </td>
-                      <td className="px-4 py-4 font-semibold text-slate-900 dark:text-slate-100">{listing.refId}</td>
+                      <td className="px-4 py-4 font-semibold text-slate-900 dark:text-slate-100">{listing.listingNo}</td>
                       <td className="px-4 py-4">
                         <Link
                           href={`/property/${listing.id}`}
@@ -393,7 +393,7 @@ export function AdminListingsManager({
                 <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{t.adminListings.deleteDescription}</p>
                 <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">{listingToDelete.title}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {t.adminListings.refId}: {listingToDelete.refId}
+                  {t.adminListings.listingNo}: {listingToDelete.listingNo}
                 </p>
                 {deleteError ? <p className="mt-3 text-sm text-red-600">{deleteError}</p> : null}
               </div>
@@ -429,3 +429,4 @@ export function AdminListingsManager({
     </div>
   );
 }
+

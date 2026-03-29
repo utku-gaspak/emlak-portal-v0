@@ -29,7 +29,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             alt=""
             fill
             priority
-            sizes="100vw"
+            sizes="(max-width: 1280px) calc(100vw - 2rem), 1280px"
             quality={75}
             className="object-cover object-center"
           />

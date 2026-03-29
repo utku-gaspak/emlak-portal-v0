@@ -1,4 +1,4 @@
-const phoneNumber = process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "";
+﻿const phoneNumber = process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "";
 const emailAddress = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "";
 const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "";
 const facebookUrl = process.env.NEXT_PUBLIC_FACEBOOK_URL ?? "";
@@ -74,7 +74,7 @@ export function getWhatsAppHref(listingTitle: string, locale: Locale = "tr"): st
   return `https://wa.me/${number}?text=${message}`;
 }
 
-export function getPropertyWhatsAppHref(listingTitle: string, refId: string | number, locale: Locale = "tr"): string {
+export function getPropertyWhatsAppHref(listingTitle: string, listingNo: string | number, locale: Locale = "tr"): string {
   const number = sanitizeWhatsAppNumber(getPublicContactConfig().phone);
 
   if (!number) {
@@ -83,8 +83,8 @@ export function getPropertyWhatsAppHref(listingTitle: string, refId: string | nu
 
   const message =
     locale === "en"
-      ? `Hello ${firmName}, I would like information about the ${listingTitle} listing (Ref: ${refId}).`
-      : `Merhaba ${firmName}, ${listingTitle} (Ref: ${refId}) ilanı hakkında bilgi almak istiyorum.`;
+      ? `Hello ${firmName}, I would like information about listing no ${listingNo} (${listingTitle}).`
+      : `Merhaba ${firmName}, ${listingTitle} (İlan No: ${listingNo}) ilanı hakkında bilgi almak istiyorum.`;
 
   return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
@@ -93,3 +93,5 @@ export function getCallHref(): string {
   const sanitizedPhone = getPublicContactConfig().phone;
   return sanitizedPhone ? `tel:${sanitizedPhone}` : "";
 }
+
+

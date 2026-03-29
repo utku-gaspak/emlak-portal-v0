@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { AdminListingsManager } from "@/components/AdminListingsManager";
 import { getListings } from "@/lib/listings-store";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
@@ -15,10 +15,6 @@ function firstSearchValue(value: string | string[] | undefined): string {
   }
 
   return typeof value === "string" ? value : "";
-}
-
-function isPureNumber(value: string): boolean {
-  return /^\d+$/.test(value.trim());
 }
 
 function buildPageHref(searchTerm: string, page: number): string {
@@ -47,12 +43,8 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   const normalizedSearch = searchTerm.toLowerCase();
 
   const filteredListings = normalizedSearch
-    ? allListings.filter((listing) => {
-        if (isPureNumber(normalizedSearch)) {
-          return listing.refId === Number(normalizedSearch);
-        }
-
-        const searchableText = [listing.title, listing.location].join(" ").toLowerCase();
+      ? allListings.filter((listing) => {
+        const searchableText = [listing.title, listing.location, listing.listingNo].join(" ").toLowerCase();
         return searchableText.includes(normalizedSearch);
       })
     : allListings;
@@ -75,3 +67,4 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
     />
   );
 }
+

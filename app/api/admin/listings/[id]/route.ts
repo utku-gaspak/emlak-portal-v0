@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getListingById, getListings, removeListingById, updateListingById } from "@/lib/listings-store";
@@ -89,6 +89,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
     const type = getListingType(String(formData.get("type") ?? existingListing.type), existingListing.type);
     const status = String(formData.get("status") ?? existingListing.status ?? "satilik");
     const categoryId = String(formData.get("category_id") ?? formData.get("categoryId") ?? existingListing.categoryId ?? "");
+    const listingNo = String(formData.get("listing_no") ?? formData.get("listingNo") ?? existingListing.listingNo ?? "").trim();
     const title = String(formData.get("title") ?? "");
     const price = String(formData.get("price") ?? "");
     const currency = normalizeCurrency(String(formData.get("currency") ?? existingListing.currency ?? "TL"));
@@ -110,6 +111,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       type,
       status: status as "satilik" | "kiralik",
       categoryId,
+      listingNo,
       currency,
       title,
       price,
@@ -160,7 +162,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
 
     const baseListing = {
       id: existingListing.id,
-      refId: existingListing.refId,
+      listingNo: listingNo || existingListing.listingNo,
       createdAt: existingListing.createdAt,
       viewCount: existingListing.viewCount ?? 0,
       isFeatured,
@@ -205,7 +207,7 @@ export async function PUT(request: Request, { params }: { params: RouteParams })
       {
         ok: true,
         listingId: savedListing.id,
-        refId: savedListing.refId,
+        listingNo: savedListing.listingNo,
         type: savedListing.type,
         images: savedListing.images
       },
@@ -263,7 +265,7 @@ export async function PATCH(request: Request, { params }: { params: RouteParams 
     {
       ok: true,
       listingId: savedListing.id,
-      refId: savedListing.refId,
+      listingNo: savedListing.listingNo,
       isFeatured: savedListing.isFeatured
     },
     { status: 200 }

@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { EditPhotoManager } from "@/components/EditPhotoManager";
@@ -50,7 +50,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
       <section id="admin-edit-form-section" data-automation="admin-edit-form-section" className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
           <p className="text-sm text-slate-700 dark:text-slate-300">
-            {t.adminPage.authenticated} Ref No: {listing.refId}
+            {t.adminPage.authenticated} İlan No: {listing.listingNo}
           </p>
           <AdminLogoutButton className="border-slate-200 bg-slate-700 text-white hover:bg-slate-900 hover:text-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700" />
         </div>
@@ -75,3 +75,4 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
     </div>
   );
 }
+

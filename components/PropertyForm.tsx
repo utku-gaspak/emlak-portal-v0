@@ -20,6 +20,7 @@ import {
 } from "@/lib/category-utils";
 
 type ListingField =
+  | "listingNo"
   | "status"
   | "categoryId"
   | "type"
@@ -52,6 +53,7 @@ type FormState = {
   status: ListingStatus;
   parentCategoryId: string;
   categoryId: string;
+  listingNo: string;
   currency: "TL" | "USD" | "EUR";
   title: string;
   price: string;
@@ -71,6 +73,7 @@ type FormState = {
 type TextFormField = Exclude<keyof FormState, "isFeatured">;
 
 const errorIdByField: Record<ListingField, string> = {
+  listingNo: "error-listing-no",
   status: "error-status",
   categoryId: "error-category-id",
   type: "error-type",
@@ -126,6 +129,7 @@ function buildFormState(initialData?: Listing, categories: Category[] = []): For
     status: initialData?.status ?? "satilik",
     parentCategoryId: preferredParentId,
     categoryId: initialCategory?.parentId ? initialCategory.id : "",
+    listingNo: String(initialData?.listingNo ?? ""),
     currency: initialData?.currency ?? "TL",
     title: initialData?.title ?? "",
     price: initialData ? String(initialData.price) : "",
@@ -457,6 +461,7 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
     const formData = new FormData(event.currentTarget);
     formData.set("status", formState.status);
     formData.set("category_id", formState.categoryId);
+    formData.set("listing_no", formState.listingNo.trim());
     formData.set("currency", formState.currency);
     formData.set("latitude", formState.latitude);
     formData.set("longitude", formState.longitude);
@@ -541,7 +546,25 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
       <input type="hidden" name="category_id" value={formState.categoryId} />
 
       <div className="rounded-3xl bg-slate-50 p-4 sm:p-5 dark:bg-slate-950/50">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-[1fr_1.4fr_1fr_132px]">
+          <div>
+            <label htmlFor="prop-listing-no" className="label-base">
+              {t.admin.form.listingNo}
+            </label>
+              <input
+                id="prop-listing-no"
+                data-automation="listing-no-input"
+                name="listing_no"
+                type="text"
+                className="input-base"
+                required
+                value={formState.listingNo ?? ""}
+                onChange={(event) => updateField("listingNo", event.target.value)}
+                placeholder={t.admin.form.listingNoPlaceholder}
+              />
+            {renderError("listingNo")}
+          </div>
+
           <StatusDropdown
             id="prop-status"
             label={t.admin.form.statusLabel}

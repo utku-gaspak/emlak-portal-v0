@@ -11,6 +11,9 @@ import { getFirmName } from "@/lib/brand";
 import { getDictionary } from "@/lib/get-dictionary";
 import { getSiteUrl } from "@/lib/site-url";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type PropertyDetailPageProps = {
   params: Promise<{
     id: string;
@@ -119,7 +122,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               </p>
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
-                  {t.propertyCard.refLabel}: {listing.refId}
+                  {t.propertyDetail.listingNo}: {listing.listingNo}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200">
                   <Eye className="h-4 w-4" />
@@ -134,46 +137,46 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                 hasHeatingType ? "md:grid-cols-5" : "md:grid-cols-4"
               }`}
             >
-              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-3 text-center">
+              <div className="flex min-h-[96px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-4 text-center">
                 <Ruler className="h-4 w-4 shrink-0 text-amber-500" />
                 <div className="min-w-0 text-center">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.areaLabel}</p>
-                  <p className="truncate text-sm font-semibold text-white">
+                  <p className="break-words text-sm font-semibold leading-snug text-white">
                     {listing.areaSqm} {t.common.squareMetersUnit}
                   </p>
                 </div>
               </div>
 
-              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-3 text-center">
+              <div className="flex min-h-[96px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-4 text-center">
                 <MapPin className="h-4 w-4 shrink-0 text-amber-500" />
                 <div className="min-w-0 text-center">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.locationLabel}</p>
-                  <p className="truncate text-sm font-semibold text-white">{listing.location}</p>
+                  <p className="break-words text-sm font-semibold leading-snug text-white">{listing.location}</p>
                 </div>
               </div>
 
-              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-3 text-center">
+              <div className="flex min-h-[96px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-4 text-center">
                 <Tag className="h-4 w-4 shrink-0 text-amber-500" />
                 <div className="min-w-0 text-center">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.filters.statusLabel}</p>
-                  <p className="truncate text-sm font-semibold text-white">{listingStatusLabel}</p>
+                  <p className="break-words text-sm font-semibold leading-snug text-white">{listingStatusLabel}</p>
                 </div>
               </div>
 
-              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-3 text-center">
+              <div className="flex min-h-[96px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-4 text-center">
                 <Camera className="h-4 w-4 shrink-0 text-amber-500" />
                 <div className="min-w-0 text-center">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.photosLabel}</p>
-                  <p className="truncate text-sm font-semibold text-white">{listing.images.length}</p>
+                  <p className="break-words text-sm font-semibold leading-snug text-white">{listing.images.length}</p>
                 </div>
               </div>
 
               {hasHeatingType ? (
-                <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-3 text-center">
+                <div className="flex min-h-[96px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-white/10 px-4 py-4 text-center">
                   <Thermometer className="h-4 w-4 shrink-0 text-amber-500" />
                   <div className="min-w-0 text-center">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{t.propertyDetail.heatingLabel}</p>
-                    <p className="truncate text-sm font-semibold text-white">{heatingType}</p>
+                    <p className="break-words text-sm font-semibold leading-snug text-white">{heatingType}</p>
                   </div>
                 </div>
               ) : null}
@@ -183,11 +186,11 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
       </section>
 
       <section className="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-3 shadow-[0_22px_70px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-[0_22px_70px_rgba(2,6,23,0.35)] sm:p-4 lg:p-5">
-        <ImageGallery listingId={listing.id} listingRef={listing.refId} title={listing.title} images={listing.images} />
+        <ImageGallery listingId={listing.id} listingNo={listing.listingNo} title={listing.title} images={listing.images} />
       </section>
 
       <ViewCounter id={listing.id} />
-      <CommunicationActionBar listingTitle={listing.title} listingRef={listing.refId} />
+      <CommunicationActionBar listingTitle={listing.title} listingNo={listing.listingNo} />
 
       <section className="rounded-[2.5rem] bg-slate-950 px-6 py-8 text-white shadow-[0_22px_70px_rgba(15,23,42,0.2)] sm:px-8 dark:bg-slate-900 dark:shadow-[0_22px_70px_rgba(2,6,23,0.35)]">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-300 dark:text-slate-400">{t.propertyDetail.specifications}</p>
@@ -235,5 +238,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     </div>
   );
 }
+
+
 
 

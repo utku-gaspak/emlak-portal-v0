@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -132,7 +132,7 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
             <h2 className="text-2xl font-black tracking-tight text-slate-950 dark:text-slate-100">{listing.title}</h2>
             <p className="text-3xl font-black text-brand-700 dark:text-amber-400">{formatListingPrice(listing.price, listing.currency)}</p>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
-              {t.propertyCard.refLabel}: {listing.refId}
+              {t.propertyCard.listingNo}: {listing.listingNo}
             </p>
           </div>
 
@@ -155,3 +155,5 @@ export function PropertyCard({ listing, canDelete = false }: PropertyCardProps) 
     </article>
   );
 }
+
+
