@@ -2,6 +2,7 @@ import Image from "next/image";
 import { PropertyCard } from "@/components/PropertyCard";
 import { SearchFiltersIsland } from "@/components/SearchFiltersIsland";
 import { FileBadge, Handshake, ShieldCheck } from "lucide-react";
+import { getTradeAuthorizationNumber } from "@/lib/brand";
 import { getCategories } from "@/lib/categories";
 import { getListings, parseListingFilters } from "@/lib/listings-store";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
@@ -17,6 +18,12 @@ type HomePageProps = {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const t = await getDictionary();
+  const tradeAuthorizationNumber = getTradeAuthorizationNumber();
+  const heroEyebrow =
+    t.meta.lang === "en"
+      ? `Real Estate Trade Authorization No: ${tradeAuthorizationNumber}`
+      : `Taşınmaz Ticareti Yetki Numarası: ${tradeAuthorizationNumber}`;
+  const heroTitle = t.meta.lang === "en" ? "Your provider for a peaceful and secure life." : "Huzurlu ve Güvenli Yaşam Tedarikçiniz.";
   const resolvedParams = await searchParams;
   const [categories, canDelete] = await Promise.all([getCategories(), isAdminAuthenticated()]);
   const filters = parseListingFilters(resolvedParams, categories);
@@ -42,11 +49,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="relative z-10 flex min-h-[78vh] flex-col items-center justify-center px-6 py-10 text-center sm:px-8 lg:px-12">
           <div className="max-w-4xl space-y-6">
             <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur">
-              {t.home.heroEyebrow}
+              {heroEyebrow}
             </p>
 
             <div className="space-y-4">
-              <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-7xl">{t.home.heroTitle}</h1>
+              <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-7xl">{heroTitle}</h1>
               <p className="mx-auto max-w-2xl text-base leading-7 text-white/85 sm:text-lg lg:text-xl">{t.home.heroDescription}</p>
             </div>
 
@@ -57,7 +64,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 href="#listings-grid"
                 className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
               >
-                {t.common.viewDetails}
+                {t.home.viewListingsButton}
               </a>
             </div>
           </div>
@@ -93,7 +100,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               },
               {
                 title: "Yetki Belgesi",
-                desc: "Taşınmaz Ticareti Yetki Numarası: 220087. Gaspak Emlak, Ticaret Bakanlığı tarafından yetkilendirilmiş resmi bir işletmedir.",
+                desc: `Taşınmaz Ticareti Yetki Numarası: ${tradeAuthorizationNumber}. Gaspak Emlak, Ticaret Bakanlığı tarafından yetkilendirilmiş resmi bir işletmedir.`,
                 tone: "from-sky-500/15 to-sky-500/5",
                 icon: FileBadge
               },

@@ -69,8 +69,8 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
   const localeIsEnglish = locale === "en";
-  const advancedButtonLabel = localeIsEnglish ? "Search Now" : "Arama Yap";
-  const advancedTitle = localeIsEnglish ? "Advanced Search" : "Gelişmiş Arama";
+  const advancedButtonLabel = localeIsEnglish ? "More Filters" : "Daha Fazla Filtre";
+  const advancedTitle = localeIsEnglish ? "More Filters" : "Daha Fazla Filtre";
   const closeLabel = localeIsEnglish ? "Close" : "Kapat";
   const searchActionLabel = t.filters.submitButton;
 
@@ -333,19 +333,10 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
           </div>
         </div>
 
-        <div id="advanced-search-panel" className="relative md:block">
-          <div className={`fixed inset-0 z-50 p-4 md:static md:inset-auto md:z-auto md:block md:p-0 ${isAdvancedOpen ? "block" : "hidden md:block"}`}>
-            <button
-              type="button"
-              aria-label={closeLabel}
-              onClick={() => setIsAdvancedOpen(false)}
-              className={`absolute inset-0 bg-slate-950/50 backdrop-blur-[2px] transition-opacity duration-300 md:hidden ${isAdvancedOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
-            />
-
-            <div
-              className={`relative flex h-full max-h-[calc(100vh-2rem)] w-full flex-col overflow-y-auto rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_28px_80px_rgba(15,23,42,0.18)] transition-all duration-300 ease-out sm:p-6 md:mt-4 md:block md:max-h-none md:h-auto md:rounded-3xl dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_28px_80px_rgba(2,6,23,0.4)] ${isAdvancedOpen ? "scale-100 opacity-100" : "scale-[0.98] opacity-0 md:scale-100 md:opacity-100"}`}
-            >
-              <div className="mb-5 flex items-center justify-between gap-4 md:hidden">
+        {isAdvancedOpen ? (
+          <div id="advanced-search-panel" className="relative z-50 mt-4">
+            <div className="relative flex h-full max-h-[calc(100vh-2rem)] w-full flex-col overflow-y-auto rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_28px_80px_rgba(15,23,42,0.18)] transition-all duration-300 ease-out sm:p-6 dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_28px_80px_rgba(2,6,23,0.4)]">
+              <div className="mb-5 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-500">{advancedTitle}</p>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{t.home.searchDescription}</p>
@@ -361,22 +352,6 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
               </div>
 
               <div className="grid gap-4 md:grid-cols-4">
-                <div className="space-y-2 md:col-span-4">
-                  <label htmlFor="search-filters-query-advanced" className="label-base">
-                    {t.filters.searchLabel}
-                  </label>
-                  <input
-                    id="search-filters-query-advanced"
-                    data-automation="search-input-advanced"
-                    name="q-advanced"
-                    type="search"
-                    value={filters.query}
-                    onChange={(event) => updateFilters({ query: event.target.value })}
-                    placeholder={t.filters.searchPlaceholder}
-                    className="input-base h-[52px] bg-white/5 dark:bg-slate-800/50"
-                  />
-                </div>
-
                 <StatusDropdown
                   id="search-filters-status"
                   label={t.filters.statusLabel}
@@ -595,7 +570,7 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
               </div>
             </div>
           </div>
-        </div>
+        ) : null}
       </form>
     </section>
   );

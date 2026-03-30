@@ -63,9 +63,10 @@
     "longitudeInvalid": "Boylam -180 ile 180 arasÄ±nda olmalÄ±dÄ±r."
   },
   "home": {
-    "heroEyebrow": "Premium Emlak SeÃ§kisi",
-    "heroTitle": "Hayalinizdeki GayrimenkulÃ¼ Keï¿½xfedin.",
-    "heroDescription": "Doï¿½xrulanmÄ±ï¿½x ilanlarÄ±mÄ±z arasÄ±ndan size en uygun evi bulun.",
+    "heroEyebrow": "Taşınmaz Ticareti Yetki Numarası",
+    "heroTitle": "Huzurlu ve Güvenli Yaşam Tedarikçiniz.",
+    "heroDescription": "Hayalinizdeki Gayrimenkulü Keşfedin.",
+    "viewListingsButton": "Ä°lanlarÄ± gÃ¶r",
     "stats": {
       "curated": {
         "value": "SeÃ§ilmiï¿½x ilanlar",

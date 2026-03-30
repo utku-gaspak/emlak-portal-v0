@@ -63,9 +63,10 @@
     "longitudeInvalid": "Longitude must be between -180 and 180."
   },
   "home": {
-    "heroEyebrow": "Premium Real Estate Collection",
-    "heroTitle": "Discover Your Dream Property.",
-    "heroDescription": "Find the perfect home from our verified listings.",
+    "heroEyebrow": "Real Estate Trade Authorization No",
+    "heroTitle": "Your provider for a peaceful and secure life.",
+    "heroDescription": "Discover your dream property.",
+    "viewListingsButton": "View listings",
     "stats": {
       "curated": {
         "value": "Curated listings",
