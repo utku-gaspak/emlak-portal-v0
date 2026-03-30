@@ -1,9 +1,10 @@
-﻿import "server-only";
+import "server-only";
 
 import { getDescendantCategoryIdsByParentId } from "@/lib/categories";
 import { normalizeCurrency } from "@/lib/currency";
-import { getSupabaseServerClient, LISTINGS_TABLE } from "@/lib/supabase";
-import { HouseListing, LandListing, Listing, ListingStatus, ListingType } from "@/lib/types";
+import { getSupabaseServerClient, hasSupabaseConfig, LISTINGS_TABLE } from "@/lib/supabase";
+import type { Category, HouseListing, LandListing, Listing, ListingStatus, ListingType } from "@/lib/types";
+import { readListingSearchFilters } from "@/lib/listing-filters";
 
 export type ListingFilters = {
   query?: string;
@@ -75,14 +76,6 @@ function getListingSortTimestamp(listing: Listing): number {
   }
 
   return 0;
-}
-
-function toSearchParamValue(value: string | string[] | undefined): string {
-  if (Array.isArray(value)) {
-    return value[0] ?? "";
-  }
-
-  return typeof value === "string" ? value : "";
 }
 
 function parseOptionalNumber(value: string): number | undefined {
@@ -275,53 +268,47 @@ function toDatabaseRow(listing: ListingInsert): Record<string, unknown> {
   };
 }
 
-export function parseListingFilters(searchParams?: SearchParamsLike): ListingFilters {
+export function parseListingFilters(searchParams?: SearchParamsLike, categories?: Category[]): ListingFilters {
   if (!searchParams) {
     return {};
   }
+  const normalizedFilters = readListingSearchFilters(
+    {
+      get(name: string) {
+        const value = searchParams[name];
 
-  const query = toSearchParamValue(searchParams.q).trim();
-  const currencyValue = toSearchParamValue(searchParams.currency);
-  const currency =
-    currencyValue === "TRY" || currencyValue === "TL" || currencyValue === "USD" || currencyValue === "EUR"
-      ? currencyValue === "TL"
-        ? "TRY"
-        : currencyValue
-      : "TRY";
-  const statusValue = toSearchParamValue(searchParams.status);
-  const status = statusValue === "satilik" || statusValue === "kiralik" ? statusValue : undefined;
-  const parentCategoryId = toSearchParamValue(searchParams.parentCategoryId).trim();
-  const categoryId = toSearchParamValue(searchParams.categoryId).trim();
-  const sortByValue = toSearchParamValue(searchParams.sortBy);
-  const sortBy =
-    sortByValue === "oldest" ||
-    sortByValue === "price-asc" ||
-    sortByValue === "price-desc" ||
-    sortByValue === "newest"
-      ? sortByValue
-      : undefined;
-  const minPrice = parseOptionalNumber(toSearchParamValue(searchParams.minPrice));
-  const maxPrice = parseOptionalNumber(toSearchParamValue(searchParams.maxPrice));
-  const rooms = toSearchParamValue(searchParams.rooms).trim();
-  const heatingType = toSearchParamValue(searchParams.heatingType).trim();
-  const zoningStatus = toSearchParamValue(searchParams.zoningStatus).trim();
+        if (Array.isArray(value)) {
+          return value[0] ?? null;
+        }
+
+        return typeof value === "string" ? value : null;
+      }
+    },
+    categories
+  );
+  const minPrice = parseOptionalNumber(normalizedFilters.minPrice);
+  const maxPrice = parseOptionalNumber(normalizedFilters.maxPrice);
 
   return {
-    ...(query ? { query } : {}),
-    currency,
-    ...(status ? { status } : {}),
-    ...(parentCategoryId ? { parentCategoryId } : {}),
-    ...(categoryId ? { categoryId } : {}),
-    ...(sortBy ? { sortBy } : {}),
+    ...(normalizedFilters.query ? { query: normalizedFilters.query } : {}),
+    currency: normalizedFilters.currency,
+    ...(normalizedFilters.status ? { status: normalizedFilters.status } : {}),
+    ...(normalizedFilters.parentCategoryId ? { parentCategoryId: normalizedFilters.parentCategoryId } : {}),
+    ...(normalizedFilters.categoryId ? { categoryId: normalizedFilters.categoryId } : {}),
+    ...(normalizedFilters.sortBy ? { sortBy: normalizedFilters.sortBy } : {}),
     ...(minPrice !== undefined ? { minPrice } : {}),
     ...(maxPrice !== undefined ? { maxPrice } : {}),
-    ...(rooms ? { rooms } : {}),
-    ...(heatingType ? { heatingType } : {}),
-    ...(zoningStatus ? { zoningStatus } : {})
+    ...(normalizedFilters.rooms ? { rooms: normalizedFilters.rooms } : {}),
+    ...(normalizedFilters.heatingType ? { heatingType: normalizedFilters.heatingType } : {}),
+    ...(normalizedFilters.zoningStatus ? { zoningStatus: normalizedFilters.zoningStatus } : {})
   };
 }
 
 async function fetchAllListingsFromDatabase(): Promise<Listing[]> {
+  if (!hasSupabaseConfig()) {
+    return [];
+  }
+
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase.from(LISTINGS_TABLE).select("*");
 
@@ -550,7 +537,3 @@ export async function incrementListingViewCount(id: string): Promise<Listing | n
 
   return normalizeListingRow(data);
 }
-
-
-
-

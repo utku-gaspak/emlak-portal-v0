@@ -1,5 +1,5 @@
 import { deleteCloudinaryImage, renameCloudinaryImage, uploadListingImages } from "@/lib/cloudinary";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseServerClient } from "@/lib/supabase";
 
 function getSupabaseStoragePathFromUrl(imageUrl: string): { bucket: string; path: string } | null {
   try {
@@ -23,6 +23,7 @@ async function deleteImageByUrl(imageUrl: string): Promise<void> {
   const supabaseStorage = getSupabaseStoragePathFromUrl(imageUrl);
 
   if (supabaseStorage) {
+    const supabase = getSupabaseServerClient();
     await supabase.storage.from(supabaseStorage.bucket).remove([supabaseStorage.path]);
     return;
   }

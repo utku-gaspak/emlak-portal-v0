@@ -1,6 +1,6 @@
 import "server-only";
 
-import { supabase, CATEGORIES_TABLE } from "@/lib/supabase";
+import { CATEGORIES_TABLE, getSupabaseServerClient, hasSupabaseConfig } from "@/lib/supabase";
 import { Category, ListingType } from "@/lib/types";
 import {
   determineListingTypeFromCategory,
@@ -41,6 +41,11 @@ function normalizeCategoryRow(raw: unknown): Category | null {
 }
 
 async function fetchCategoriesFromDatabase(): Promise<Category[]> {
+  if (!hasSupabaseConfig()) {
+    return [];
+  }
+
+  const supabase = getSupabaseServerClient();
   const { data, error } = await supabase.from(CATEGORIES_TABLE).select("*").order("name", { ascending: true });
 
   if (error) {

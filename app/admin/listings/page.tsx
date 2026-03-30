@@ -5,8 +5,10 @@ import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 const ITEMS_PER_PAGE = 10;
 
+type SearchParams = Record<string, string | string[] | undefined>;
+
 type AdminListingsPageProps = {
-  searchParams: Promise<any>;
+  searchParams: Promise<SearchParams>;
 };
 
 function firstSearchValue(value: string | string[] | undefined): string {
@@ -67,4 +69,3 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
     />
   );
 }
-

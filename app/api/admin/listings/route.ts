@@ -1,8 +1,8 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getDictionary } from "@/lib/get-dictionary";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { validateListingForm } from "@/lib/validation";
-import { LISTINGS_TABLE, supabase } from "@/lib/supabase";
+import { LISTINGS_TABLE, getSupabaseServerClient } from "@/lib/supabase";
 import { ListingType } from "@/lib/types";
 import { normalizeCurrency } from "@/lib/currency";
 import { resolveListingTypeFromCategoryId } from "@/lib/categories";
@@ -83,6 +83,7 @@ export async function GET() {
     return NextResponse.json({ ok: false, error: t.errors.authUnauthorized }, { status: 401 });
   }
 
+  const supabase = getSupabaseServerClient();
   const { data, error } = await supabase.from(LISTINGS_TABLE).select("*").order("created_at", { ascending: false });
 
   if (error) {
@@ -208,6 +209,7 @@ export async function POST(request: Request) {
       images: imageUrls
     });
 
+    const supabase = getSupabaseServerClient();
     const { data: savedListing, error: dbError } = await supabase.from(LISTINGS_TABLE).insert(insertData).select("*").single();
 
     if (dbError) {
@@ -234,4 +236,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

@@ -18,6 +18,10 @@ build/
 # Project-specific data (Eğer listings.json'ı veritabanı gibi kullanıyorsan dışarıda tutabilirsin)
 # listings.json
 
+# Temporary planning notes
+todo.md
+todo-*.md
+
 # Debug logs
 npm-debug.log*
 yarn-debug.log*

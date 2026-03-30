@@ -4,49 +4,35 @@ import { FormEvent, useEffect, useMemo, useRef, useState, useTransition } from "
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Check, ChevronDown, Settings2, X } from "lucide-react";
 import { useTranslation } from "@/context/TranslationContext";
-import { Category } from "@/lib/types";
+import type { Category } from "@/lib/types";
 import { CategoryDropdown } from "@/components/CategoryDropdown";
 import { StatusDropdown } from "@/components/StatusDropdown";
-import { getChildCategories, getParentCategoryById } from "@/lib/category-utils";
+import { determineListingTypeFromCategory, getChildCategories, getParentCategoryById } from "@/lib/category-utils";
+import {
+  DEFAULT_LISTING_SEARCH_FILTERS,
+  buildListingSearchUrl,
+  readListingSearchFilters,
+  type ListingSearchFilters
+} from "@/lib/listing-filters";
 
 type SearchFiltersProps = {
   categories: Category[];
   showHeader?: boolean;
 };
 
-type FilterState = {
-  query: string;
-  currency: "TRY" | "USD" | "EUR";
-  status: "" | "satilik" | "kiralik";
-  parentCategoryId: string;
-  categoryId: string;
-  sortBy: "newest" | "oldest" | "price-asc" | "price-desc";
-  minPrice: string;
-  maxPrice: string;
-};
+type FilterState = ListingSearchFilters;
 
-function readFiltersFromParams(params: { get(name: string): string | null }): FilterState {
-  const currencyValue = params.get("currency");
-  const currency = currencyValue === "USD" || currencyValue === "EUR" ? currencyValue : "TRY";
-  const statusValue = params.get("status");
-  const status = statusValue === "satilik" || statusValue === "kiralik" ? statusValue : "";
-  const sortByValue = params.get("sortBy");
-  const sortBy =
-    sortByValue === "oldest" || sortByValue === "price-asc" || sortByValue === "price-desc" || sortByValue === "newest"
-      ? sortByValue
-      : "newest";
+const HEATING_TYPE_OPTIONS = [
+  "Doğalgaz (Kombi)",
+  "Merkezi Sistem",
+  "Yerden Isıtma",
+  "Klima",
+  "Soba / Katı Yakıt",
+  "Isı Pompası",
+  "Yok"
+];
 
-  return {
-    query: params.get("q") ?? "",
-    currency,
-    status,
-    parentCategoryId: params.get("parentCategoryId") ?? "",
-    categoryId: params.get("categoryId") ?? "",
-    sortBy,
-    minPrice: params.get("minPrice") ?? "",
-    maxPrice: params.get("maxPrice") ?? ""
-  };
-}
+const ZONING_STATUS_OPTIONS = ["İmarlı", "İmarsız"];
 
 function normalizeOptions(values: Category[]): Category[] {
   return values
@@ -63,7 +49,7 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
   const sortMenuRef = useRef<HTMLDivElement>(null);
   const searchSignature = searchParams.toString();
   const rootCategories = useMemo(() => normalizeOptions(categories.filter((category) => !category.parentId)), [categories]);
-  const currentFilters = useMemo(() => readFiltersFromParams(searchParams), [searchSignature]);
+  const currentFilters = useMemo(() => readListingSearchFilters(searchParams, categories), [searchSignature, categories]);
   const [filters, setFilters] = useState<FilterState>(currentFilters);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -74,19 +60,7 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
   const closeLabel = localeIsEnglish ? "Close" : "Kapat";
   const searchActionLabel = t.filters.submitButton;
 
-  const defaultFilters = useMemo<FilterState>(
-    () => ({
-      query: "",
-      currency: "TRY",
-      status: "",
-      parentCategoryId: "",
-      categoryId: "",
-      sortBy: "newest",
-      minPrice: "",
-      maxPrice: ""
-    }),
-    []
-  );
+  const defaultFilters = DEFAULT_LISTING_SEARCH_FILTERS;
 
   const sortOptions = useMemo(
     () => [
@@ -128,6 +102,15 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
     () => categories.find((category) => category.id === filters.categoryId) ?? null,
     [categories, filters.categoryId]
   );
+  const selectedListingType = useMemo(() => {
+    if (!selectedParent && !selectedSubCategory) {
+      return null;
+    }
+
+    return determineListingTypeFromCategory(selectedSubCategory, selectedParent);
+  }, [selectedParent, selectedSubCategory]);
+  const showHouseFilters = selectedListingType !== "land";
+  const showLandFilters = selectedListingType !== "house";
 
   useEffect(() => {
     if (!filters.categoryId) {
@@ -174,40 +157,7 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
   }, []);
 
   function buildUrl(nextFilters: FilterState): string {
-    const params = new URLSearchParams();
-
-    if (nextFilters.query.trim()) {
-      params.set("q", nextFilters.query.trim());
-    }
-
-    params.set("currency", nextFilters.currency);
-
-    if (nextFilters.status) {
-      params.set("status", nextFilters.status);
-    }
-
-    if (nextFilters.parentCategoryId) {
-      params.set("parentCategoryId", nextFilters.parentCategoryId);
-    }
-
-    if (nextFilters.categoryId) {
-      params.set("categoryId", nextFilters.categoryId);
-    }
-
-    if (nextFilters.sortBy) {
-      params.set("sortBy", nextFilters.sortBy);
-    }
-
-    if (nextFilters.minPrice.trim()) {
-      params.set("minPrice", nextFilters.minPrice.trim());
-    }
-
-    if (nextFilters.maxPrice.trim()) {
-      params.set("maxPrice", nextFilters.maxPrice.trim());
-    }
-
-    const queryString = params.toString();
-    return queryString ? `${pathname}?${queryString}` : pathname;
+    return buildListingSearchUrl(pathname, nextFilters);
   }
 
   function pushFilters(nextFilters: FilterState) {
@@ -231,6 +181,24 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
       nextFilters.parentCategoryId = nextSubCategory?.parentId ?? nextFilters.parentCategoryId;
     }
 
+    const nextParentCategory = nextFilters.parentCategoryId
+      ? categories.find((category) => category.id === nextFilters.parentCategoryId) ?? null
+      : null;
+    const nextSubCategory = nextFilters.categoryId ? categories.find((category) => category.id === nextFilters.categoryId) ?? null : null;
+
+    if (nextParentCategory || nextSubCategory) {
+      const nextListingType = determineListingTypeFromCategory(nextSubCategory, nextParentCategory);
+
+      if (nextListingType === "house") {
+        nextFilters.zoningStatus = "";
+      }
+
+      if (nextListingType === "land") {
+        nextFilters.rooms = "";
+        nextFilters.heatingType = "";
+      }
+    }
+
     setFilters(nextFilters);
     pushFilters(nextFilters);
   }
@@ -247,7 +215,10 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
     filters.categoryId.length > 0 ||
     filters.sortBy !== "newest" ||
     filters.minPrice.trim().length > 0 ||
-    filters.maxPrice.trim().length > 0;
+    filters.maxPrice.trim().length > 0 ||
+    filters.rooms.trim().length > 0 ||
+    filters.heatingType.trim().length > 0 ||
+    filters.zoningStatus.trim().length > 0;
 
   function resetAllFilters() {
     setFilters(defaultFilters);
@@ -319,7 +290,10 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
                     filters.categoryId.length > 0,
                     filters.sortBy !== "newest",
                     filters.minPrice.trim().length > 0,
-                    filters.maxPrice.trim().length > 0
+                    filters.maxPrice.trim().length > 0,
+                    filters.rooms.trim().length > 0,
+                    filters.heatingType.trim().length > 0,
+                    filters.zoningStatus.trim().length > 0
                   ].filter(Boolean).length}
                 </span>
               ) : null}
@@ -466,6 +440,54 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
                   />
                 </div>
 
+                {showHouseFilters ? (
+                  <>
+                    <div className="space-y-2">
+                      <label htmlFor="search-filters-rooms" className="label-base">
+                        {t.filters.roomCountLabel}
+                      </label>
+                      <input
+                        id="search-filters-rooms"
+                        data-automation="rooms-filter"
+                        name="rooms"
+                        type="text"
+                        value={filters.rooms}
+                        onChange={(event) => updateFilters({ rooms: event.target.value })}
+                        placeholder="3+1"
+                        className="input-base h-[52px] w-full bg-white/5 dark:bg-slate-800/50"
+                      />
+                    </div>
+
+                    <StatusDropdown
+                      id="search-filters-heating-type"
+                      label={t.filters.heatingTypeLabel}
+                      placeholder={t.filters.anyOption}
+                      value={filters.heatingType}
+                      options={HEATING_TYPE_OPTIONS.map((value) => ({ value, label: value }))}
+                      onChange={(nextValue) => updateFilters({ heatingType: nextValue })}
+                      dataAutomation="heating-type-filter"
+                      clearLabel={t.common.clear}
+                      allowClear
+                      className="input-base h-[52px] bg-white/5 dark:bg-slate-800/50"
+                    />
+                  </>
+                ) : null}
+
+                {showLandFilters ? (
+                  <StatusDropdown
+                    id="search-filters-zoning-status"
+                    label={t.filters.zoningStatusLabel}
+                    placeholder={t.filters.anyOption}
+                    value={filters.zoningStatus}
+                    options={ZONING_STATUS_OPTIONS.map((value) => ({ value, label: value }))}
+                    onChange={(nextValue) => updateFilters({ zoningStatus: nextValue })}
+                    dataAutomation="zoning-status-filter"
+                    clearLabel={t.common.clear}
+                    allowClear
+                    className="input-base h-[52px] bg-white/5 dark:bg-slate-800/50"
+                  />
+                ) : null}
+
                 <div className="space-y-2">
                   <label htmlFor="search-filters-sort-by-trigger" className="label-base">
                     {t.filters.sortByLabel}
@@ -546,6 +568,3 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
     </section>
   );
 }
-
-
-

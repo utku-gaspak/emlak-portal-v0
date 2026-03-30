@@ -9,16 +9,18 @@ import { getDictionary } from "@/lib/get-dictionary";
 
 export const dynamic = "force-dynamic";
 
+type SearchParams = Record<string, string | string[] | undefined>;
+
 type HomePageProps = {
-  searchParams: Promise<any>;
+  searchParams: Promise<SearchParams>;
 };
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const t = await getDictionary();
   const resolvedParams = await searchParams;
-  const filters = parseListingFilters(resolvedParams);
-  const [filteredListings, categories] = await Promise.all([getListings(filters), getCategories()]);
-  const canDelete = await isAdminAuthenticated();
+  const [categories, canDelete] = await Promise.all([getCategories(), isAdminAuthenticated()]);
+  const filters = parseListingFilters(resolvedParams, categories);
+  const filteredListings = await getListings(filters);
 
   return (
     <div className="space-y-10 sm:space-y-12">
