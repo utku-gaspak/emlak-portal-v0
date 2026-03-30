@@ -4,7 +4,7 @@ import { getDictionary, getServerLocale } from "@/lib/get-dictionary";
 import { getFirmName } from "@/lib/brand";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getPublicContactConfig } from "@/lib/contact-links";
-import { getParentCategories } from "@/lib/categories";
+import { getCategories } from "@/lib/categories";
 import { getLocalizedCategoryName } from "@/lib/category-utils";
 
 function normalizeText(value: string): string {
@@ -20,17 +20,17 @@ function normalizeText(value: string): string {
     .trim();
 }
 
-function buildCategoryHref(categoryId: string): { pathname: string; query: { parentCategoryId: string }; hash: string } {
+function buildCategoryHref(categoryId: string): { pathname: string; query: { categoryId: string }; hash: string } {
   return {
     pathname: "/",
-    query: { parentCategoryId: categoryId },
+    query: { categoryId },
     hash: "search-filters-panel"
   };
 }
 
 export async function Footer() {
   const locale = await getServerLocale();
-  const [t, rootCategories] = await Promise.all([getDictionary(locale), getParentCategories()]);
+  const [t, allCategories] = await Promise.all([getDictionary(locale), getCategories()]);
   const firmName = getFirmName();
   const copyrightLine =
     t.meta.lang === "en"
@@ -59,10 +59,14 @@ export async function Footer() {
 
   const categoryLinks = footerCategoryItems
     .map((item) => {
-      const category = rootCategories.find((candidate) => {
+      const category = allCategories.find((candidate) => {
         const localizedName = normalizeText(getLocalizedCategoryName(candidate, locale));
         const rawHaystack = normalizeText([candidate.name, candidate.slug ?? ""].join(" "));
-        return item.keywords.some((keyword) => localizedName.includes(normalizeText(keyword)) || rawHaystack.includes(normalizeText(keyword)));
+        const normalizedKeywords = item.keywords.map(normalizeText);
+
+        return normalizedKeywords.some(
+          (keyword) => localizedName === keyword || rawHaystack === keyword || localizedName.includes(keyword) || rawHaystack.includes(keyword)
+        );
       });
 
       return category ? { label: item.label, href: buildCategoryHref(category.id) } : { label: item.label, href: null };
