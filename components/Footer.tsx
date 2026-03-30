@@ -91,7 +91,7 @@ export async function Footer() {
             <ul className="mt-5 space-y-4 text-sm">
               <li className="flex items-center gap-3 text-slate-400">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
-                <span>{t.footer.address}</span>
+                <span>{contact.address || t.footer.address}</span>
               </li>
               <li>
                 <a

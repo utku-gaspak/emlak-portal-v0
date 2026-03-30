@@ -1,5 +1,6 @@
-﻿const phoneNumber = process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "";
+const phoneNumber = process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "";
 const emailAddress = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "";
+const addressLine = process.env.NEXT_PUBLIC_CONTACT_ADDRESS ?? "";
 const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "";
 const facebookUrl = process.env.NEXT_PUBLIC_FACEBOOK_URL ?? "";
 const firmName = process.env.NEXT_PUBLIC_FIRM_NAME?.trim() || "Gaspak Emlak";
@@ -9,6 +10,7 @@ type Locale = "tr" | "en";
 type PublicContactConfig = {
   phone: string;
   email: string;
+  address: string;
   instagramUrl: string;
   facebookUrl: string;
 };
@@ -53,10 +55,15 @@ function sanitizeUrl(value: string): string {
   }
 }
 
+function sanitizeAddress(value: string): string {
+  return value.trim();
+}
+
 export function getPublicContactConfig(): PublicContactConfig {
   return {
     phone: sanitizePhoneNumber(phoneNumber),
     email: emailAddress.trim(),
+    address: sanitizeAddress(addressLine),
     instagramUrl: sanitizeUrl(instagramUrl),
     facebookUrl: sanitizeUrl(facebookUrl)
   };
@@ -93,5 +100,4 @@ export function getCallHref(): string {
   const sanitizedPhone = getPublicContactConfig().phone;
   return sanitizedPhone ? `tel:${sanitizedPhone}` : "";
 }
-
 
