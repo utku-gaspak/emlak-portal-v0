@@ -1,19 +1,19 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { MessageCircle, Phone, Share2, Check } from "lucide-react";
 import { getCallHref, getPropertyWhatsAppHref } from "@/lib/contact-links";
-import { getClientLocale } from "@/lib/locale";
+import type { Locale } from "@/lib/i18n-data";
 import { useTranslation } from "@/context/TranslationContext";
 
 type CommunicationActionBarProps = {
   listingTitle: string;
   listingNo: string | number;
+  locale: Locale;
 };
 
-export function CommunicationActionBar({ listingTitle, listingNo }: CommunicationActionBarProps) {
+export function CommunicationActionBar({ listingTitle, listingNo, locale }: CommunicationActionBarProps) {
   const { t } = useTranslation();
-  const locale = getClientLocale();
   const [shareState, setShareState] = useState<"idle" | "copied" | "error">("idle");
   const whatsappHref = getPropertyWhatsAppHref(listingTitle, listingNo, locale);
   const callHref = getCallHref();
@@ -79,4 +79,3 @@ export function CommunicationActionBar({ listingTitle, listingNo }: Communicatio
       </div>
     );
 }
-

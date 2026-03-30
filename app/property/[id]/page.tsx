@@ -10,7 +10,6 @@ import { getListingById } from "@/lib/listings-store";
 import { getFirmName } from "@/lib/brand";
 import { getDictionary, getServerLocale } from "@/lib/get-dictionary";
 import { getSiteUrl } from "@/lib/site-url";
-import { getLocalizedHeatingType } from "@/lib/category-utils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -33,6 +32,45 @@ function buildOgImage(listingImage?: string | null): string | null {
   } catch {
     return listingImage;
   }
+}
+
+function localizeHeatingType(value: string, locale: "tr" | "en"): string {
+  const normalized = value
+    .replace(/[çÇ]/g, "c")
+    .replace(/[ğĞ]/g, "g")
+    .replace(/[ıİ]/g, "i")
+    .replace(/[öÖ]/g, "o")
+    .replace(/[şŞ]/g, "s")
+    .replace(/[üÜ]/g, "u")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+  if (!normalized) {
+    return value;
+  }
+
+  if (locale === "en") {
+    if (normalized.includes("dogalgaz") || normalized.includes("combi")) return "Natural Gas (Combi)";
+    if (normalized.includes("merkezi sistem") || normalized === "central system") return "Central System";
+    if (normalized.includes("yerden isitma") || normalized.includes("underfloor")) return "Underfloor Heating";
+    if (normalized === "klima" || normalized.includes("air conditioning")) return "Air Conditioning";
+    if (normalized.includes("soba") || normalized.includes("kati yakit") || normalized.includes("solid fuel")) return "Stove / Solid Fuel";
+    if (normalized.includes("isi pompas") || normalized.includes("heat pump")) return "Heat Pump";
+    if (normalized === "yok" || normalized === "none") return "None";
+  }
+
+  if (normalized.includes("dogalgaz") || normalized.includes("natural gas")) return "Doğalgaz (Kombi)";
+  if (normalized.includes("merkezi sistem") || normalized.includes("central system")) return "Merkezi Sistem";
+  if (normalized.includes("yerden isitma") || normalized.includes("underfloor")) return "Yerden Isıtma";
+  if (normalized === "klima" || normalized.includes("air conditioning")) return "Klima";
+  if (normalized.includes("soba") || normalized.includes("kati yakit") || normalized.includes("solid fuel")) return "Soba / Katı Yakıt";
+  if (normalized.includes("isi pompas") || normalized.includes("heat pump")) return "Isı Pompası";
+  if (normalized === "yok" || normalized === "none") return "Yok";
+
+  return value;
 }
 
 export async function generateMetadata({ params }: PropertyDetailPageProps): Promise<Metadata> {
@@ -103,7 +141,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     notFound();
   }
 
-  const heatingType = listing.type === "house" ? getLocalizedHeatingType(listing.heatingType?.trim() ?? "", locale) : "";
+  const heatingType = listing.type === "house" ? localizeHeatingType(listing.heatingType?.trim() ?? "", locale) : "";
   const hasHeatingType = Boolean(heatingType);
   const listingStatusLabel = listing.status === "satilik" ? t.filters.statusForSale : t.filters.statusForRent;
 
@@ -193,7 +231,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
       </section>
 
       <ViewCounter id={listing.id} />
-      <CommunicationActionBar listingTitle={listing.title} listingNo={listing.listingNo} />
+      <CommunicationActionBar listingTitle={listing.title} listingNo={listing.listingNo} locale={locale} />
 
       <section className="rounded-[2.5rem] bg-slate-950 px-6 py-8 text-white shadow-[0_22px_70px_rgba(15,23,42,0.2)] sm:px-8 dark:bg-slate-900 dark:shadow-[0_22px_70px_rgba(2,6,23,0.35)]">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-300 dark:text-slate-400">{t.propertyDetail.specifications}</p>
@@ -202,7 +240,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
             <>
               <SpecificationItem label={t.propertyDetail.roomsLabel} value={listing.roomCount} />
               <SpecificationItem label={t.propertyDetail.floorLabel} value={listing.floorNumber} />
-              <SpecificationItem label={t.propertyDetail.heatingLabel} value={listing.heatingType} />
+              <SpecificationItem label={t.propertyDetail.heatingLabel} value={heatingType} />
             </>
           ) : (
             <>
@@ -241,6 +279,3 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     </div>
   );
 }
-
-
-
