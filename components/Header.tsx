@@ -1,6 +1,6 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { Home, MessageCircle } from "lucide-react";
-import { getDictionary } from "@/lib/get-dictionary";
+import { getDictionary, getServerLocale } from "@/lib/get-dictionary";
 import { getFirmName } from "@/lib/brand";
 import { getPublicContactConfig } from "@/lib/contact-links";
 import { HeaderMobileMenu } from "@/components/HeaderMobileMenu";
@@ -8,7 +8,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export async function Header() {
-  const t = await getDictionary();
+  const locale = await getServerLocale();
+  const t = await getDictionary(locale);
   const firmName = getFirmName();
   const contact = getPublicContactConfig();
   const whatsappHref = contact.phone ? `https://wa.me/${contact.phone.replace(/\D/g, "")}` : "#";
@@ -62,10 +63,10 @@ export async function Header() {
 
             <div className="hidden items-stretch gap-2 md:flex">
               <ThemeToggle />
-              <LanguageSwitcher />
+              <LanguageSwitcher initialLocale={locale} />
             </div>
             <div className="md:hidden">
-              <HeaderMobileMenu navItems={navItems} whatsappHref={whatsappHref} />
+              <HeaderMobileMenu navItems={navItems} whatsappHref={whatsappHref} initialLocale={locale} />
             </div>
           </div>
         </div>
@@ -73,4 +74,3 @@ export async function Header() {
     </header>
   );
 }
-

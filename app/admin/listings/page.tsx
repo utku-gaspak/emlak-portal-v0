@@ -1,7 +1,8 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { AdminListingsManager } from "@/components/AdminListingsManager";
 import { getListings } from "@/lib/listings-store";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { getServerLocale } from "@/lib/get-dictionary";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -33,6 +34,8 @@ function buildPageHref(searchTerm: string, page: number): string {
 }
 
 export default async function AdminListingsPage({ searchParams }: AdminListingsPageProps) {
+  const locale = await getServerLocale();
+
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
@@ -66,6 +69,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
       totalFeaturedListings={totalFeaturedListings}
       previousHref={buildPageHref(searchTerm, Math.max(1, safePage - 1))}
       nextHref={buildPageHref(searchTerm, Math.min(totalPages, safePage + 1))}
+      initialLocale={locale}
     />
   );
 }

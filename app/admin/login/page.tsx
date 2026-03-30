@@ -2,11 +2,12 @@ import { redirect } from "next/navigation";
 import { AdminLoginForm } from "@/components/AdminLoginForm";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { getDictionary } from "@/lib/get-dictionary";
+import { getDictionary, getServerLocale } from "@/lib/get-dictionary";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default async function AdminLoginPage() {
-  const t = await getDictionary();
+  const locale = await getServerLocale();
+  const t = await getDictionary(locale);
 
   if (await isAdminAuthenticated()) {
     redirect("/admin/listings");
@@ -23,7 +24,7 @@ export default async function AdminLoginPage() {
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <LanguageSwitcher />
+            <LanguageSwitcher initialLocale={locale} />
           </div>
         </div>
       </header>

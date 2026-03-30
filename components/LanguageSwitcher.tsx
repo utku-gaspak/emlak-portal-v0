@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getClientLocale, setLocaleCookie } from "@/lib/locale";
 import type { Locale } from "@/lib/i18n-data";
@@ -60,15 +61,26 @@ function FlagIcon({ locale }: { locale: Locale }) {
   );
 }
 
-export function LanguageSwitcher() {
+type LanguageSwitcherProps = {
+  initialLocale?: Locale;
+};
+
+export function LanguageSwitcher({ initialLocale }: LanguageSwitcherProps) {
   const router = useRouter();
-  const currentLocale = getClientLocale();
+  const [currentLocale, setCurrentLocale] = useState<Locale>(initialLocale ?? getClientLocale());
+
+  useEffect(() => {
+    if (initialLocale) {
+      setCurrentLocale(initialLocale);
+    }
+  }, [initialLocale]);
 
   function handleLocaleChange(locale: Locale) {
     if (locale === currentLocale) {
       return;
     }
 
+    setCurrentLocale(locale);
     setLocaleCookie(locale);
     router.refresh();
   }

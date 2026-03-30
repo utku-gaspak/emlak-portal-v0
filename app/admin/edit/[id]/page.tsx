@@ -6,7 +6,7 @@ import { PropertyForm } from "@/components/PropertyForm";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getCategories } from "@/lib/categories";
-import { getDictionary } from "@/lib/get-dictionary";
+import { getDictionary, getServerLocale } from "@/lib/get-dictionary";
 import { getListingById } from "@/lib/listings-store";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
@@ -17,7 +17,8 @@ type EditListingPageProps = {
 };
 
 export default async function EditListingPage({ params }: EditListingPageProps) {
-  const t = await getDictionary();
+  const locale = await getServerLocale();
+  const t = await getDictionary(locale);
   const categories = await getCategories();
 
   if (!(await isAdminAuthenticated())) {
@@ -42,7 +43,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <LanguageSwitcher />
+            <LanguageSwitcher initialLocale={locale} />
           </div>
         </div>
       </header>
@@ -75,4 +76,3 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
     </div>
   );
 }
-

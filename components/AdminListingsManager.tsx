@@ -12,6 +12,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTranslation } from "@/context/TranslationContext";
 import { useToast } from "@/components/ToastProvider";
+import type { Locale } from "@/lib/i18n-data";
 
 type AdminListingsManagerProps = {
   listings: Listing[];
@@ -21,6 +22,7 @@ type AdminListingsManagerProps = {
   totalFeaturedListings: number;
   previousHref: string;
   nextHref: string;
+  initialLocale: Locale;
 };
 
 export function AdminListingsManager({
@@ -30,7 +32,8 @@ export function AdminListingsManager({
   totalListings,
   totalFeaturedListings,
   previousHref,
-  nextHref
+  nextHref,
+  initialLocale
 }: AdminListingsManagerProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -149,7 +152,7 @@ export function AdminListingsManager({
 
           <div className="flex flex-wrap items-center gap-3">
             <ThemeToggle />
-            <LanguageSwitcher />
+            <LanguageSwitcher initialLocale={initialLocale} />
             <Link
               id="admin-add-button"
               data-automation="admin-add-button"
@@ -429,4 +432,3 @@ export function AdminListingsManager({
     </div>
   );
 }
-

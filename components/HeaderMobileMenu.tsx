@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Menu, MessageCircle, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import type { Locale } from "@/lib/i18n-data";
 
 type NavItem = {
   href: string;
@@ -15,9 +16,10 @@ type NavItem = {
 type HeaderMobileMenuProps = {
   navItems: NavItem[];
   whatsappHref: string;
+  initialLocale: Locale;
 };
 
-export function HeaderMobileMenu({ navItems, whatsappHref }: HeaderMobileMenuProps) {
+export function HeaderMobileMenu({ navItems, whatsappHref, initialLocale }: HeaderMobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -114,7 +116,7 @@ export function HeaderMobileMenu({ navItems, whatsappHref }: HeaderMobileMenuPro
 
                   <div className="grid grid-cols-2 gap-3">
                     <ThemeToggle />
-                    <LanguageSwitcher />
+                    <LanguageSwitcher initialLocale={initialLocale} />
                   </div>
                 </div>
               </aside>
