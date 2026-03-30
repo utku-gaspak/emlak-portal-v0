@@ -25,8 +25,8 @@ export async function Footer() {
         <div className="grid gap-12 lg:grid-cols-4">
           <div className="space-y-5">
             <div className="space-y-3">
-              <div className="inline-flex min-w-0 shrink-0 items-center rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2 shadow-[0_0_0_1px_rgba(245,158,11,0.08),0_10px_24px_rgba(245,158,11,0.08)] transition-shadow duration-300 hover:shadow-[0_0_0_1px_rgba(245,158,11,0.14),0_12px_28px_rgba(245,158,11,0.12)] dark:border-amber-500/20 dark:bg-amber-500/10 sm:px-5 sm:py-2.5">
-                <p className="whitespace-nowrap text-xl font-extrabold tracking-tighter text-slate-950 dark:text-neutral-50 sm:text-2xl md:text-2xl">
+              <div className="inline-flex min-w-0 shrink-0 items-center rounded-2xl border border-orange-300/80 bg-orange-50 px-4 py-2 shadow-[0_10px_24px_rgba(249,115,22,0.16),0_0_0_1px_rgba(249,115,22,0.08)] transition-shadow duration-300 hover:shadow-[0_14px_30px_rgba(249,115,22,0.22),0_0_0_1px_rgba(249,115,22,0.12)] dark:border-amber-500/20 dark:bg-amber-500/10 sm:px-5 sm:py-2.5">
+                <p className="whitespace-nowrap text-xl font-extrabold tracking-tighter text-amber-700 dark:text-amber-300 sm:text-2xl md:text-2xl">
                   {firmName}
                 </p>
               </div>
@@ -130,5 +130,3 @@ export async function Footer() {
     </footer>
   );
 }
-
-
