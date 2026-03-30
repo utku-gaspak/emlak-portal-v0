@@ -1,12 +1,36 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
-import { getDictionary } from "@/lib/get-dictionary";
+import { getDictionary, getServerLocale } from "@/lib/get-dictionary";
 import { getFirmName } from "@/lib/brand";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getPublicContactConfig } from "@/lib/contact-links";
+import { getParentCategories } from "@/lib/categories";
+import { getLocalizedCategoryName } from "@/lib/category-utils";
+
+function normalizeText(value: string): string {
+  return value
+    .replace(/[çÇ]/g, "c")
+    .replace(/[ğĞ]/g, "g")
+    .replace(/[ıİ]/g, "i")
+    .replace(/[öÖ]/g, "o")
+    .replace(/[şŞ]/g, "s")
+    .replace(/[üÜ]/g, "u")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function buildCategoryHref(categoryId: string): { pathname: string; query: { parentCategoryId: string }; hash: string } {
+  return {
+    pathname: "/",
+    query: { parentCategoryId: categoryId },
+    hash: "search-filters-panel"
+  };
+}
 
 export async function Footer() {
-  const t = await getDictionary();
+  const locale = await getServerLocale();
+  const [t, rootCategories] = await Promise.all([getDictionary(locale), getParentCategories()]);
   const firmName = getFirmName();
   const copyrightLine =
     t.meta.lang === "en"
@@ -14,6 +38,35 @@ export async function Footer() {
       : `© ${new Date().getFullYear()} ${firmName}. Tüm hakları saklıdır.`;
   const contact = getPublicContactConfig();
   const isAuthenticated = await isAdminAuthenticated();
+  const footerCategoryItems = [
+    {
+      label: t.footer.apartment,
+      keywords: ["daire", "apartment", "flat"]
+    },
+    {
+      label: t.footer.villa,
+      keywords: ["villa"]
+    },
+    {
+      label: t.footer.land,
+      keywords: ["arsa", "land", "tarla"]
+    },
+    {
+      label: t.footer.commercial,
+      keywords: ["isyeri", "is yeri", "commercial", "office", "dukkan", "magaza", "shop", "ticari"]
+    }
+  ] as const;
+
+  const categoryLinks = footerCategoryItems
+    .map((item) => {
+      const category = rootCategories.find((candidate) => {
+        const localizedName = normalizeText(getLocalizedCategoryName(candidate, locale));
+        const rawHaystack = normalizeText([candidate.name, candidate.slug ?? ""].join(" "));
+        return item.keywords.some((keyword) => localizedName.includes(normalizeText(keyword)) || rawHaystack.includes(normalizeText(keyword)));
+      });
+
+      return category ? { label: item.label, href: buildCategoryHref(category.id) } : { label: item.label, href: null };
+    });
   const socialLinks = [
     { href: contact.instagramUrl || "#", label: t.footer.socialInstagram, icon: Instagram, external: Boolean(contact.instagramUrl) },
     { href: contact.facebookUrl || "#", label: t.footer.socialFacebook, icon: Facebook, external: Boolean(contact.facebookUrl) }
@@ -80,9 +133,17 @@ export async function Footer() {
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-white">{t.footer.categories}</h2>
             <ul className="mt-5 space-y-3 text-sm">
-              <li className="text-slate-400 transition hover:text-white">{t.footer.apartment}</li>
-              <li className="text-slate-400 transition hover:text-white">{t.footer.villa}</li>
-              <li className="text-slate-400 transition hover:text-white">{t.footer.land}</li>
+              {categoryLinks.map((item) => (
+                <li key={item.label}>
+                  {item.href ? (
+                    <Link className="text-slate-400 transition hover:text-white" href={item.href}>
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span className="text-slate-400">{item.label}</span>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
 

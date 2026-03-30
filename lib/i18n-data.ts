@@ -464,6 +464,7 @@ const trOverrides = {
     apartment: "Daire",
     villa: "Villa",
     land: "Arsa",
+    commercial: "Ticari",
     address: "Edirne, T\u00fcrkiye",
     phone: "+90 212 000 00 00",
     email: "info@gaspakemlak.com",
@@ -526,5 +527,4 @@ export const dictionaries: Record<Locale, Dictionary> = {
 export function normalizeLocale(value: string | null | undefined): Locale {
   return value === "en" ? "en" : "tr";
 }
-
 
