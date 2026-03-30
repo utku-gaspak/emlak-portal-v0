@@ -21,6 +21,7 @@ build/
 # Temporary planning notes
 todo.md
 todo-*.md
+.opencode/
 
 # Debug logs
 npm-debug.log*

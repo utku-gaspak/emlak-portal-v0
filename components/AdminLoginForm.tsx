@@ -38,8 +38,7 @@ export function AdminLoginForm() {
       return;
     }
 
-    router.push("/admin/listings");
-    router.refresh();
+    router.replace("/admin/listings");
   }
 
   return (
