@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Check, ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { Category } from "@/lib/types";
 import { Listing } from "@/lib/types";
 import { formatListingPrice } from "@/lib/currency";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
@@ -13,9 +14,11 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTranslation } from "@/context/TranslationContext";
 import { useToast } from "@/components/ToastProvider";
 import type { Locale } from "@/lib/i18n-data";
+import { getLocalizedCategoryName } from "@/lib/category-utils";
 
 type AdminListingsManagerProps = {
   listings: Listing[];
+  categories: Category[];
   currentPage: number;
   totalPages: number;
   totalListings: number;
@@ -27,6 +30,7 @@ type AdminListingsManagerProps = {
 
 export function AdminListingsManager({
   listings,
+  categories,
   currentPage,
   totalPages,
   totalListings,
@@ -46,6 +50,11 @@ export function AdminListingsManager({
   const [isDeleting, setIsDeleting] = useState(false);
   const [featuredPendingIds, setFeaturedPendingIds] = useState<Record<string, boolean>>({});
   const [deleteError, setDeleteError] = useState("");
+  const locale = initialLocale;
+  const localizedCategoriesById = useMemo(
+    () => new Map(categories.map((category) => [category.id, getLocalizedCategoryName(category, locale)])),
+    [categories, locale]
+  );
 
   useEffect(() => {
     setVisibleListings(listings);
@@ -220,6 +229,7 @@ export function AdminListingsManager({
                 <th className="px-4 py-4">{t.adminListings.thumbnail}</th>
                 <th className="px-4 py-4">{t.adminListings.listingNo}</th>
                 <th className="px-4 py-4">{t.adminListings.titleColumn}</th>
+                <th className="px-4 py-4">{t.filters.parentCategoryLabel}</th>
                 <th className="px-4 py-4">{t.adminListings.price}</th>
                 <th className="px-4 py-4">{t.adminListings.featured}</th>
                 <th className="px-4 py-4">{t.adminListings.status}</th>
@@ -273,6 +283,9 @@ export function AdminListingsManager({
                           <ExternalLink className="h-4 w-4" />
                         </Link>
                         <div className="text-xs text-slate-500">{listing.location}</div>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
+                        {localizedCategoriesById.get(listing.categoryId) ?? "-"}
                       </td>
                       <td className="px-4 py-4 font-semibold text-brand-700 dark:text-amber-400">{formatListingPrice(listing.price, listing.currency)}</td>
                       <td className="px-4 py-4">
@@ -341,7 +354,7 @@ export function AdminListingsManager({
                 })
               ) : (
                 <tr>
-                  <td className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400" colSpan={7}>
+                  <td className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400" colSpan={8}>
                     {t.adminListings.noResults}
                   </td>
                 </tr>
@@ -356,7 +369,7 @@ export function AdminListingsManager({
           {t.adminListings.showing} {listings.length} {t.adminListings.listingsUnit} / {totalListings} {t.adminListings.listingsUnit}
         </p>
 
-        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
           <Link
             href={previousHref}
             className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import imageCompression from "browser-image-compression";
 import { Listing, ListingStatus, ListingType, Category } from "@/lib/types";
@@ -15,6 +15,7 @@ import {
   determineListingTypeFromCategory,
   findCategoryById,
   getChildCategories,
+  getLocalizedCategoryName,
   getPreferredParentCategoryId,
   shouldShowHeatingType
 } from "@/lib/category-utils";
@@ -187,11 +188,16 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
   const formRef = useRef<HTMLFormElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const categoriesById = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
-  const parentCategories = useMemo(() => categories.filter((category) => !category.parentId), [categories]);
+  const localeIsEnglish = t.meta.lang === "en";
+  const displayCategories = useMemo(
+    () => categories.map((category) => ({ ...category, name: getLocalizedCategoryName(category, localeIsEnglish ? "en" : "tr") })),
+    [categories, localeIsEnglish]
+  );
+  const parentCategories = useMemo(() => displayCategories.filter((category) => !category.parentId), [displayCategories]);
   const selectedParentCategory = formState.parentCategoryId ? categoriesById.get(formState.parentCategoryId) ?? null : null;
   const subCategories = useMemo(
-    () => (formState.parentCategoryId ? getChildCategories(categories, formState.parentCategoryId) : []),
-    [categories, formState.parentCategoryId]
+    () => (formState.parentCategoryId ? getChildCategories(displayCategories, formState.parentCategoryId) : []),
+    [displayCategories, formState.parentCategoryId]
   );
   const selectedCategory = formState.categoryId ? categoriesById.get(formState.categoryId) ?? null : null;
   const listingType = useMemo(
@@ -217,7 +223,7 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
   const longitudeValue = formState.longitude.trim() ? Number(formState.longitude) : null;
   const hasManualCoordinates =
     typeof latitudeValue === "number" && Number.isFinite(latitudeValue) && typeof longitudeValue === "number" && Number.isFinite(longitudeValue);
-  const isEnglish = t.meta.lang === "en";
+  const isEnglish = localeIsEnglish;
 
   function toggleLocationMethod(method: "manual" | "address" | "map") {
     setOpenLocationMethod((current) => (current === method ? "" : method));
@@ -229,6 +235,32 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
       ...current,
       [field]: value
     }));
+  }
+
+  function sanitizeDigits(value: string) {
+    return value.replace(/\D/g, "");
+  }
+
+  function handleNumericFieldChange(field: Extract<TextFormField, "price" | "areaSqm" | "floorNumber" | "islandNumber" | "parcelNumber">, value: string) {
+    updateField(field, sanitizeDigits(value));
+  }
+
+  function handleNumericKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
+    const allowedKeys = ["Backspace", "Delete", "Tab", "Enter", "Escape", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"];
+
+    if (allowedKeys.includes(event.key)) {
+      return;
+    }
+
+    if (/^[0-9]$/.test(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
   }
 
   function updateCheckbox(field: "isFeatured", value: boolean) {
@@ -660,7 +692,8 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
             pattern="[0-9]*"
             required
             value={formState.price}
-            onChange={(event) => updateField("price", event.target.value)}
+            onKeyDown={handleNumericKeyDown}
+            onChange={(event) => handleNumericFieldChange("price", event.target.value)}
             placeholder={t.admin.form.pricePlaceholder}
             className="input-base h-11"
           />
@@ -710,12 +743,15 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
             id="prop-area-sqm"
             data-automation="area-input"
             name="areaSqm"
-            type="number"
+            type="text"
             min="1"
+            inputMode="numeric"
+            pattern="[0-9]*"
             className="input-base"
             required
             value={formState.areaSqm}
-            onChange={(event) => updateField("areaSqm", event.target.value)}
+            onKeyDown={handleNumericKeyDown}
+            onChange={(event) => handleNumericFieldChange("areaSqm", event.target.value)}
             placeholder={t.admin.form.areaPlaceholder}
           />
           {renderError("areaSqm")}
@@ -913,12 +949,15 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
                 id="prop-floor-number"
                 data-automation="floor-input"
                 name="floorNumber"
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className="input-base"
                 placeholder={t.admin.form.floorPlaceholder}
                 required
                 value={formState.floorNumber}
-                onChange={(event) => updateField("floorNumber", event.target.value)}
+                onKeyDown={handleNumericKeyDown}
+                onChange={(event) => handleNumericFieldChange("floorNumber", event.target.value)}
               />
               {renderError("floorNumber")}
             </div>
@@ -980,12 +1019,15 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
                 id="prop-island-number"
                 data-automation="island-input"
                 name="islandNumber"
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className="input-base"
                 placeholder={t.admin.form.islandPlaceholder}
                 required
                 value={formState.islandNumber}
-                onChange={(event) => updateField("islandNumber", event.target.value)}
+                onKeyDown={handleNumericKeyDown}
+                onChange={(event) => handleNumericFieldChange("islandNumber", event.target.value)}
               />
               {renderError("islandNumber")}
             </div>
@@ -998,12 +1040,15 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
                 id="prop-parcel-number"
                 data-automation="parcel-input"
                 name="parcelNumber"
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className="input-base"
                 placeholder={t.admin.form.parcelPlaceholder}
                 required
                 value={formState.parcelNumber}
-                onChange={(event) => updateField("parcelNumber", event.target.value)}
+                onKeyDown={handleNumericKeyDown}
+                onChange={(event) => handleNumericFieldChange("parcelNumber", event.target.value)}
               />
               {renderError("parcelNumber")}
             </div>
@@ -1114,9 +1159,6 @@ export function PropertyForm({ mode, initialData, categories = [] }: PropertyFor
     </form>
   );
 }
-
-
-
 
 
 

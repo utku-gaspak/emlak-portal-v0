@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AdminListingsManager } from "@/components/AdminListingsManager";
+import { getCategories } from "@/lib/categories";
 import { getListings } from "@/lib/listings-store";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getServerLocale } from "@/lib/get-dictionary";
@@ -46,6 +47,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   const currentPage = Number.isFinite(pageNumber) && pageNumber > 0 ? Math.floor(pageNumber) : 1;
   const allListings = await getListings();
   const normalizedSearch = searchTerm.toLowerCase();
+  const categories = await getCategories();
 
   const filteredListings = normalizedSearch
       ? allListings.filter((listing) => {
@@ -63,6 +65,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   return (
     <AdminListingsManager
       listings={pageListings}
+      categories={categories}
       currentPage={safePage}
       totalPages={totalPages}
       totalListings={filteredListings.length}

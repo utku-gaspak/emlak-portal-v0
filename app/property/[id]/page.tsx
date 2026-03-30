@@ -8,8 +8,9 @@ import { ViewCounter } from "@/components/ViewCounter";
 import { formatListingPrice } from "@/lib/currency";
 import { getListingById } from "@/lib/listings-store";
 import { getFirmName } from "@/lib/brand";
-import { getDictionary } from "@/lib/get-dictionary";
+import { getDictionary, getServerLocale } from "@/lib/get-dictionary";
 import { getSiteUrl } from "@/lib/site-url";
+import { getLocalizedHeatingType } from "@/lib/category-utils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -35,7 +36,8 @@ function buildOgImage(listingImage?: string | null): string | null {
 }
 
 export async function generateMetadata({ params }: PropertyDetailPageProps): Promise<Metadata> {
-  const t = await getDictionary();
+  const locale = await getServerLocale();
+  const t = await getDictionary(locale);
   const firmName = getFirmName();
   const resolvedParams = await params;
   const listing = await getListingById(resolvedParams.id);
@@ -92,7 +94,8 @@ function SpecificationItem({ label, value }: { label: string; value: string }) {
 }
 
 export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
-  const t = await getDictionary();
+  const locale = await getServerLocale();
+  const t = await getDictionary(locale);
   const resolvedParams = await params;
   const listing = await getListingById(resolvedParams.id);
 
@@ -100,7 +103,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     notFound();
   }
 
-  const heatingType = listing.type === "house" ? listing.heatingType?.trim() ?? "" : "";
+  const heatingType = listing.type === "house" ? getLocalizedHeatingType(listing.heatingType?.trim() ?? "", locale) : "";
   const hasHeatingType = Boolean(heatingType);
   const listingStatusLabel = listing.status === "satilik" ? t.filters.statusForSale : t.filters.statusForRent;
 
@@ -238,7 +241,6 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     </div>
   );
 }
-
 
 
 

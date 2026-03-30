@@ -7,13 +7,19 @@ import { useTranslation } from "@/context/TranslationContext";
 import type { Category } from "@/lib/types";
 import { CategoryDropdown } from "@/components/CategoryDropdown";
 import { StatusDropdown } from "@/components/StatusDropdown";
-import { determineListingTypeFromCategory, getChildCategories, getParentCategoryById } from "@/lib/category-utils";
+import {
+  determineListingTypeFromCategory,
+  getChildCategories,
+  getLocalizedCategoryName,
+  getParentCategoryById
+} from "@/lib/category-utils";
 import {
   DEFAULT_LISTING_SEARCH_FILTERS,
   buildListingSearchUrl,
   readListingSearchFilters,
   type ListingSearchFilters
 } from "@/lib/listing-filters";
+import type { Locale } from "@/lib/i18n-data";
 
 type SearchFiltersProps = {
   categories: Category[];
@@ -23,16 +29,19 @@ type SearchFiltersProps = {
 type FilterState = ListingSearchFilters;
 
 const HEATING_TYPE_OPTIONS = [
-  "Doğalgaz (Kombi)",
-  "Merkezi Sistem",
-  "Yerden Isıtma",
-  "Klima",
-  "Soba / Katı Yakıt",
-  "Isı Pompası",
-  "Yok"
+  { value: "Doğalgaz (Kombi)", labelTr: "Doğalgaz (Kombi)", labelEn: "Natural Gas (Combi)" },
+  { value: "Merkezi Sistem", labelTr: "Merkezi Sistem", labelEn: "Central System" },
+  { value: "Yerden Isıtma", labelTr: "Yerden Isıtma", labelEn: "Underfloor Heating" },
+  { value: "Klima", labelTr: "Klima", labelEn: "Air Conditioning" },
+  { value: "Soba / Katı Yakıt", labelTr: "Soba / Katı Yakıt", labelEn: "Stove / Solid Fuel" },
+  { value: "Isı Pompası", labelTr: "Isı Pompası", labelEn: "Heat Pump" },
+  { value: "Yok", labelTr: "Yok", labelEn: "None" }
 ];
 
-const ZONING_STATUS_OPTIONS = ["İmarlı", "İmarsız"];
+const ZONING_STATUS_OPTIONS = [
+  { value: "İmarlı", labelTr: "İmarlı", labelEn: "Zoned" },
+  { value: "İmarsız", labelTr: "İmarsız", labelEn: "Unzoned" }
+];
 
 function normalizeOptions(values: Category[]): Category[] {
   return values
@@ -48,13 +57,18 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
   const [isPending, startTransition] = useTransition();
   const sortMenuRef = useRef<HTMLDivElement>(null);
   const searchSignature = searchParams.toString();
-  const rootCategories = useMemo(() => normalizeOptions(categories.filter((category) => !category.parentId)), [categories]);
+  const locale = (t.meta.lang === "en" ? "en" : "tr") as Locale;
+  const localizedCategories = useMemo(
+    () => categories.map((category) => ({ ...category, name: getLocalizedCategoryName(category, locale) })),
+    [categories, locale]
+  );
+  const rootCategories = useMemo(() => normalizeOptions(localizedCategories.filter((category) => !category.parentId)), [localizedCategories]);
   const currentFilters = useMemo(() => readListingSearchFilters(searchParams, categories), [searchSignature, categories]);
   const [filters, setFilters] = useState<FilterState>(currentFilters);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
-  const localeIsEnglish = t.meta.lang === "en";
+  const localeIsEnglish = locale === "en";
   const advancedButtonLabel = localeIsEnglish ? "Search Now" : "Arama Yap";
   const advancedTitle = localeIsEnglish ? "Advanced Search" : "Gelişmiş Arama";
   const closeLabel = localeIsEnglish ? "Close" : "Kapat";
@@ -90,13 +104,31 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
     [t.filters.currencyTL, t.filters.currencyUSD, t.filters.currencyEUR]
   );
 
+  const heatingOptions = useMemo(
+    () =>
+      HEATING_TYPE_OPTIONS.map((option) => ({
+        value: option.value,
+        label: localeIsEnglish ? option.labelEn : option.labelTr
+      })),
+    [localeIsEnglish]
+  );
+
+  const zoningOptions = useMemo(
+    () =>
+      ZONING_STATUS_OPTIONS.map((option) => ({
+        value: option.value,
+        label: localeIsEnglish ? option.labelEn : option.labelTr
+      })),
+    [localeIsEnglish]
+  );
+
   const selectedParent = useMemo(
     () => rootCategories.find((category) => category.id === filters.parentCategoryId) ?? null,
     [filters.parentCategoryId, rootCategories]
   );
   const subCategories = useMemo(
-    () => (filters.parentCategoryId ? normalizeOptions(getChildCategories(categories, filters.parentCategoryId)) : []),
-    [categories, filters.parentCategoryId]
+    () => (filters.parentCategoryId ? normalizeOptions(getChildCategories(localizedCategories, filters.parentCategoryId)) : []),
+    [filters.parentCategoryId, localizedCategories]
   );
   const selectedSubCategory = useMemo(
     () => categories.find((category) => category.id === filters.categoryId) ?? null,
@@ -463,7 +495,7 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
                       label={t.filters.heatingTypeLabel}
                       placeholder={t.filters.anyOption}
                       value={filters.heatingType}
-                      options={HEATING_TYPE_OPTIONS.map((value) => ({ value, label: value }))}
+                      options={heatingOptions}
                       onChange={(nextValue) => updateFilters({ heatingType: nextValue })}
                       dataAutomation="heating-type-filter"
                       clearLabel={t.common.clear}
@@ -479,7 +511,7 @@ export function SearchFilters({ categories, showHeader = true }: SearchFiltersPr
                     label={t.filters.zoningStatusLabel}
                     placeholder={t.filters.anyOption}
                     value={filters.zoningStatus}
-                    options={ZONING_STATUS_OPTIONS.map((value) => ({ value, label: value }))}
+                    options={zoningOptions}
                     onChange={(nextValue) => updateFilters({ zoningStatus: nextValue })}
                     dataAutomation="zoning-status-filter"
                     clearLabel={t.common.clear}
